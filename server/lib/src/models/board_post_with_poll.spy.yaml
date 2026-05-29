@@ -1,0 +1,5 @@
+### Post bacheca con opzioni sondaggio.
+class: BoardPostWithPoll
+fields:
+  post: BoardPost
+  options: List<PollOption>

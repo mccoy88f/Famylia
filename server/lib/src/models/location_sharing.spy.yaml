@@ -1,0 +1,16 @@
+### Impostazioni condivisione posizione per utente/famiglia.
+class: LocationSharing
+table: location_sharing
+fields:
+  userId: int
+  familyId: int, relation(parent=family)
+  isEnabled: bool, default=false
+  accuracyLevel: LocationAccuracyLevel, default=precise
+  autoDisableAfterHours: int, default=24
+  shareWithUserIdsJson: String, default='[]'
+  enabledAt: DateTime?
+  expiresAt: DateTime?
+indexes:
+  location_sharing_user_family_idx:
+    fields: userId, familyId
+    unique: true

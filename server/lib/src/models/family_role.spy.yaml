@@ -1,0 +1,7 @@
+### Ruolo membro nella famiglia.
+enum: FamilyRole
+serialized: byName
+values:
+  - admin
+  - member
+  - guest

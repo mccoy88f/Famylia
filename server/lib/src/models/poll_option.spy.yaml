@@ -1,0 +1,7 @@
+### Opzione sondaggio bacheca.
+class: PollOption
+table: poll_option
+fields:
+  boardPostId: int, relation(parent=board_post)
+  text: String
+  votesJson: String, default='[]'

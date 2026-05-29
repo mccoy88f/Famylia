@@ -1,0 +1,7 @@
+enum: DeadlineStatus
+serialized: byName
+values:
+  - pending
+  - paid
+  - overdue
+  - cancelled

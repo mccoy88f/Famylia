@@ -1,0 +1,6 @@
+### Famiglia con ruolo dell'utente corrente (risposta API).
+class: FamilyWithRole
+fields:
+  family: Family
+  role: FamilyRole
+  memberId: int

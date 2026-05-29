@@ -1,0 +1,4 @@
+### Notifica aggiornamento lista spesa (real-time).
+class: ShoppingListChanged
+fields:
+  listId: int

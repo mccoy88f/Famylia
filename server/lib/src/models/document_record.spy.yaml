@@ -1,0 +1,19 @@
+### Documento o ricevuta familiare.
+class: DocumentRecord
+table: document_record
+fields:
+  familyId: int, relation(parent=family)
+  uploadedBy: int
+  title: String
+  description: String?
+  fileUrl: String
+  fileType: DocumentFileType, default=other
+  fileSizeBytes: int?
+  category: DocumentCategory, default=other
+  relatedDeadlineId: int?
+  relatedExpenseId: int?
+  ocrDataJson: String?
+  accessLevel: DocumentAccessLevel, default=family
+indexes:
+  document_record_family_idx:
+    fields: familyId

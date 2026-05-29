@@ -1,0 +1,7 @@
+enum: TodoPriority
+serialized: byName
+values:
+  - low
+  - medium
+  - high
+  - critical

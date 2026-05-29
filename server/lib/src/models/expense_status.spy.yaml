@@ -1,0 +1,6 @@
+enum: ExpenseStatus
+serialized: byName
+values:
+  - active
+  - settled
+  - pending

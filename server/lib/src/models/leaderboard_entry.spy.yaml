@@ -1,0 +1,6 @@
+class: LeaderboardEntry
+fields:
+  userId: int
+  displayName: String
+  points: int
+  badgesJson: String

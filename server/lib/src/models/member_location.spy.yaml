@@ -1,0 +1,9 @@
+class: MemberLocation
+fields:
+  userId: int
+  displayName: String
+  latitude: double
+  longitude: double
+  address: String?
+  recordedAt: DateTime
+  isSharingEnabled: bool

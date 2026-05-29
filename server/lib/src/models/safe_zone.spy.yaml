@@ -1,0 +1,15 @@
+### Zona sicura (casa, scuola, lavoro).
+class: SafeZone
+table: safe_zone
+fields:
+  familyId: int, relation(parent=family)
+  createdBy: int
+  name: String
+  latitude: double
+  longitude: double
+  radiusMeters: int, default=100
+  notifyOnEnter: bool, default=true
+  notifyOnExit: bool, default=true
+indexes:
+  safe_zone_family_idx:
+    fields: familyId

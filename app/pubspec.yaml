@@ -1,0 +1,36 @@
+name: famylia_app
+description: Famylia — companion app familiare (PWA)
+publish_to: none
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  go_router: ^14.6.2
+  provider: ^6.1.2
+  shared_preferences: ^2.3.3
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  connectivity_plus: ^6.1.0
+  intl: ^0.20.2
+  file_picker: ^8.1.7
+  serverpod_client: 2.5.1
+  serverpod_flutter: 2.5.1
+  serverpod_auth_client: 2.5.1
+  serverpod_auth_shared_flutter: 2.5.1
+  famylia_client:
+    path: ../client
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

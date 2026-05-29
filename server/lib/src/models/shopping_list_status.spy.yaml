@@ -1,0 +1,6 @@
+enum: ShoppingListStatus
+serialized: byName
+values:
+  - active
+  - completed
+  - archived

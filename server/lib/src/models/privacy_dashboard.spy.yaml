@@ -1,0 +1,7 @@
+class: PrivacyDashboard
+fields:
+  locationEnabled: bool
+  locationExpiresAt: DateTime?
+  sharedWithCount: int
+  viewersJson: String
+  canExportData: bool

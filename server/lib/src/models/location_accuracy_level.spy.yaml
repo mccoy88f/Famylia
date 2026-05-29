@@ -1,0 +1,6 @@
+enum: LocationAccuracyLevel
+serialized: byName
+values:
+  - precise
+  - approximate
+  - cityOnly

@@ -1,0 +1,7 @@
+enum: ExpenseSplitType
+serialized: byName
+values:
+  - equal
+  - percentage
+  - exact
+  - shares

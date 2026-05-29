@@ -1,0 +1,6 @@
+enum: SettlementStatus
+serialized: byName
+values:
+  - pending
+  - paid
+  - cancelled

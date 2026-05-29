@@ -1,0 +1,6 @@
+enum: DocumentFileType
+serialized: byName
+values:
+  - image
+  - pdf
+  - other

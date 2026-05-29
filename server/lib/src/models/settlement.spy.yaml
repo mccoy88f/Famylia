@@ -1,0 +1,14 @@
+### Registrazione saldo tra membri.
+class: Settlement
+table: settlement
+fields:
+  familyId: int, relation(parent=family)
+  fromUserId: int
+  toUserId: int
+  amount: double
+  currency: String, default='EUR'
+  status: SettlementStatus, default=pending
+  settledAt: DateTime?
+indexes:
+  settlement_family_idx:
+    fields: familyId

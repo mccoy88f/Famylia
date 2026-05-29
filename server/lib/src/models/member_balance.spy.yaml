@@ -1,0 +1,6 @@
+### Saldo netto di un membro (spese).
+class: MemberBalance
+fields:
+  userId: int
+  displayName: String
+  balance: double

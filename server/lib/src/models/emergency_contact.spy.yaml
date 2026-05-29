@@ -1,0 +1,14 @@
+### Contatto emergenza familiare.
+class: EmergencyContact
+table: emergency_contact
+fields:
+  familyId: int, relation(parent=family)
+  createdBy: int
+  name: String
+  phone: String
+  email: String?
+  priority: int, default=1
+  notes: String?
+indexes:
+  emergency_contact_family_idx:
+    fields: familyId

@@ -1,0 +1,13 @@
+### Ricetta familiare.
+class: Recipe
+table: recipe
+fields:
+  familyId: int, relation(parent=family)
+  createdBy: int
+  title: String
+  description: String?
+  ingredientsJson: String, default='[]'
+  servings: int, default=4
+indexes:
+  recipe_family_idx:
+    fields: familyId

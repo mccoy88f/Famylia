@@ -1,0 +1,5 @@
+### Bilancio spese famiglia.
+class: FamilyBalance
+fields:
+  members: List<MemberBalance>
+  suggestions: List<SettlementSuggestion>

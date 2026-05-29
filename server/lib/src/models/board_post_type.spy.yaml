@@ -1,0 +1,7 @@
+enum: BoardPostType
+serialized: byName
+values:
+  - note
+  - poll
+  - announcement
+  - reminder

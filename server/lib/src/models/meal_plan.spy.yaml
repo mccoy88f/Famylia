@@ -1,0 +1,11 @@
+### Piano pasti settimanale.
+class: MealPlan
+table: meal_plan
+fields:
+  familyId: int, relation(parent=family)
+  createdBy: int
+  weekStart: DateTime
+  mealsJson: String, default='[]'
+indexes:
+  meal_plan_family_week_idx:
+    fields: familyId, weekStart

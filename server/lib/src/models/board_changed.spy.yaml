@@ -1,0 +1,4 @@
+### Notifica aggiornamento bacheca (real-time).
+class: BoardChanged
+fields:
+  familyId: int

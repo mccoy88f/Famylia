@@ -1,0 +1,10 @@
+enum: DeadlineCategory
+serialized: byName
+values:
+  - bill
+  - tax
+  - license
+  - medical
+  - contract
+  - personal
+  - other

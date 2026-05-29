@@ -1,0 +1,8 @@
+### Suggerimento transazione per saldare debiti.
+class: SettlementSuggestion
+fields:
+  fromUserId: int
+  fromDisplayName: String
+  toUserId: int
+  toDisplayName: String
+  amount: double

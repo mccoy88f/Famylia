@@ -1,0 +1,23 @@
+# Database e Redis per sviluppo locale Serverpod
+# Avvio da server/: docker compose up -d
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "8090:5432"
+    environment:
+      POSTGRES_USER: famylia
+      POSTGRES_DB: famylia
+      POSTGRES_PASSWORD: "changeme_famylia_db"
+    volumes:
+      - famylia_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "8091:6379"
+    command: redis-server --requirepass "changeme_redis"
+
+volumes:
+  famylia_data:

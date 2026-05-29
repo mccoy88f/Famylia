@@ -1,0 +1,12 @@
+enum: CalendarEventCategory
+serialized: byName
+values:
+  - birthday
+  - medical
+  - school
+  - work
+  - sport
+  - social
+  - travel
+  - appointment
+  - other

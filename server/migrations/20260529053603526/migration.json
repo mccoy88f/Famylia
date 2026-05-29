@@ -1,0 +1,811 @@
+{
+  "actions": [
+    {
+      "type": "createTable",
+      "createTable": {
+        "name": "emergency_alert",
+        "dartName": "EmergencyAlert",
+        "module": "famylia",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "nextval('emergency_alert_id_seq'::regclass)",
+            "dartType": "int?"
+          },
+          {
+            "name": "familyId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "triggeredBy",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "alertType",
+            "columnType": 0,
+            "isNullable": false,
+            "columnDefault": "'other'::text",
+            "dartType": "protocol:EmergencyAlertType"
+          },
+          {
+            "name": "customMessage",
+            "columnType": 0,
+            "isNullable": true,
+            "dartType": "String?"
+          },
+          {
+            "name": "locationLat",
+            "columnType": 3,
+            "isNullable": true,
+            "dartType": "double?"
+          },
+          {
+            "name": "locationLng",
+            "columnType": 3,
+            "isNullable": true,
+            "dartType": "double?"
+          },
+          {
+            "name": "locationAddress",
+            "columnType": 0,
+            "isNullable": true,
+            "dartType": "String?"
+          },
+          {
+            "name": "batteryLevel",
+            "columnType": 6,
+            "isNullable": true,
+            "dartType": "int?"
+          },
+          {
+            "name": "triggerMethod",
+            "columnType": 0,
+            "isNullable": false,
+            "columnDefault": "'panicButton'::text",
+            "dartType": "protocol:EmergencyTriggerMethod"
+          },
+          {
+            "name": "status",
+            "columnType": 0,
+            "isNullable": false,
+            "columnDefault": "'active'::text",
+            "dartType": "protocol:EmergencyAlertStatus"
+          },
+          {
+            "name": "isTest",
+            "columnType": 1,
+            "isNullable": false,
+            "columnDefault": "false",
+            "dartType": "bool"
+          },
+          {
+            "name": "acknowledgedBy",
+            "columnType": 6,
+            "isNullable": true,
+            "dartType": "int?"
+          },
+          {
+            "name": "acknowledgedAt",
+            "columnType": 4,
+            "isNullable": true,
+            "dartType": "DateTime?"
+          },
+          {
+            "name": "resolvedBy",
+            "columnType": 6,
+            "isNullable": true,
+            "dartType": "int?"
+          },
+          {
+            "name": "resolvedAt",
+            "columnType": 4,
+            "isNullable": true,
+            "dartType": "DateTime?"
+          },
+          {
+            "name": "escalationLevel",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "1",
+            "dartType": "int"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "constraintName": "emergency_alert_fk_0",
+            "columns": [
+              "familyId"
+            ],
+            "referenceTable": "family",
+            "referenceTableSchema": "public",
+            "referenceColumns": [
+              "id"
+            ],
+            "onUpdate": 3,
+            "onDelete": 3
+          }
+        ],
+        "indexes": [
+          {
+            "indexName": "emergency_alert_pkey",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "id"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": true
+          },
+          {
+            "indexName": "emergency_alert_family_status_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "familyId"
+              },
+              {
+                "type": 0,
+                "definition": "status"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          }
+        ],
+        "managed": true
+      }
+    },
+    {
+      "type": "createTable",
+      "createTable": {
+        "name": "emergency_contact",
+        "dartName": "EmergencyContact",
+        "module": "famylia",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "nextval('emergency_contact_id_seq'::regclass)",
+            "dartType": "int?"
+          },
+          {
+            "name": "familyId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "createdBy",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "name",
+            "columnType": 0,
+            "isNullable": false,
+            "dartType": "String"
+          },
+          {
+            "name": "phone",
+            "columnType": 0,
+            "isNullable": false,
+            "dartType": "String"
+          },
+          {
+            "name": "email",
+            "columnType": 0,
+            "isNullable": true,
+            "dartType": "String?"
+          },
+          {
+            "name": "priority",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "1",
+            "dartType": "int"
+          },
+          {
+            "name": "notes",
+            "columnType": 0,
+            "isNullable": true,
+            "dartType": "String?"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "constraintName": "emergency_contact_fk_0",
+            "columns": [
+              "familyId"
+            ],
+            "referenceTable": "family",
+            "referenceTableSchema": "public",
+            "referenceColumns": [
+              "id"
+            ],
+            "onUpdate": 3,
+            "onDelete": 3
+          }
+        ],
+        "indexes": [
+          {
+            "indexName": "emergency_contact_pkey",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "id"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": true
+          },
+          {
+            "indexName": "emergency_contact_family_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "familyId"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          }
+        ],
+        "managed": true
+      }
+    },
+    {
+      "type": "createTable",
+      "createTable": {
+        "name": "emergency_settings",
+        "dartName": "EmergencySettings",
+        "module": "famylia",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "nextval('emergency_settings_id_seq'::regclass)",
+            "dartType": "int?"
+          },
+          {
+            "name": "familyId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "panicButtonEnabled",
+            "columnType": 1,
+            "isNullable": false,
+            "columnDefault": "true",
+            "dartType": "bool"
+          },
+          {
+            "name": "requireConfirmation",
+            "columnType": 1,
+            "isNullable": false,
+            "columnDefault": "true",
+            "dartType": "bool"
+          },
+          {
+            "name": "confirmationSeconds",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "3",
+            "dartType": "int"
+          },
+          {
+            "name": "escalationMinutesJson",
+            "columnType": 0,
+            "isNullable": false,
+            "columnDefault": "'[5,15,30]'::text",
+            "dartType": "String"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "constraintName": "emergency_settings_fk_0",
+            "columns": [
+              "familyId"
+            ],
+            "referenceTable": "family",
+            "referenceTableSchema": "public",
+            "referenceColumns": [
+              "id"
+            ],
+            "onUpdate": 3,
+            "onDelete": 3
+          }
+        ],
+        "indexes": [
+          {
+            "indexName": "emergency_settings_pkey",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "id"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": true
+          },
+          {
+            "indexName": "emergency_settings_family_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "familyId"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": false
+          }
+        ],
+        "managed": true
+      }
+    },
+    {
+      "type": "createTable",
+      "createTable": {
+        "name": "location_history",
+        "dartName": "LocationHistory",
+        "module": "famylia",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "nextval('location_history_id_seq'::regclass)",
+            "dartType": "int?"
+          },
+          {
+            "name": "userId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "familyId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "latitude",
+            "columnType": 3,
+            "isNullable": false,
+            "dartType": "double"
+          },
+          {
+            "name": "longitude",
+            "columnType": 3,
+            "isNullable": false,
+            "dartType": "double"
+          },
+          {
+            "name": "accuracyMeters",
+            "columnType": 6,
+            "isNullable": true,
+            "dartType": "int?"
+          },
+          {
+            "name": "address",
+            "columnType": 0,
+            "isNullable": true,
+            "dartType": "String?"
+          },
+          {
+            "name": "batteryLevel",
+            "columnType": 6,
+            "isNullable": true,
+            "dartType": "int?"
+          },
+          {
+            "name": "isManualCheckIn",
+            "columnType": 1,
+            "isNullable": false,
+            "columnDefault": "false",
+            "dartType": "bool"
+          },
+          {
+            "name": "recordedAt",
+            "columnType": 4,
+            "isNullable": false,
+            "dartType": "DateTime"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "constraintName": "location_history_fk_0",
+            "columns": [
+              "familyId"
+            ],
+            "referenceTable": "family",
+            "referenceTableSchema": "public",
+            "referenceColumns": [
+              "id"
+            ],
+            "onUpdate": 3,
+            "onDelete": 3
+          }
+        ],
+        "indexes": [
+          {
+            "indexName": "location_history_pkey",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "id"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": true
+          },
+          {
+            "indexName": "location_history_family_user_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "familyId"
+              },
+              {
+                "type": 0,
+                "definition": "userId"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          }
+        ],
+        "managed": true
+      }
+    },
+    {
+      "type": "createTable",
+      "createTable": {
+        "name": "location_sharing",
+        "dartName": "LocationSharing",
+        "module": "famylia",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "nextval('location_sharing_id_seq'::regclass)",
+            "dartType": "int?"
+          },
+          {
+            "name": "userId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "familyId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "isEnabled",
+            "columnType": 1,
+            "isNullable": false,
+            "columnDefault": "false",
+            "dartType": "bool"
+          },
+          {
+            "name": "accuracyLevel",
+            "columnType": 0,
+            "isNullable": false,
+            "columnDefault": "'precise'::text",
+            "dartType": "protocol:LocationAccuracyLevel"
+          },
+          {
+            "name": "autoDisableAfterHours",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "24",
+            "dartType": "int"
+          },
+          {
+            "name": "shareWithUserIdsJson",
+            "columnType": 0,
+            "isNullable": false,
+            "columnDefault": "'[]'::text",
+            "dartType": "String"
+          },
+          {
+            "name": "enabledAt",
+            "columnType": 4,
+            "isNullable": true,
+            "dartType": "DateTime?"
+          },
+          {
+            "name": "expiresAt",
+            "columnType": 4,
+            "isNullable": true,
+            "dartType": "DateTime?"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "constraintName": "location_sharing_fk_0",
+            "columns": [
+              "familyId"
+            ],
+            "referenceTable": "family",
+            "referenceTableSchema": "public",
+            "referenceColumns": [
+              "id"
+            ],
+            "onUpdate": 3,
+            "onDelete": 3
+          }
+        ],
+        "indexes": [
+          {
+            "indexName": "location_sharing_pkey",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "id"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": true
+          },
+          {
+            "indexName": "location_sharing_user_family_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "userId"
+              },
+              {
+                "type": 0,
+                "definition": "familyId"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": false
+          }
+        ],
+        "managed": true
+      }
+    },
+    {
+      "type": "createTable",
+      "createTable": {
+        "name": "safe_zone",
+        "dartName": "SafeZone",
+        "module": "famylia",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "nextval('safe_zone_id_seq'::regclass)",
+            "dartType": "int?"
+          },
+          {
+            "name": "familyId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "createdBy",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "name",
+            "columnType": 0,
+            "isNullable": false,
+            "dartType": "String"
+          },
+          {
+            "name": "latitude",
+            "columnType": 3,
+            "isNullable": false,
+            "dartType": "double"
+          },
+          {
+            "name": "longitude",
+            "columnType": 3,
+            "isNullable": false,
+            "dartType": "double"
+          },
+          {
+            "name": "radiusMeters",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "100",
+            "dartType": "int"
+          },
+          {
+            "name": "notifyOnEnter",
+            "columnType": 1,
+            "isNullable": false,
+            "columnDefault": "true",
+            "dartType": "bool"
+          },
+          {
+            "name": "notifyOnExit",
+            "columnType": 1,
+            "isNullable": false,
+            "columnDefault": "true",
+            "dartType": "bool"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "constraintName": "safe_zone_fk_0",
+            "columns": [
+              "familyId"
+            ],
+            "referenceTable": "family",
+            "referenceTableSchema": "public",
+            "referenceColumns": [
+              "id"
+            ],
+            "onUpdate": 3,
+            "onDelete": 3
+          }
+        ],
+        "indexes": [
+          {
+            "indexName": "safe_zone_pkey",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "id"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": true
+          },
+          {
+            "indexName": "safe_zone_family_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "familyId"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          }
+        ],
+        "managed": true
+      }
+    },
+    {
+      "type": "createTable",
+      "createTable": {
+        "name": "user_points",
+        "dartName": "UserPoints",
+        "module": "famylia",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "nextval('user_points_id_seq'::regclass)",
+            "dartType": "int?"
+          },
+          {
+            "name": "userId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "familyId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "points",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "0",
+            "dartType": "int"
+          },
+          {
+            "name": "streakDays",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "0",
+            "dartType": "int"
+          },
+          {
+            "name": "badgesJson",
+            "columnType": 0,
+            "isNullable": false,
+            "columnDefault": "'[]'::text",
+            "dartType": "String"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "constraintName": "user_points_fk_0",
+            "columns": [
+              "familyId"
+            ],
+            "referenceTable": "family",
+            "referenceTableSchema": "public",
+            "referenceColumns": [
+              "id"
+            ],
+            "onUpdate": 3,
+            "onDelete": 3
+          }
+        ],
+        "indexes": [
+          {
+            "indexName": "user_points_pkey",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "id"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": true
+          },
+          {
+            "indexName": "user_points_user_family_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "userId"
+              },
+              {
+                "type": 0,
+                "definition": "familyId"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": false
+          }
+        ],
+        "managed": true
+      }
+    }
+  ],
+  "warnings": [],
+  "migrationApiVersion": 1
+}

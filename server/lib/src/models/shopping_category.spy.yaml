@@ -1,0 +1,13 @@
+enum: ShoppingCategory
+serialized: byName
+values:
+  - dairy
+  - meat
+  - vegetables
+  - fruit
+  - bakery
+  - beverages
+  - frozen
+  - household
+  - personal
+  - other

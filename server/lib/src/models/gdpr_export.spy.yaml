@@ -1,0 +1,4 @@
+class: GdprExport
+fields:
+  exportedAt: DateTime
+  payloadJson: String

@@ -1,0 +1,35 @@
+# Dart / Flutter
+.dart_tool/
+.packages
+build/
+*.iml
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Serverpod
+server/config/passwords.yaml
+
+# Env
+.env
+docker/.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Coverage
+coverage/
+
+# MinIO / DB local data (if mounted locally)
+data/
+
+# Documenti caricati (dev)
+server/storage/

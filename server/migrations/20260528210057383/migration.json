@@ -1,0 +1,406 @@
+{
+  "actions": [
+    {
+      "type": "createTable",
+      "createTable": {
+        "name": "shopping_item",
+        "dartName": "ShoppingItem",
+        "module": "famylia",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "nextval('shopping_item_id_seq'::regclass)",
+            "dartType": "int?"
+          },
+          {
+            "name": "shoppingListId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "name",
+            "columnType": 0,
+            "isNullable": false,
+            "dartType": "String"
+          },
+          {
+            "name": "quantity",
+            "columnType": 3,
+            "isNullable": false,
+            "columnDefault": "1",
+            "dartType": "double"
+          },
+          {
+            "name": "unit",
+            "columnType": 0,
+            "isNullable": false,
+            "columnDefault": "'pieces'::text",
+            "dartType": "protocol:ShoppingUnit"
+          },
+          {
+            "name": "category",
+            "columnType": 0,
+            "isNullable": false,
+            "columnDefault": "'other'::text",
+            "dartType": "protocol:ShoppingCategory"
+          },
+          {
+            "name": "isChecked",
+            "columnType": 1,
+            "isNullable": false,
+            "columnDefault": "false",
+            "dartType": "bool"
+          },
+          {
+            "name": "checkedBy",
+            "columnType": 6,
+            "isNullable": true,
+            "dartType": "int?"
+          },
+          {
+            "name": "checkedAt",
+            "columnType": 4,
+            "isNullable": true,
+            "dartType": "DateTime?"
+          },
+          {
+            "name": "priceEstimate",
+            "columnType": 3,
+            "isNullable": true,
+            "dartType": "double?"
+          },
+          {
+            "name": "notes",
+            "columnType": 0,
+            "isNullable": true,
+            "dartType": "String?"
+          },
+          {
+            "name": "addedBy",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "isUrgent",
+            "columnType": 1,
+            "isNullable": false,
+            "columnDefault": "false",
+            "dartType": "bool"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "constraintName": "shopping_item_fk_0",
+            "columns": [
+              "shoppingListId"
+            ],
+            "referenceTable": "shopping_list",
+            "referenceTableSchema": "public",
+            "referenceColumns": [
+              "id"
+            ],
+            "onUpdate": 3,
+            "onDelete": 3
+          }
+        ],
+        "indexes": [
+          {
+            "indexName": "shopping_item_pkey",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "id"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": true
+          },
+          {
+            "indexName": "shopping_item_list_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "shoppingListId"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          }
+        ],
+        "managed": true
+      }
+    },
+    {
+      "type": "createTable",
+      "createTable": {
+        "name": "shopping_list",
+        "dartName": "ShoppingList",
+        "module": "famylia",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "nextval('shopping_list_id_seq'::regclass)",
+            "dartType": "int?"
+          },
+          {
+            "name": "familyId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "createdBy",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "name",
+            "columnType": 0,
+            "isNullable": false,
+            "dartType": "String"
+          },
+          {
+            "name": "store",
+            "columnType": 0,
+            "isNullable": true,
+            "dartType": "String?"
+          },
+          {
+            "name": "status",
+            "columnType": 0,
+            "isNullable": false,
+            "columnDefault": "'active'::text",
+            "dartType": "protocol:ShoppingListStatus"
+          },
+          {
+            "name": "assignedTo",
+            "columnType": 6,
+            "isNullable": true,
+            "dartType": "int?"
+          },
+          {
+            "name": "dueDate",
+            "columnType": 4,
+            "isNullable": true,
+            "dartType": "DateTime?"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "constraintName": "shopping_list_fk_0",
+            "columns": [
+              "familyId"
+            ],
+            "referenceTable": "family",
+            "referenceTableSchema": "public",
+            "referenceColumns": [
+              "id"
+            ],
+            "onUpdate": 3,
+            "onDelete": 3
+          }
+        ],
+        "indexes": [
+          {
+            "indexName": "shopping_list_pkey",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "id"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": true
+          },
+          {
+            "indexName": "shopping_list_family_status_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "familyId"
+              },
+              {
+                "type": 0,
+                "definition": "status"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          }
+        ],
+        "managed": true
+      }
+    },
+    {
+      "type": "createTable",
+      "createTable": {
+        "name": "todo_item",
+        "dartName": "TodoItem",
+        "module": "famylia",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "nextval('todo_item_id_seq'::regclass)",
+            "dartType": "int?"
+          },
+          {
+            "name": "familyId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "createdBy",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "title",
+            "columnType": 0,
+            "isNullable": false,
+            "dartType": "String"
+          },
+          {
+            "name": "description",
+            "columnType": 0,
+            "isNullable": true,
+            "dartType": "String?"
+          },
+          {
+            "name": "category",
+            "columnType": 0,
+            "isNullable": false,
+            "columnDefault": "'other'::text",
+            "dartType": "protocol:TodoCategory"
+          },
+          {
+            "name": "priority",
+            "columnType": 0,
+            "isNullable": false,
+            "columnDefault": "'medium'::text",
+            "dartType": "protocol:TodoPriority"
+          },
+          {
+            "name": "status",
+            "columnType": 0,
+            "isNullable": false,
+            "columnDefault": "'pending'::text",
+            "dartType": "protocol:TodoStatus"
+          },
+          {
+            "name": "assignedTo",
+            "columnType": 6,
+            "isNullable": true,
+            "dartType": "int?"
+          },
+          {
+            "name": "dueDate",
+            "columnType": 4,
+            "isNullable": true,
+            "dartType": "DateTime?"
+          },
+          {
+            "name": "points",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "10",
+            "dartType": "int"
+          },
+          {
+            "name": "completedAt",
+            "columnType": 4,
+            "isNullable": true,
+            "dartType": "DateTime?"
+          },
+          {
+            "name": "completedBy",
+            "columnType": 6,
+            "isNullable": true,
+            "dartType": "int?"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "constraintName": "todo_item_fk_0",
+            "columns": [
+              "familyId"
+            ],
+            "referenceTable": "family",
+            "referenceTableSchema": "public",
+            "referenceColumns": [
+              "id"
+            ],
+            "onUpdate": 3,
+            "onDelete": 3
+          }
+        ],
+        "indexes": [
+          {
+            "indexName": "todo_item_pkey",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "id"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": true
+          },
+          {
+            "indexName": "todo_item_family_status_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "familyId"
+              },
+              {
+                "type": 0,
+                "definition": "status"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          },
+          {
+            "indexName": "todo_item_family_assigned_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "familyId"
+              },
+              {
+                "type": 0,
+                "definition": "assignedTo"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          }
+        ],
+        "managed": true
+      }
+    }
+  ],
+  "warnings": [],
+  "migrationApiVersion": 1
+}

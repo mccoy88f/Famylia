@@ -1,0 +1,6 @@
+### Membro famiglia con nome visualizzabile (da auth).
+class: FamilyMemberInfo
+fields:
+  userId: int
+  role: FamilyRole
+  displayName: String

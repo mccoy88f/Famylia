@@ -1,0 +1,13 @@
+### Impostazioni emergenza per famiglia.
+class: EmergencySettings
+table: emergency_settings
+fields:
+  familyId: int, relation(parent=family)
+  panicButtonEnabled: bool, default=true
+  requireConfirmation: bool, default=true
+  confirmationSeconds: int, default=3
+  escalationMinutesJson: String, default='[5,15,30]'
+indexes:
+  emergency_settings_family_idx:
+    fields: familyId
+    unique: true

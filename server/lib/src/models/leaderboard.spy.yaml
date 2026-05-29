@@ -1,0 +1,3 @@
+class: Leaderboard
+fields:
+  entries: List<LeaderboardEntry>

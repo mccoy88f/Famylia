@@ -1,0 +1,19 @@
+### Articolo in lista spesa.
+class: ShoppingItem
+table: shopping_item
+fields:
+  shoppingListId: int, relation(parent=shopping_list)
+  name: String
+  quantity: double, default=1
+  unit: ShoppingUnit, default=pieces
+  category: ShoppingCategory, default=other
+  isChecked: bool, default=false
+  checkedBy: int?
+  checkedAt: DateTime?
+  priceEstimate: double?
+  notes: String?
+  addedBy: int
+  isUrgent: bool, default=false
+indexes:
+  shopping_item_list_idx:
+    fields: shoppingListId

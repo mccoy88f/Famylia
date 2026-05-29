@@ -1,0 +1,8 @@
+enum: EmergencyTriggerMethod
+serialized: byName
+values:
+  - panicButton
+  - voiceCommand
+  - shake
+  - widget
+  - testMode

@@ -1,0 +1,8 @@
+class: FamilyReport
+fields:
+  openTodos: int
+  completedTodos: int
+  totalExpenses: double
+  upcomingDeadlines: int
+  activeShoppingLists: int
+  csvExport: String

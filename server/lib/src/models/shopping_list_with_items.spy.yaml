@@ -1,0 +1,5 @@
+### Lista spesa con articoli (risposta API).
+class: ShoppingListWithItems
+fields:
+  list: ShoppingList
+  items: List<ShoppingItem>

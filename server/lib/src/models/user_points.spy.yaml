@@ -1,0 +1,13 @@
+### Punti gamification per membro.
+class: UserPoints
+table: user_points
+fields:
+  userId: int
+  familyId: int, relation(parent=family)
+  points: int, default=0
+  streakDays: int, default=0
+  badgesJson: String, default='[]'
+indexes:
+  user_points_user_family_idx:
+    fields: userId, familyId
+    unique: true

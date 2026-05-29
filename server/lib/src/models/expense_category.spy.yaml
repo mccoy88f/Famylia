@@ -1,0 +1,11 @@
+enum: ExpenseCategory
+serialized: byName
+values:
+  - grocery
+  - bills
+  - transport
+  - health
+  - entertainment
+  - home
+  - education
+  - other

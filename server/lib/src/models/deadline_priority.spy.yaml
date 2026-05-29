@@ -1,0 +1,7 @@
+enum: DeadlinePriority
+serialized: byName
+values:
+  - low
+  - medium
+  - high
+  - critical

@@ -1,0 +1,24 @@
+### Scadenza o bolletta familiare.
+class: Deadline
+table: deadline
+fields:
+  familyId: int, relation(parent=family)
+  createdBy: int
+  title: String
+  description: String?
+  category: DeadlineCategory, default=other
+  amount: double?
+  currency: String, default='EUR'
+  dueDate: DateTime
+  isRecurring: bool, default=false
+  recurrenceRule: String?
+  status: DeadlineStatus, default=pending
+  priority: DeadlinePriority, default=medium
+  assignedTo: int?
+  notifyBeforeHoursJson: String?, default='[24,72]'
+  isPrivate: bool, default=false
+  completedAt: DateTime?
+  completedBy: int?
+indexes:
+  deadline_family_due_idx:
+    fields: familyId, dueDate

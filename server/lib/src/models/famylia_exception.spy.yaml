@@ -1,0 +1,4 @@
+### Errore API Famylia (messaggio leggibile lato client).
+exception: FamyliaException
+fields:
+  message: String

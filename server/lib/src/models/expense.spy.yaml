@@ -1,0 +1,19 @@
+### Spesa condivisa familiare.
+class: Expense
+table: expense
+fields:
+  familyId: int, relation(parent=family)
+  createdBy: int
+  title: String
+  description: String?
+  amount: double
+  currency: String, default='EUR'
+  category: ExpenseCategory, default=other
+  paidBy: int
+  splitType: ExpenseSplitType, default=equal
+  splitDetailsJson: String, default='[]'
+  expenseDate: DateTime
+  status: ExpenseStatus, default=active
+indexes:
+  expense_family_date_idx:
+    fields: familyId, expenseDate

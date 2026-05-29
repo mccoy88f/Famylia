@@ -1,0 +1,16 @@
+### Storico posizione / check-in.
+class: LocationHistory
+table: location_history
+fields:
+  userId: int
+  familyId: int, relation(parent=family)
+  latitude: double
+  longitude: double
+  accuracyMeters: int?
+  address: String?
+  batteryLevel: int?
+  isManualCheckIn: bool, default=false
+  recordedAt: DateTime
+indexes:
+  location_history_family_user_idx:
+    fields: familyId, userId

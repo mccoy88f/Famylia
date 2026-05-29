@@ -1,0 +1,23 @@
+### Allerta emergenza familiare.
+class: EmergencyAlert
+table: emergency_alert
+fields:
+  familyId: int, relation(parent=family)
+  triggeredBy: int
+  alertType: EmergencyAlertType, default=other
+  customMessage: String?
+  locationLat: double?
+  locationLng: double?
+  locationAddress: String?
+  batteryLevel: int?
+  triggerMethod: EmergencyTriggerMethod, default=panicButton
+  status: EmergencyAlertStatus, default=active
+  isTest: bool, default=false
+  acknowledgedBy: int?
+  acknowledgedAt: DateTime?
+  resolvedBy: int?
+  resolvedAt: DateTime?
+  escalationLevel: int, default=1
+indexes:
+  emergency_alert_family_status_idx:
+    fields: familyId, status

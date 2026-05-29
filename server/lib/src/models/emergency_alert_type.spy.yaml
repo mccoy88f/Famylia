@@ -1,0 +1,9 @@
+enum: EmergencyAlertType
+serialized: byName
+values:
+  - medical
+  - accident
+  - security
+  - fire
+  - other
+  - custom

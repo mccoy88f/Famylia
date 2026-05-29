@@ -1,0 +1,4 @@
+### Notifica real-time emergenza.
+class: EmergencyChanged
+fields:
+  familyId: int

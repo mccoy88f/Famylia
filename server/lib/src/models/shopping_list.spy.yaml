@@ -1,0 +1,14 @@
+### Lista della spesa.
+class: ShoppingList
+table: shopping_list
+fields:
+  familyId: int, relation(parent=family)
+  createdBy: int
+  name: String
+  store: String?
+  status: ShoppingListStatus, default=active
+  assignedTo: int?
+  dueDate: DateTime?
+indexes:
+  shopping_list_family_status_idx:
+    fields: familyId, status

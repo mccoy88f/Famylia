@@ -1,0 +1,6 @@
+type: server
+name: famylia
+client_package_path: ../client
+modules:
+  serverpod_auth:
+    nickname: auth

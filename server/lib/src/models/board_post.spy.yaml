@@ -1,0 +1,16 @@
+### Post bacheca familiare.
+class: BoardPost
+table: board_post
+fields:
+  familyId: int, relation(parent=family)
+  createdBy: int
+  title: String?
+  content: String
+  type: BoardPostType, default=note
+  isPinned: bool, default=false
+  expiresAt: DateTime?
+  reactionsJson: String, default='{}'
+  commentsJson: String, default='[]'
+indexes:
+  board_post_family_idx:
+    fields: familyId

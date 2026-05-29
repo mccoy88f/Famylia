@@ -1,0 +1,6 @@
+enum: DocumentAccessLevel
+serialized: byName
+values:
+  - family
+  - adminOnly
+  - private

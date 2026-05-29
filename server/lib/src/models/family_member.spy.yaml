@@ -1,0 +1,11 @@
+### Appartenenza utente ↔ famiglia.
+class: FamilyMember
+table: family_member
+fields:
+  userId: int
+  familyId: int, relation(parent=family)
+  role: FamilyRole, default=member
+indexes:
+  family_member_user_family_idx:
+    fields: userId, familyId
+    unique: true

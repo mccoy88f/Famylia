@@ -1,0 +1,8 @@
+enum: ShoppingUnit
+serialized: byName
+values:
+  - pieces
+  - liters
+  - grams
+  - kilos
+  - other

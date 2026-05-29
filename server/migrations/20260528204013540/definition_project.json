@@ -1,0 +1,158 @@
+{
+  "moduleName": "famylia",
+  "tables": [
+    {
+      "name": "family",
+      "dartName": "Family",
+      "module": "famylia",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "columnType": 6,
+          "isNullable": false,
+          "columnDefault": "nextval('family_id_seq'::regclass)",
+          "dartType": "int?"
+        },
+        {
+          "name": "name",
+          "columnType": 0,
+          "isNullable": false,
+          "dartType": "String"
+        },
+        {
+          "name": "inviteCode",
+          "columnType": 0,
+          "isNullable": false,
+          "dartType": "String"
+        },
+        {
+          "name": "settings",
+          "columnType": 0,
+          "isNullable": true,
+          "columnDefault": "'{}'::text",
+          "dartType": "String?"
+        }
+      ],
+      "foreignKeys": [],
+      "indexes": [
+        {
+          "indexName": "family_pkey",
+          "elements": [
+            {
+              "type": 0,
+              "definition": "id"
+            }
+          ],
+          "type": "btree",
+          "isUnique": true,
+          "isPrimary": true
+        },
+        {
+          "indexName": "family_invite_code_idx",
+          "elements": [
+            {
+              "type": 0,
+              "definition": "inviteCode"
+            }
+          ],
+          "type": "btree",
+          "isUnique": true,
+          "isPrimary": false
+        }
+      ],
+      "managed": true
+    },
+    {
+      "name": "family_member",
+      "dartName": "FamilyMember",
+      "module": "famylia",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "columnType": 6,
+          "isNullable": false,
+          "columnDefault": "nextval('family_member_id_seq'::regclass)",
+          "dartType": "int?"
+        },
+        {
+          "name": "userId",
+          "columnType": 6,
+          "isNullable": false,
+          "dartType": "int"
+        },
+        {
+          "name": "familyId",
+          "columnType": 6,
+          "isNullable": false,
+          "dartType": "int"
+        },
+        {
+          "name": "role",
+          "columnType": 0,
+          "isNullable": false,
+          "columnDefault": "'member'::text",
+          "dartType": "protocol:FamilyRole"
+        }
+      ],
+      "foreignKeys": [
+        {
+          "constraintName": "family_member_fk_0",
+          "columns": [
+            "familyId"
+          ],
+          "referenceTable": "family",
+          "referenceTableSchema": "public",
+          "referenceColumns": [
+            "id"
+          ],
+          "onUpdate": 3,
+          "onDelete": 3
+        }
+      ],
+      "indexes": [
+        {
+          "indexName": "family_member_pkey",
+          "elements": [
+            {
+              "type": 0,
+              "definition": "id"
+            }
+          ],
+          "type": "btree",
+          "isUnique": true,
+          "isPrimary": true
+        },
+        {
+          "indexName": "family_member_user_family_idx",
+          "elements": [
+            {
+              "type": 0,
+              "definition": "userId"
+            },
+            {
+              "type": 0,
+              "definition": "familyId"
+            }
+          ],
+          "type": "btree",
+          "isUnique": true,
+          "isPrimary": false
+        }
+      ],
+      "managed": true
+    }
+  ],
+  "installedModules": [
+    {
+      "module": "serverpod",
+      "version": "20240516151843329"
+    },
+    {
+      "module": "serverpod_auth",
+      "version": "20240520102713718"
+    }
+  ],
+  "migrationApiVersion": 1
+}

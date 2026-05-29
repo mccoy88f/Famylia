@@ -1,0 +1,11 @@
+### Gruppo familiare Famylia.
+class: Family
+table: family
+fields:
+  name: String
+  inviteCode: String
+  settings: String?, defaultPersist="{}"
+indexes:
+  family_invite_code_idx:
+    fields: inviteCode
+    unique: true

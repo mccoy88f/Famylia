@@ -1,0 +1,10 @@
+enum: TodoCategory
+serialized: byName
+values:
+  - cleaning
+  - cooking
+  - shopping
+  - maintenance
+  - kids
+  - admin
+  - other

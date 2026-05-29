@@ -1,0 +1,92 @@
+board:
+  - watchBoard:
+  - listPosts:
+  - createPost:
+  - votePoll:
+  - deletePost:
+calendar:
+  - createEvent:
+  - listEvents:
+  - updateEvent:
+  - deleteEvent:
+deadline:
+  - createDeadline:
+  - listDeadlines:
+  - upcoming:
+  - completeDeadline:
+  - updateDeadline:
+  - deleteDeadline:
+dev:
+  - getVerificationCode:
+document:
+  - listDocuments:
+  - uploadDocument:
+  - runOcr:
+  - deleteDocument:
+emergency:
+  - watchAlerts:
+  - getSettings:
+  - updateSettings:
+  - triggerAlert:
+  - listActive:
+  - listHistory:
+  - acknowledge:
+  - resolve:
+  - markFalseAlarm:
+  - listContacts:
+  - addContact:
+  - deleteContact:
+expense:
+  - createExpense:
+  - listExpenses:
+  - getBalance:
+  - recordSettlement:
+  - listSettlements:
+  - deleteExpense:
+family:
+  - createFamily:
+  - joinFamily:
+  - listMyFamilies:
+  - getFamily:
+  - listMembers:
+  - leaveFamily:
+gamification:
+  - getMyPoints:
+  - getLeaderboard:
+gdpr:
+  - exportMyData:
+  - deleteMyAccount:
+  - getPrivacyDashboard:
+location:
+  - getStatus:
+  - updateStatus:
+  - checkIn:
+  - getFamilyLocations:
+  - listSafeZones:
+  - createSafeZone:
+meal:
+  - createRecipe:
+  - listRecipes:
+  - saveMealPlan:
+  - getMealPlan:
+  - shoppingItemsFromPlan:
+report:
+  - getReport:
+shopping:
+  - watchList:
+  - createList:
+  - listLists:
+  - getList:
+  - addItem:
+  - updateItem:
+  - checkItem:
+  - deleteItem:
+  - completeList:
+todo:
+  - createTodo:
+  - listTodos:
+  - myDay:
+  - assignTodo:
+  - updateTodo:
+  - completeTodo:
+  - deleteTodo:

@@ -1,0 +1,7 @@
+enum: TodoStatus
+serialized: byName
+values:
+  - pending
+  - inProgress
+  - done
+  - cancelled

@@ -1,0 +1,10 @@
+enum: DocumentCategory
+serialized: byName
+values:
+  - receipt
+  - invoice
+  - contract
+  - medical
+  - warranty
+  - id
+  - other

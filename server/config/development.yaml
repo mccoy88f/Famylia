@@ -1,0 +1,31 @@
+# Configurazione sviluppo — Serverpod
+# https://docs.serverpod.dev
+
+apiServer:
+  port: 8080
+  publicHost: localhost
+  publicPort: 8080
+  publicScheme: http
+
+insightsServer:
+  port: 8081
+  publicHost: localhost
+  publicPort: 8081
+  publicScheme: http
+
+webServer:
+  port: 8082
+  publicHost: localhost
+  publicPort: 8082
+  publicScheme: http
+
+database:
+  host: localhost
+  port: 8090
+  name: famylia
+  user: famylia
+
+redis:
+  enabled: false
+  host: localhost
+  port: 8091

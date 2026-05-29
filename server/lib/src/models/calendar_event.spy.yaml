@@ -1,0 +1,20 @@
+### Evento calendario familiare.
+class: CalendarEvent
+table: calendar_event
+fields:
+  familyId: int, relation(parent=family)
+  createdBy: int
+  title: String
+  description: String?
+  category: CalendarEventCategory, default=other
+  startAt: DateTime
+  endAt: DateTime?
+  isAllDay: bool, default=false
+  location: String?
+  assignedTo: int?
+  isPrivate: bool, default=false
+  color: String?
+  reminderMinutesJson: String?
+indexes:
+  calendar_event_family_start_idx:
+    fields: familyId, startAt

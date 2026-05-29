@@ -1,0 +1,7 @@
+enum: EmergencyAlertStatus
+serialized: byName
+values:
+  - active
+  - acknowledged
+  - resolved
+  - falseAlarm
