@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/auth_repository.dart';
 import '../../core/api/gdpr_repository.dart';
@@ -65,6 +66,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
   }
 
   Future<void> _deleteAccount() async {
+    final shadTheme = ShadTheme.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -75,7 +77,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(backgroundColor: shadTheme.colorScheme.destructive),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Elimina'),
           ),
@@ -100,14 +102,20 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Privacy e GDPR')),
+      backgroundColor: shadTheme.colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
+        title: const Text('Privacy e GDPR'),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Card(
+                ShadCard(
                   child: ListTile(
                     leading: const Icon(Icons.location_on_outlined),
                     title: const Text('Condivisione posizione'),
@@ -121,19 +129,33 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                 if (_dashboard?.viewersJson.isNotEmpty == true)
                   Padding(
                     padding: const EdgeInsets.only(left: 16, bottom: 16),
-                    child: Text('Visibile a: ${_dashboard!.viewersJson}'),
+                    child: Text('Visibile a: ${_dashboard!.viewersJson}', style: shadTheme.textTheme.muted),
                   ),
                 const SizedBox(height: 8),
-                FilledButton.icon(
+                ShadButton(
                   onPressed: _export,
-                  icon: const Icon(Icons.download_outlined),
-                  label: const Text('Esporta i miei dati (GDPR)'),
+                  width: double.infinity,
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.download_outlined, size: 18),
+                      SizedBox(width: 8),
+                      Text('Esporta i miei dati (GDPR)'),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 12),
-                OutlinedButton.icon(
+                ShadButton.outline(
                   onPressed: _deleteAccount,
-                  icon: const Icon(Icons.delete_forever_outlined),
-                  label: const Text('Elimina account'),
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.delete_forever_outlined, size: 18, color: shadTheme.colorScheme.destructive),
+                      const SizedBox(width: 8),
+                      Text('Elimina account', style: TextStyle(color: shadTheme.colorScheme.destructive)),
+                    ],
+                  ),
                 ),
               ],
             ),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/shopping_repository.dart';
 import '../../core/shopping/shopping_category_style.dart';
@@ -121,9 +122,13 @@ class _ShoppingListDetailScreenState extends State<ShoppingListDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     final detail = _detail;
     return Scaffold(
+      backgroundColor: shadTheme.colorScheme.background,
       appBar: AppBar(
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
         title: Text(detail?.list.name ?? 'Lista'),
         actions: [
           if (_offline)
@@ -132,39 +137,53 @@ class _ShoppingListDetailScreenState extends State<ShoppingListDetailScreen> {
               child: Icon(Icons.cloud_off, size: 20),
             )
           else
-            const Padding(
-              padding: EdgeInsets.only(right: 12),
-              child: Icon(Icons.sync, size: 20, color: Colors.green),
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Icon(Icons.sync, size: 20, color: shadTheme.colorScheme.primary),
             ),
         ],
       ),
       body: Column(
         children: [
           if (_offline)
-            MaterialBanner(
-              content: const Text('Offline — modifiche in coda, sync al reconnect'),
-              leading: const Icon(Icons.cloud_off),
-              actions: [
-                TextButton(onPressed: _loadOnce, child: const Text('Riprova')),
-              ],
+            Container(
+              width: double.infinity,
+              color: shadTheme.colorScheme.destructive.withValues(alpha: 0.1),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Row(
+                children: [
+                  Icon(Icons.cloud_off, size: 18, color: shadTheme.colorScheme.destructive),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Offline — modifiche in coda, sync al reconnect',
+                      style: TextStyle(color: shadTheme.colorScheme.destructive, fontSize: 13),
+                    ),
+                  ),
+                  ShadButton.ghost(
+                    onPressed: _loadOnce,
+                    size: ShadButtonSize.sm,
+                    child: const Text('Riprova'),
+                  ),
+                ],
+              ),
             ),
           Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
+                  child: ShadInput(
                     controller: _quickAddController,
-                    decoration: const InputDecoration(
-                      hintText: 'Aggiungi articolo…',
-                      isDense: true,
-                    ),
+                    placeholder: const Text('Aggiungi articolo…'),
                     onSubmitted: (_) => _addItem(),
                   ),
                 ),
-                IconButton.filled(
+                const SizedBox(width: 8),
+                ShadButton(
                   onPressed: _addItem,
-                  icon: const Icon(Icons.add),
+                  size: ShadButtonSize.icon,
+                  child: const Icon(Icons.add, size: 18),
                 ),
               ],
             ),

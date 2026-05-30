@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/family_repository.dart';
 import '../../core/theme/app_settings.dart';
@@ -55,20 +56,23 @@ class _FamilyAppearanceScreenState extends State<FamilyAppearanceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     final family = context.watch<FamilyContext>();
     final settings = context.watch<AppSettings>();
-    final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Aspetto')),
+      backgroundColor: shadTheme.colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
+        title: const Text('Aspetto'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
           Text(
             'Tema',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: shadTheme.textTheme.p?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           SegmentedButton<ThemeMode>(
@@ -95,18 +99,14 @@ class _FamilyAppearanceScreenState extends State<FamilyAppearanceScreen> {
           const SizedBox(height: 32),
           Text(
             'Colore accento famiglia',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: shadTheme.textTheme.p?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             family.isAdmin
                 ? 'Visibile a tutti i membri di «${family.activeFamilyName ?? 'famiglia'}».'
                 : 'Solo gli admin possono modificarlo.',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: scheme.onSurface.withValues(alpha: 0.65),
-                ),
+            style: shadTheme.textTheme.muted,
           ),
           const SizedBox(height: 16),
           Wrap(
@@ -124,20 +124,17 @@ class _FamilyAppearanceScreenState extends State<FamilyAppearanceScreen> {
           ),
           if (_error != null) ...[
             const SizedBox(height: 16),
-            Text(_error!, style: TextStyle(color: scheme.error)),
+            Text(_error!, style: TextStyle(color: shadTheme.colorScheme.destructive)),
           ],
           if (family.isAdmin) ...[
             const SizedBox(height: 24),
-            FilledButton(
+            ShadButton(
               onPressed: _saving || _selectedHex == family.accentColorHex
                   ? null
                   : _saveAccent,
+              width: double.infinity,
               child: _saving
-                  ? const SizedBox(
-                      height: 22,
-                      width: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                  ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
                   : const Text('Salva colore famiglia'),
             ),
           ],
@@ -162,6 +159,7 @@ class _AccentSwatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     return Semantics(
       label: preset.label,
       child: InkWell(
@@ -176,7 +174,7 @@ class _AccentSwatch extends StatelessWidget {
             border: Border.all(
               color: selected
                   ? preset.color
-                  : Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
+                  : shadTheme.colorScheme.border.withValues(alpha: 0.6),
               width: selected ? 2.5 : 1,
             ),
           ),
@@ -198,7 +196,7 @@ class _AccentSwatch extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 preset.label,
-                style: Theme.of(context).textTheme.labelSmall,
+                style: shadTheme.textTheme.small,
               ),
             ],
           ),

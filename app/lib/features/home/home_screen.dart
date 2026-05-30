@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/auth_repository.dart';
 import '../../core/api/deadline_repository.dart';
@@ -77,12 +78,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     final appState = context.watch<AppState>();
     final family = context.watch<FamilyContext>();
-    final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: shadTheme.colorScheme.background,
       appBar: AppBar(
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
         title: Text(family.activeFamilyName ?? 'Famylia'),
         actions: [
           if (_offline)
@@ -106,8 +110,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (context.mounted) context.go(AppRoutes.login);
               }
             },
-            itemBuilder: (_) => [
-              const PopupMenuItem(
+            itemBuilder: (_) => const [
+              PopupMenuItem(
                 value: 'appearance',
                 child: Row(
                   children: [
@@ -117,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'privacy',
                 child: Row(
                   children: [
@@ -127,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'logout',
                 child: Row(
                   children: [
@@ -148,9 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text(
               'Ciao, ${appState.userName ?? 'famiglia'}!',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: shadTheme.textTheme.h3,
             ),
             const SizedBox(height: 24),
             if (_loading)
@@ -183,26 +185,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: Text(
                         'Prossime visite',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: shadTheme.textTheme.p?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ),
-                    TextButton(
+                    ShadButton.ghost(
                       onPressed: () => context.push(AppRoutes.health),
                       child: const Text('Tutte'),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                Card(
+                ShadCard(
+                  padding: EdgeInsets.zero,
                   child: Column(
                     children: [
                       for (var i = 0; i < _upcomingVisits.length && i < 3; i++)
                         ListTile(
                           leading: Icon(
                             Icons.medical_services_outlined,
-                            color: theme.colorScheme.primary,
+                            color: shadTheme.colorScheme.primary,
                           ),
                           title: Text(_upcomingVisits[i].title),
                           subtitle: Text(
@@ -224,9 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 24),
               Text(
                 'Organizzazione',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: shadTheme.textTheme.p?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               Wrap(
@@ -268,9 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 24),
               Text(
                 'Sicurezza e privacy',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: shadTheme.textTheme.p?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               Wrap(
@@ -348,7 +345,9 @@ class _DashboardCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final shadTheme = ShadTheme.of(context);
+    return ShadCard(
+      padding: EdgeInsets.zero,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -356,18 +355,16 @@ class _DashboardCard extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Row(
             children: [
-              Icon(icon, size: 40, color: Theme.of(context).colorScheme.primary),
+              Icon(icon, size: 40, color: shadTheme.colorScheme.primary),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: Theme.of(context).textTheme.titleMedium),
+                    Text(title, style: shadTheme.textTheme.p),
                     Text(
                       value,
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style: shadTheme.textTheme.h2,
                     ),
                   ],
                 ),

@@ -1,6 +1,7 @@
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/board_repository.dart';
 import '../../core/api/calendar_repository.dart';
@@ -26,12 +27,11 @@ class QuickAddModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    final shadTheme = ShadTheme.of(context);
 
     return Container(
       decoration: BoxDecoration(
-        color: scheme.surface,
+        color: shadTheme.colorScheme.background,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
@@ -49,7 +49,7 @@ class QuickAddModal extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: scheme.outline.withValues(alpha: 0.4),
+                color: shadTheme.colorScheme.border.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -57,7 +57,7 @@ class QuickAddModal extends StatelessWidget {
           const SizedBox(height: 20),
           Text(
             'Aggiungi',
-            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            style: shadTheme.textTheme.h4,
           ),
           const SizedBox(height: 20),
           GridView.count(
@@ -442,7 +442,7 @@ class _QuickTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final shadTheme = ShadTheme.of(context);
     return Material(
       color: color.withValues(alpha: 0.12),
       borderRadius: BorderRadius.circular(16),
@@ -458,7 +458,7 @@ class _QuickTile extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 label,
-                style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+                style: shadTheme.textTheme.small?.copyWith(fontWeight: FontWeight.w600),
                 textAlign: TextAlign.center,
               ),
             ],

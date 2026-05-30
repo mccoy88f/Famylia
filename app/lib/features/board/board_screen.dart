@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/board_repository.dart';
 import '../../core/extensions/context_extensions.dart';
@@ -138,20 +139,30 @@ class _BoardScreenState extends State<BoardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Bacheca')),
+      backgroundColor: shadTheme.colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
+        title: const Text('Bacheca'),
+      ),
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           FloatingActionButton.small(
             heroTag: 'poll',
             onPressed: _addPoll,
+            backgroundColor: shadTheme.colorScheme.primary,
+            foregroundColor: shadTheme.colorScheme.primaryForeground,
             child: const Icon(Icons.poll),
           ),
           const SizedBox(height: 8),
           FloatingActionButton(
             heroTag: 'note',
             onPressed: _addNote,
+            backgroundColor: shadTheme.colorScheme.primary,
+            foregroundColor: shadTheme.colorScheme.primaryForeground,
             child: const Icon(Icons.add),
           ),
         ],
@@ -166,20 +177,22 @@ class _BoardScreenState extends State<BoardScreen> {
                   itemBuilder: (_, i) {
                     final item = _posts[i];
                     final post = item.post;
-                    return Card(
-                      child: Padding(
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: ShadCard(
                         padding: const EdgeInsets.all(12),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (post.isPinned)
-                              const Chip(
-                                label: Text('In evidenza'),
-                                visualDensity: VisualDensity.compact,
+                              ShadBadge.raw(
+                                variant: ShadBadgeVariant.secondary,
+                                child: const Text('In evidenza'),
                               ),
+                            if (post.isPinned) const SizedBox(height: 6),
                             Text(
                               post.content,
-                              style: Theme.of(context).textTheme.titleMedium,
+                              style: shadTheme.textTheme.p?.copyWith(fontWeight: FontWeight.w500),
                             ),
                             if (post.type == BoardPostType.poll) ...[
                               const SizedBox(height: 8),

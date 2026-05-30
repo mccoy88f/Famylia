@@ -1,6 +1,7 @@
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/deadline_repository.dart';
 import '../../core/extensions/context_extensions.dart';
@@ -105,21 +106,29 @@ class _DeadlinesScreenState extends State<DeadlinesScreen> {
     }
   }
 
-  Color _statusColor(DeadlineStatus s, ThemeData theme) {
+  Color _statusColor(DeadlineStatus s, ShadThemeData shadTheme) {
     return switch (s) {
-      DeadlineStatus.overdue => theme.colorScheme.error,
+      DeadlineStatus.overdue => shadTheme.colorScheme.destructive,
       DeadlineStatus.paid => Colors.green,
-      DeadlineStatus.cancelled => theme.disabledColor,
-      _ => theme.colorScheme.primary,
+      DeadlineStatus.cancelled => shadTheme.colorScheme.mutedForeground,
+      _ => shadTheme.colorScheme.primary,
     };
   }
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Scadenze')),
+      backgroundColor: shadTheme.colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
+        title: const Text('Scadenze'),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _add,
+        backgroundColor: shadTheme.colorScheme.primary,
+        foregroundColor: shadTheme.colorScheme.primaryForeground,
         child: const Icon(Icons.add),
       ),
       body: _loading
@@ -139,7 +148,7 @@ class _DeadlinesScreenState extends State<DeadlinesScreen> {
                         final d = _items[i];
                         return ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: _statusColor(d.status, Theme.of(context)),
+                            backgroundColor: _statusColor(d.status, shadTheme),
                             child: Icon(
                               d.status == DeadlineStatus.paid
                                   ? Icons.check

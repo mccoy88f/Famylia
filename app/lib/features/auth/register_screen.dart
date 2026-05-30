@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/auth_repository.dart';
 import '../../core/router/app_router.dart';
@@ -12,11 +13,10 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _codeController = TextEditingController();
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  final _codeCtrl = TextEditingController();
   final _auth = AuthRepository();
 
   bool _loading = false;
@@ -26,58 +26,65 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _codeController.dispose();
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    _codeCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _requestCode() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    if (_nameCtrl.text.trim().isEmpty) {
+      setState(() => _error = 'Inserisci il nome');
+      return;
+    }
+    if (!_emailCtrl.text.contains('@')) {
+      setState(() => _error = 'Email non valida');
+      return;
+    }
+    if (_passCtrl.text.length < 8) {
+      setState(() => _error = 'Password: minimo 8 caratteri');
+      return;
+    }
+    setState(() { _loading = true; _error = null; });
     try {
       await _auth.requestAccount(
-        userName: _nameController.text,
-        email: _emailController.text,
-        password: _passwordController.text,
+        userName: _nameCtrl.text,
+        email: _emailCtrl.text,
+        password: _passCtrl.text,
       );
-      final devCode = await _auth.devVerificationCode(_emailController.text);
+      final devCode = await _auth.devVerificationCode(_emailCtrl.text);
       if (!mounted) return;
       setState(() {
         _awaitingCode = true;
         _devCode = devCode;
-        if (devCode != null) _codeController.text = devCode;
+        if (devCode != null) _codeCtrl.text = devCode;
       });
       if (devCode != null) {
+        final shadTheme = ShadTheme.of(context);
         await showDialog<void>(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Text('Codice di verifica (sviluppo)'),
+            backgroundColor: shadTheme.colorScheme.background,
+            title: Text('Codice di verifica (sviluppo)', style: shadTheme.textTheme.h4),
             content: SelectableText(
               'Non inviamo email in locale.\n\nIl tuo codice è:\n\n$devCode',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 2),
             ),
             actions: [
-              FilledButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Ho capito'),
-              ),
+              FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('Ho capito')),
             ],
           ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Nessuna email inviata in sviluppo. Controlla i log del server.',
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Nessuna email inviata in sviluppo. Controlla i log del server.'),
+              duration: Duration(seconds: 6),
             ),
-            duration: Duration(seconds: 6),
-          ),
-        );
+          );
+        }
       }
     } on AuthException catch (e) {
       setState(() => _error = e.message);
@@ -89,19 +96,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _completeRegistration() async {
-    if (_codeController.text.trim().length < 4) {
+    if (_codeCtrl.text.trim().length < 4) {
       setState(() => _error = 'Inserisci il codice di verifica');
       return;
     }
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    setState(() { _loading = true; _error = null; });
     try {
       await _auth.completeAccount(
-        email: _emailController.text,
-        verificationCode: _codeController.text,
-        password: _passwordController.text,
+        email: _emailCtrl.text,
+        verificationCode: _codeCtrl.text,
+        password: _passCtrl.text,
       );
       if (!mounted) return;
       context.go(AppRoutes.onboarding);
@@ -116,125 +120,106 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Registrati')),
+      backgroundColor: shadTheme.colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
+        title: Text('Registrati', style: shadTheme.textTheme.h4),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (_error != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Text(
-                      _error!,
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
-                    ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (_error != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    _error!,
+                    style: TextStyle(color: shadTheme.colorScheme.destructive, fontSize: 14),
                   ),
-                if (!_awaitingCode) ...[
-                  TextFormField(
-                    controller: _nameController,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(
-                      labelText: 'Nome',
-                      prefixIcon: Icon(Icons.person_outline),
-                    ),
-                    validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Inserisci il nome' : null,
+                ),
+              if (!_awaitingCode) ...[
+                ShadInput(
+                  controller: _nameCtrl,
+                  textCapitalization: TextCapitalization.words,
+                  placeholder: const Text('Nome'),
+                  leading: Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Icon(Icons.person_outline, size: 18, color: shadTheme.colorScheme.mutedForeground),
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email_outlined),
-                    ),
-                    validator: (v) {
-                      if (v == null || !v.contains('@')) return 'Email non valida';
-                      return null;
-                    },
+                ),
+                const SizedBox(height: 12),
+                ShadInput(
+                  controller: _emailCtrl,
+                  keyboardType: TextInputType.emailAddress,
+                  placeholder: const Text('Email'),
+                  leading: Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Icon(Icons.email_outlined, size: 18, color: shadTheme.colorScheme.mutedForeground),
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: Icon(Icons.lock_outline),
-                    ),
-                    validator: (v) {
-                      if (v == null || v.length < 8) return 'Minimo 8 caratteri';
-                      return null;
-                    },
+                ),
+                const SizedBox(height: 12),
+                ShadInput(
+                  controller: _passCtrl,
+                  obscureText: true,
+                  placeholder: const Text('Password (min. 8 caratteri)'),
+                  leading: Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Icon(Icons.lock_outline, size: 18, color: shadTheme.colorScheme.mutedForeground),
                   ),
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: _loading ? null : _requestCode,
-                    child: _loading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Invia codice verifica'),
+                ),
+                const SizedBox(height: 24),
+                ShadButton(
+                  onPressed: _loading ? null : _requestCode,
+                  width: double.infinity,
+                  child: _loading
+                      ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Invia codice verifica'),
+                ),
+              ] else ...[
+                ShadCard(
+                  backgroundColor: shadTheme.colorScheme.muted.withValues(alpha: 0.5),
+                  child: Text(
+                    _devCode != null
+                        ? 'In locale non arriva alcuna email. Usa il codice mostrato sopra.'
+                        : 'In locale non arriva alcuna email. Il codice è nei log del server.',
+                    style: shadTheme.textTheme.muted,
                   ),
-                ] else ...[
-                  Card(
-                    color: Theme.of(context).colorScheme.secondaryContainer,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Text(
-                        _devCode != null
-                            ? 'In locale non arriva alcuna email. Usa il codice mostrato sopra.'
-                            : 'In locale non arriva alcuna email. Il codice è nei log del server '
-                                '(riga "codice verifica per la tua email").',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
-                  ),
-                  if (_devCode != null) ...[
-                    const SizedBox(height: 12),
-                    SelectableText(
-                      'Codice: $_devCode',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  Text(
-                    'Email: ${_emailController.text}',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _codeController,
-                    textCapitalization: TextCapitalization.characters,
-                    decoration: const InputDecoration(
-                      labelText: 'Codice verifica',
-                      hintText: 'es. ABC123',
-                      prefixIcon: Icon(Icons.pin_outlined),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: _loading ? null : _completeRegistration,
-                    child: _loading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Completa registrazione'),
+                ),
+                if (_devCode != null) ...[
+                  const SizedBox(height: 12),
+                  SelectableText(
+                    'Codice: $_devCode',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 2),
+                    textAlign: TextAlign.center,
                   ),
                 ],
+                const SizedBox(height: 16),
+                Text('Email: ${_emailCtrl.text}', style: shadTheme.textTheme.muted),
+                const SizedBox(height: 16),
+                ShadInput(
+                  controller: _codeCtrl,
+                  textCapitalization: TextCapitalization.characters,
+                  placeholder: const Text('Codice verifica (es. ABC123)'),
+                  leading: Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Icon(Icons.pin_outlined, size: 18, color: shadTheme.colorScheme.mutedForeground),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ShadButton(
+                  onPressed: _loading ? null : _completeRegistration,
+                  width: double.infinity,
+                  child: _loading
+                      ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Completa registrazione'),
+                ),
               ],
-            ),
+            ],
           ),
         ),
       ),

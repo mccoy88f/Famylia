@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/family_repository.dart';
 import '../../core/router/app_router.dart';
@@ -14,7 +15,6 @@ class JoinFamilyScreen extends StatefulWidget {
 }
 
 class _JoinFamilyScreenState extends State<JoinFamilyScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _codeController = TextEditingController();
   final _families = FamilyRepository();
   bool _loading = false;
@@ -27,7 +27,10 @@ class _JoinFamilyScreenState extends State<JoinFamilyScreen> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_codeController.text.trim().length < 6) {
+      setState(() => _error = 'Codice non valido');
+      return;
+    }
     setState(() {
       _loading = true;
       _error = null;
@@ -55,56 +58,51 @@ class _JoinFamilyScreenState extends State<JoinFamilyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Unisciti')),
+      backgroundColor: shadTheme.colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
+        title: Text('Unisciti', style: shadTheme.textTheme.h4),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Inserisci il codice invito ricevuto da un admin della famiglia.',
+                style: shadTheme.textTheme.muted,
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
                 Text(
-                  'Inserisci il codice invito ricevuto da un admin della famiglia.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                if (_error != null) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    _error!,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
-                  ),
-                ],
-                const SizedBox(height: 24),
-                TextFormField(
-                  controller: _codeController,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(
-                    labelText: 'Codice invito',
-                    hintText: 'FAM-XXXXXX',
-                    prefixIcon: Icon(Icons.vpn_key_outlined),
-                  ),
-                  validator: (v) {
-                    if (v == null || v.trim().length < 6) {
-                      return 'Codice non valido';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                FilledButton(
-                  onPressed: _loading ? null : _submit,
-                  child: _loading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Unisciti'),
+                  _error!,
+                  style: TextStyle(color: shadTheme.colorScheme.destructive, fontSize: 14),
                 ),
               ],
-            ),
+              const SizedBox(height: 24),
+              ShadInput(
+                controller: _codeController,
+                textCapitalization: TextCapitalization.characters,
+                placeholder: const Text('Codice invito (es. FAM-XXXXXX)'),
+                leading: Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Icon(Icons.vpn_key_outlined, size: 18, color: shadTheme.colorScheme.mutedForeground),
+                ),
+                onSubmitted: (_) => _loading ? null : _submit(),
+              ),
+              const SizedBox(height: 24),
+              ShadButton(
+                onPressed: _loading ? null : _submit,
+                width: double.infinity,
+                child: _loading
+                    ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text('Unisciti'),
+              ),
+            ],
           ),
         ),
       ),

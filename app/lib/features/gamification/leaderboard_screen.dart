@@ -1,5 +1,6 @@
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/gamification_repository.dart';
 import '../../core/extensions/context_extensions.dart';
@@ -49,8 +50,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Classifica')),
+      backgroundColor: shadTheme.colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
+        title: const Text('Classifica'),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -58,26 +65,30 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  Card(
-                    color: Theme.of(context).colorScheme.primaryContainer,
+                  ShadCard(
+                    backgroundColor: shadTheme.colorScheme.primary.withValues(alpha: 0.1),
                     child: ListTile(
-                      leading: const Icon(Icons.emoji_events),
+                      leading: Icon(Icons.emoji_events, color: shadTheme.colorScheme.primary),
                       title: const Text('I tuoi punti'),
                       trailing: Text(
                         '${_mine?.points ?? 0}',
-                        style: Theme.of(context).textTheme.headlineSmall,
+                        style: shadTheme.textTheme.h2,
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text('Leaderboard', style: Theme.of(context).textTheme.titleMedium),
+                  Text('Leaderboard', style: shadTheme.textTheme.h4),
                   const SizedBox(height: 8),
                   if ((_board?.entries ?? []).isEmpty)
-                    const Text('Completa task per guadagnare punti')
+                    Text('Completa task per guadagnare punti', style: shadTheme.textTheme.muted)
                   else
                     for (var i = 0; i < _board!.entries.length; i++)
                       ListTile(
-                        leading: CircleAvatar(child: Text('${i + 1}')),
+                        leading: CircleAvatar(
+                          backgroundColor: shadTheme.colorScheme.primary,
+                          foregroundColor: shadTheme.colorScheme.primaryForeground,
+                          child: Text('${i + 1}'),
+                        ),
                         title: Text(_board!.entries[i].displayName),
                         trailing: Text('${_board!.entries[i].points} pt'),
                       ),

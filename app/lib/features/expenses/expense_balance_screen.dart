@@ -1,5 +1,6 @@
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/expense_repository.dart';
 import '../../core/extensions/context_extensions.dart';
@@ -42,8 +43,14 @@ class _ExpenseBalanceScreenState extends State<ExpenseBalanceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Bilancio spese')),
+      backgroundColor: shadTheme.colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
+        title: const Text('Bilancio spese'),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -53,20 +60,23 @@ class _ExpenseBalanceScreenState extends State<ExpenseBalanceScreen> {
                 children: [
                   Text(
                     'Saldi membri',
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: shadTheme.textTheme.h4,
                   ),
                   const SizedBox(height: 8),
                   for (final m in _balance?.members ?? [])
-                    Card(
-                      child: ListTile(
-                        title: Text(m.displayName),
-                        trailing: Text(
-                          '€${m.balance.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            color: m.balance >= 0
-                                ? Colors.green
-                                : Theme.of(context).colorScheme.error,
-                            fontWeight: FontWeight.bold,
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: ShadCard(
+                        child: ListTile(
+                          title: Text(m.displayName),
+                          trailing: Text(
+                            '€${m.balance.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              color: m.balance >= 0
+                                  ? Colors.green
+                                  : shadTheme.colorScheme.destructive,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -74,20 +84,23 @@ class _ExpenseBalanceScreenState extends State<ExpenseBalanceScreen> {
                   const SizedBox(height: 24),
                   Text(
                     'Pagamenti suggeriti',
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: shadTheme.textTheme.h4,
                   ),
                   const SizedBox(height: 8),
                   if ((_balance?.suggestions ?? []).isEmpty)
-                    const Text('Tutto in pari')
+                    Text('Tutto in pari', style: shadTheme.textTheme.muted)
                   else
                     for (final s in _balance!.suggestions)
-                      Card(
-                        child: ListTile(
-                          leading: const Icon(Icons.swap_horiz),
-                          title: Text(
-                            '${s.fromDisplayName} → ${s.toDisplayName}',
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: ShadCard(
+                          child: ListTile(
+                            leading: const Icon(Icons.swap_horiz),
+                            title: Text(
+                              '${s.fromDisplayName} → ${s.toDisplayName}',
+                            ),
+                            trailing: Text('€${s.amount.toStringAsFixed(2)}'),
                           ),
-                          trailing: Text('€${s.amount.toStringAsFixed(2)}'),
                         ),
                       ),
                 ],

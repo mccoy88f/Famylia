@@ -1,6 +1,7 @@
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/report_repository.dart';
 import '../../core/extensions/context_extensions.dart';
@@ -43,9 +44,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     final r = _report;
     return Scaffold(
+      backgroundColor: shadTheme.colorScheme.background,
       appBar: AppBar(
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
         title: const Text('Report'),
         actions: [
           if (r != null)
@@ -89,10 +94,17 @@ class _MetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        title: Text(label),
-        trailing: Text(value, style: Theme.of(context).textTheme.titleLarge),
+    final shadTheme = ShadTheme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: ShadCard(
+        child: ListTile(
+          title: Text(label),
+          trailing: Text(
+            value,
+            style: shadTheme.textTheme.h4,
+          ),
+        ),
       ),
     );
   }

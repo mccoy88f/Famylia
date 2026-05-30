@@ -1,6 +1,7 @@
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/location_repository.dart';
 import '../../core/extensions/context_extensions.dart';
@@ -91,8 +92,14 @@ class _LocationScreenState extends State<LocationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Posizione')),
+      backgroundColor: shadTheme.colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
+        title: const Text('Posizione'),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -114,28 +121,38 @@ class _LocationScreenState extends State<LocationScreen> {
                       ),
                     ),
                   const SizedBox(height: 8),
-                  FilledButton.icon(
+                  ShadButton(
                     onPressed: _checkIn,
-                    icon: const Icon(Icons.my_location),
-                    label: const Text('Check-in "Sono arrivato"'),
+                    width: double.infinity,
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.my_location, size: 18),
+                        SizedBox(width: 8),
+                        Text('Check-in "Sono arrivato"'),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Text(
                     'Membri visibili',
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: shadTheme.textTheme.h4,
                   ),
                   const SizedBox(height: 8),
                   if (_members.isEmpty)
-                    const Text('Nessun membro con posizione condivisa')
+                    Text('Nessun membro con posizione condivisa', style: shadTheme.textTheme.muted)
                   else
                     for (final m in _members)
-                      Card(
-                        child: ListTile(
-                          leading: const Icon(Icons.person_pin_circle),
-                          title: Text(m.displayName),
-                          subtitle: Text(
-                            '${m.address ?? '${m.latitude}, ${m.longitude}'}\n'
-                            '${_fmt.format(m.recordedAt.toLocal())}',
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: ShadCard(
+                          child: ListTile(
+                            leading: const Icon(Icons.person_pin_circle),
+                            title: Text(m.displayName),
+                            subtitle: Text(
+                              '${m.address ?? '${m.latitude}, ${m.longitude}'}\n'
+                              '${_fmt.format(m.recordedAt.toLocal())}',
+                            ),
                           ),
                         ),
                       ),

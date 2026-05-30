@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/emergency_repository.dart';
 import '../../core/extensions/context_extensions.dart';
@@ -120,86 +121,104 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Emergenza')),
+      backgroundColor: shadTheme.colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
+        title: const Text('Emergenza'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Card(
-            color: Theme.of(context).colorScheme.errorContainer,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  const Icon(Icons.warning_amber_rounded, size: 48),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Famylia non sostituisce il 112',
-                    style: Theme.of(context).textTheme.titleMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'In caso di pericolo immediato chiama i servizi di emergenza.',
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
+          ShadCard(
+            backgroundColor: shadTheme.colorScheme.destructive.withValues(alpha: 0.1),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Icon(Icons.warning_amber_rounded, size: 48, color: shadTheme.colorScheme.destructive),
+                const SizedBox(height: 8),
+                Text(
+                  'Famylia non sostituisce il 112',
+                  style: shadTheme.textTheme.p?.copyWith(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'In caso di pericolo immediato chiama i servizi di emergenza.',
+                  textAlign: TextAlign.center,
+                  style: shadTheme.textTheme.muted,
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 24),
           if (_countdown != null)
             Column(
               children: [
-                Text('Invio tra $_countdown...', style: Theme.of(context).textTheme.headlineMedium),
-                TextButton(onPressed: _cancelCountdown, child: const Text('Annulla')),
+                Text('Invio tra $_countdown...', style: shadTheme.textTheme.h2),
+                ShadButton.ghost(
+                  onPressed: _cancelCountdown,
+                  child: const Text('Annulla'),
+                ),
               ],
             )
           else ...[
             SizedBox(
               width: double.infinity,
               height: 120,
-              child: FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: Colors.red.shade700,
-                  foregroundColor: Colors.white,
-                ),
+              child: ShadButton(
+                backgroundColor: Colors.red.shade700,
+                foregroundColor: Colors.white,
                 onPressed: () => _startPanic(isTest: false),
                 child: const Text('PANIC', style: TextStyle(fontSize: 28)),
               ),
             ),
             const SizedBox(height: 12),
-            OutlinedButton.icon(
+            ShadButton.outline(
               onPressed: () => _startPanic(isTest: true),
-              icon: const Icon(Icons.science_outlined),
-              label: const Text('Modalità test'),
+              width: double.infinity,
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.science_outlined, size: 18),
+                  SizedBox(width: 8),
+                  Text('Modalità test'),
+                ],
+              ),
             ),
           ],
           const SizedBox(height: 24),
-          Text('Allerte attive', style: Theme.of(context).textTheme.titleMedium),
+          Text('Allerte attive', style: shadTheme.textTheme.h4),
           if (_alerts.isEmpty)
-            const ListTile(title: Text('Nessuna allerta attiva'))
+            ListTile(
+              title: Text('Nessuna allerta attiva', style: shadTheme.textTheme.muted),
+            )
           else
             for (final a in _alerts)
-              Card(
-                child: ListTile(
-                  title: Text(a.isTest ? 'TEST · ${a.alertType.name}' : a.alertType.name),
-                  subtitle: Text(a.customMessage ?? ''),
-                  trailing: PopupMenuButton<String>(
-                    onSelected: (v) async {
-                      if (a.id == null) return;
-                      if (v == 'ack') await _repo.acknowledge(a.id!);
-                      if (v == 'resolve') await _repo.resolve(a.id!);
-                    },
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(value: 'ack', child: Text('Visto')),
-                      PopupMenuItem(value: 'resolve', child: Text('Risolto')),
-                    ],
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: ShadCard(
+                  child: ListTile(
+                    title: Text(a.isTest ? 'TEST · ${a.alertType.name}' : a.alertType.name),
+                    subtitle: Text(a.customMessage ?? ''),
+                    trailing: PopupMenuButton<String>(
+                      onSelected: (v) async {
+                        if (a.id == null) return;
+                        if (v == 'ack') await _repo.acknowledge(a.id!);
+                        if (v == 'resolve') await _repo.resolve(a.id!);
+                      },
+                      itemBuilder: (_) => const [
+                        PopupMenuItem(value: 'ack', child: Text('Visto')),
+                        PopupMenuItem(value: 'resolve', child: Text('Risolto')),
+                      ],
+                    ),
                   ),
                 ),
               ),
           const SizedBox(height: 16),
-          Text('Contatti emergenza', style: Theme.of(context).textTheme.titleMedium),
+          Text('Contatti emergenza', style: shadTheme.textTheme.h4),
           for (final c in _contacts)
             ListTile(
               leading: const Icon(Icons.contact_phone),

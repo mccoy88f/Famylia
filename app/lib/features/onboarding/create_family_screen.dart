@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/family_repository.dart';
 import '../../core/router/app_router.dart';
@@ -16,7 +17,6 @@ class CreateFamilyScreen extends StatefulWidget {
 }
 
 class _CreateFamilyScreenState extends State<CreateFamilyScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _families = FamilyRepository();
   bool _loading = false;
@@ -30,7 +30,10 @@ class _CreateFamilyScreenState extends State<CreateFamilyScreen> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_nameController.text.trim().isEmpty) {
+      setState(() => _error = 'Inserisci un nome');
+      return;
+    }
     setState(() {
       _loading = true;
       _error = null;
@@ -56,42 +59,62 @@ class _CreateFamilyScreenState extends State<CreateFamilyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
+
     if (_inviteCode != null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Famiglia creata')),
+        backgroundColor: shadTheme.colorScheme.background,
+        appBar: AppBar(
+          backgroundColor: shadTheme.colorScheme.background,
+          surfaceTintColor: Colors.transparent,
+          title: Text('Famiglia creata', style: shadTheme.textTheme.h4),
+        ),
         body: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Icon(Icons.check_circle_outline, size: 64, color: Colors.green),
+              Icon(Icons.check_circle_outline, size: 64, color: shadTheme.colorScheme.primary),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Condividi questo codice con i membri:',
                 textAlign: TextAlign.center,
+                style: shadTheme.textTheme.p,
               ),
               const SizedBox(height: 16),
               SelectableText(
                 _inviteCode!,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2,
-                    ),
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 4,
+                  color: shadTheme.colorScheme.primary,
+                ),
               ),
               const SizedBox(height: 16),
-              OutlinedButton.icon(
+              ShadButton.outline(
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: _inviteCode!));
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Codice copiato')),
                   );
                 },
-                icon: const Icon(Icons.copy),
-                label: const Text('Copia codice'),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.copy, size: 18),
+                    SizedBox(width: 8),
+                    Text('Copia codice'),
+                  ],
+                ),
               ),
               const Spacer(),
-              FilledButton(onPressed: _goHome, child: const Text('Vai alla home')),
+              ShadButton(
+                onPressed: _goHome,
+                width: double.infinity,
+                child: const Text('Vai alla home'),
+              ),
             ],
           ),
         ),
@@ -99,47 +122,45 @@ class _CreateFamilyScreenState extends State<CreateFamilyScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Crea famiglia')),
+      backgroundColor: shadTheme.colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
+        title: Text('Crea famiglia', style: shadTheme.textTheme.h4),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (_error != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Text(
-                      _error!,
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
-                    ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (_error != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    _error!,
+                    style: TextStyle(color: shadTheme.colorScheme.destructive, fontSize: 14),
                   ),
-                TextFormField(
-                  controller: _nameController,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(
-                    labelText: 'Nome famiglia',
-                    hintText: 'es. Famiglia Rossi',
-                    prefixIcon: Icon(Icons.home_outlined),
-                  ),
-                  validator: (v) =>
-                      v == null || v.trim().isEmpty ? 'Inserisci un nome' : null,
                 ),
-                const SizedBox(height: 24),
-                FilledButton(
-                  onPressed: _loading ? null : _submit,
-                  child: _loading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Crea'),
+              ShadInput(
+                controller: _nameController,
+                textCapitalization: TextCapitalization.words,
+                placeholder: const Text('Nome famiglia (es. Famiglia Rossi)'),
+                leading: Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Icon(Icons.home_outlined, size: 18, color: shadTheme.colorScheme.mutedForeground),
                 ),
-              ],
-            ),
+                onSubmitted: (_) => _loading ? null : _submit(),
+              ),
+              const SizedBox(height: 24),
+              ShadButton(
+                onPressed: _loading ? null : _submit,
+                width: double.infinity,
+                child: _loading
+                    ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text('Crea'),
+              ),
+            ],
           ),
         ),
       ),

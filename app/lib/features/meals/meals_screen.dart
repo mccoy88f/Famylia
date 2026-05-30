@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/health_repository.dart';
 import '../../core/api/meal_repository.dart';
@@ -11,7 +12,6 @@ import '../../core/extensions/context_extensions.dart';
 class MealsScreen extends StatefulWidget {
   const MealsScreen({this.linkedDietId, super.key});
 
-  /// Dieta da collegare al piano settimanale (query `?dietId=`).
   final int? linkedDietId;
 
   @override
@@ -175,12 +175,16 @@ class _MealsScreenState extends State<MealsScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     final weekLabel = DateFormat('d MMM yyyy').format(_weekStart);
     final diet = _linkedDiet;
     final showDietBanner = diet != null;
 
     return Scaffold(
+      backgroundColor: shadTheme.colorScheme.background,
       appBar: AppBar(
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
         title: const Text('Pasti'),
         bottom: TabBar(
           controller: _tabs,
@@ -192,6 +196,8 @@ class _MealsScreenState extends State<MealsScreen> with SingleTickerProviderStat
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _tabs.index == 0 ? _addRecipe : _saveSamplePlan,
+        backgroundColor: shadTheme.colorScheme.primary,
+        foregroundColor: shadTheme.colorScheme.primaryForeground,
         child: Icon(_tabs.index == 0 ? Icons.add : Icons.save),
       ),
       body: _loading
@@ -199,37 +205,34 @@ class _MealsScreenState extends State<MealsScreen> with SingleTickerProviderStat
           : Column(
               children: [
                 if (showDietBanner)
-                  Material(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
+                  Container(
+                    width: double.infinity,
+                    color: shadTheme.colorScheme.primary.withValues(alpha: 0.1),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'Dieta: ${diet.title}',
+                          style: shadTheme.textTheme.p?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        if (diet.dietGoal != null)
                           Text(
-                            'Dieta: ${diet.title}',
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            diet.dietGoal!,
+                            style: shadTheme.textTheme.muted,
                           ),
-                          if (diet.dietGoal != null)
-                            Text(
-                              diet.dietGoal!,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          const SizedBox(height: 8),
-                          FilledButton.tonal(
-                            onPressed: _linkingDiet ? null : _applyLinkedDiet,
-                            child: _linkingDiet
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  )
-                                : const Text('Collega al piano settimanale'),
-                          ),
-                        ],
-                      ),
+                        const SizedBox(height: 8),
+                        ShadButton.outline(
+                          onPressed: _linkingDiet ? null : _applyLinkedDiet,
+                          child: _linkingDiet
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Text('Collega al piano settimanale'),
+                        ),
+                      ],
                     ),
                   ),
                 Expanded(
@@ -247,11 +250,12 @@ class _MealsScreenState extends State<MealsScreen> with SingleTickerProviderStat
                       ListView(
                         padding: const EdgeInsets.all(16),
                         children: [
-                          Text('Settimana dal $weekLabel'),
+                          Text('Settimana dal $weekLabel', style: shadTheme.textTheme.p),
                           const SizedBox(height: 12),
                           if (_plan == null)
-                            const Text(
+                            Text(
                               'Nessun piano — collega una dieta o salva un esempio',
+                              style: shadTheme.textTheme.muted,
                             )
                           else ...[
                             if (_plan!.linkedHealthEntryId != null)
@@ -259,7 +263,7 @@ class _MealsScreenState extends State<MealsScreen> with SingleTickerProviderStat
                                 padding: const EdgeInsets.only(bottom: 8),
                                 child: Text(
                                   'Collegata a dieta #${_plan!.linkedHealthEntryId}',
-                                  style: Theme.of(context).textTheme.labelMedium,
+                                  style: shadTheme.textTheme.small,
                                 ),
                               ),
                             Text('Piano: ${_plan!.mealsJson}'),
@@ -267,11 +271,11 @@ class _MealsScreenState extends State<MealsScreen> with SingleTickerProviderStat
                           const SizedBox(height: 24),
                           Text(
                             'Ingredienti per lista spesa',
-                            style: Theme.of(context).textTheme.titleMedium,
+                            style: shadTheme.textTheme.p?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
                           if (_shoppingItems.isEmpty)
-                            const Text('Aggiungi pasti al piano')
+                            Text('Aggiungi pasti al piano', style: shadTheme.textTheme.muted)
                           else
                             for (final item in _shoppingItems)
                               ListTile(
