@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +17,7 @@ import 'core/theme/app_settings.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await initializeDateFormatting('it');
   await Hive.initFlutter();
   await ShoppingOfflineStore.instance.init();
   await FamyliaServices.init();
