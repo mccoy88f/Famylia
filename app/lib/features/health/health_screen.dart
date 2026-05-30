@@ -1,5 +1,6 @@
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -243,14 +244,8 @@ class _HealthTabState extends State<_HealthTab> {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Annulla'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Salva'),
-            ),
+            ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+            ShadButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
           ],
         ),
       ),
@@ -394,14 +389,8 @@ class _HealthTabState extends State<_HealthTab> {
                                 title: const Text('Eliminare?'),
                                 content: Text(e.title),
                                 actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx, false),
-                                    child: const Text('Annulla'),
-                                  ),
-                                  FilledButton(
-                                    onPressed: () => Navigator.pop(ctx, true),
-                                    child: const Text('Elimina'),
-                                  ),
+                                  ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+                                  ShadButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Elimina')),
                                 ],
                               ),
                             );

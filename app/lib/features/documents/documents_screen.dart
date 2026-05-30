@@ -1,6 +1,7 @@
 import 'package:famylia_client/famylia_client.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/document_repository.dart';
 import '../../core/extensions/context_extensions.dart';
@@ -62,8 +63,8 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           decoration: const InputDecoration(labelText: 'Titolo'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Carica')),
+          ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+          ShadButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Carica')),
         ],
       ),
     );

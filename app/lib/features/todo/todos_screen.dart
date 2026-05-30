@@ -1,5 +1,6 @@
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/api/family_repository.dart';
@@ -69,9 +70,9 @@ class _TodosScreenState extends State<TodosScreen> {
           decoration: const InputDecoration(hintText: 'Cosa fare?'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annulla')),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, controller.text),
+          ShadButton.ghost(onPressed: () => Navigator.pop(ctx), child: const Text('Annulla')),
+          ShadButton(
+              onPressed: () => Navigator.pop(ctx, controller.text),
             child: const Text('Aggiungi'),
           ),
         ],

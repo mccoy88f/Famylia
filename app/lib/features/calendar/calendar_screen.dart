@@ -1,5 +1,6 @@
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/api/calendar_repository.dart';
@@ -60,8 +61,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
           decoration: const InputDecoration(labelText: 'Titolo'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
+          ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+          ShadButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
         ],
       ),
     );

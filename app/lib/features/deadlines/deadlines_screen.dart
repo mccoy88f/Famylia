@@ -82,8 +82,8 @@ class _DeadlinesScreenState extends State<DeadlinesScreen> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
+          ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+          ShadButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
         ],
       ),
     );

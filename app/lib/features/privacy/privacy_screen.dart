@@ -75,9 +75,10 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
           'Questa azione è irreversibile. I tuoi dati personali verranno rimossi.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: shadTheme.colorScheme.destructive),
+          ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+          ShadButton(
+            backgroundColor: shadTheme.colorScheme.destructive,
+            foregroundColor: Colors.white,
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Elimina'),
           ),

@@ -1,5 +1,6 @@
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -93,8 +94,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
+            ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+            ShadButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
           ],
         ),
       ),

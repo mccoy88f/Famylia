@@ -183,8 +183,8 @@ class QuickAddModal extends StatelessWidget {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Aggiungi')),
+            ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+            ShadButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Aggiungi')),
           ],
         ),
       ),
@@ -250,8 +250,8 @@ class QuickAddModal extends StatelessWidget {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
+            ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+            ShadButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
           ],
         ),
       ),
@@ -309,8 +309,8 @@ class QuickAddModal extends StatelessWidget {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Crea')),
+            ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+            ShadButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Crea')),
           ],
         ),
       ),
@@ -371,8 +371,8 @@ class QuickAddModal extends StatelessWidget {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
+            ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+            ShadButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
           ],
         ),
       ),
@@ -410,8 +410,8 @@ class QuickAddModal extends StatelessWidget {
           decoration: const InputDecoration(hintText: 'Scrivi un messaggio alla famiglia...'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Pubblica')),
+          ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+          ShadButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Pubblica')),
         ],
       ),
     );
@@ -493,8 +493,8 @@ class _SimpleDialog extends StatelessWidget {
         onSubmitted: (v) => Navigator.pop(context, v),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annulla')),
-        FilledButton(
+        ShadButton.ghost(onPressed: () => Navigator.pop(context), child: const Text('Annulla')),
+        ShadButton(
           onPressed: () => Navigator.pop(context, controller.text),
           child: Text(confirmLabel),
         ),

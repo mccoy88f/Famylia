@@ -534,8 +534,8 @@ class _SpesaTabState extends State<_SpesaTab> with AutomaticKeepAliveClientMixin
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Aggiungi')),
+            ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+            ShadButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Aggiungi')),
           ],
         ),
       ),
@@ -560,8 +560,8 @@ class _SpesaTabState extends State<_SpesaTab> with AutomaticKeepAliveClientMixin
         title: Text('Nuova lista', style: shadTheme.textTheme.h4),
         content: TextField(controller: ctrl, autofocus: true),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annulla')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, ctrl.text), child: const Text('Crea')),
+          ShadButton.ghost(onPressed: () => Navigator.pop(ctx), child: const Text('Annulla')),
+          ShadButton(onPressed: () => Navigator.pop(ctx, ctrl.text), child: const Text('Crea')),
         ],
       ),
     );

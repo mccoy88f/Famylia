@@ -259,7 +259,7 @@ class _FamilyMembersSectionState extends State<_FamilyMembersSection> {
           ],
         ),
         actions: [
-          TextButton(
+          ShadButton.ghost(
             onPressed: () {
               Clipboard.setData(ClipboardData(text: code));
               Navigator.pop(ctx);
@@ -269,7 +269,7 @@ class _FamilyMembersSectionState extends State<_FamilyMembersSection> {
             },
             child: const Text('Copia codice'),
           ),
-          FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('Chiudi')),
+          ShadButton(onPressed: () => Navigator.pop(ctx), child: const Text('Chiudi')),
         ],
       ),
     );
@@ -461,10 +461,11 @@ class _SettingsSection extends StatelessWidget {
                       backgroundColor: shadTheme.colorScheme.background,
                       title: Text('Esci da Famylia?', style: shadTheme.textTheme.h4),
                       actions: [
-                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-                        FilledButton(
+                        ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+                        ShadButton(
                           onPressed: () => Navigator.pop(ctx, true),
-                          style: FilledButton.styleFrom(backgroundColor: shadTheme.colorScheme.destructive),
+                          backgroundColor: shadTheme.colorScheme.destructive,
+                          foregroundColor: Colors.white,
                           child: const Text('Esci'),
                         ),
                       ],

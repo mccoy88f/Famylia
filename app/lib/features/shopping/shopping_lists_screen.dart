@@ -1,5 +1,6 @@
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/api/shopping_repository.dart';
@@ -61,9 +62,9 @@ class _ShoppingListsScreenState extends State<ShoppingListsScreen> {
           autofocus: true,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annulla')),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, controller.text),
+          ShadButton.ghost(onPressed: () => Navigator.pop(ctx), child: const Text('Annulla')),
+          ShadButton(
+              onPressed: () => Navigator.pop(ctx, controller.text),
             child: const Text('Crea'),
           ),
         ],

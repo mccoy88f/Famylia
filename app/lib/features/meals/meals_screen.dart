@@ -121,8 +121,8 @@ class _MealsScreenState extends State<MealsScreen> with SingleTickerProviderStat
           decoration: const InputDecoration(labelText: 'Nome'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
+          ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+          ShadButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
         ],
       ),
     );

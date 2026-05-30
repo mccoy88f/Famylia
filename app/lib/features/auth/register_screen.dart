@@ -72,7 +72,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 2),
             ),
             actions: [
-              FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('Ho capito')),
+              ShadButton(onPressed: () => Navigator.pop(ctx), child: const Text('Ho capito')),
             ],
           ),
         );

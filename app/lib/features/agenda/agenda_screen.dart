@@ -190,8 +190,8 @@ class _AppuntamentiTabState extends State<_AppuntamentiTab> with AutomaticKeepAl
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Crea')),
+            ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+            ShadButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Crea')),
           ],
         ),
       ),
@@ -423,8 +423,8 @@ class _ScadenzeTabState extends State<_ScadenzeTab> with AutomaticKeepAliveClien
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
+            ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+            ShadButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
           ],
         ),
       ),
