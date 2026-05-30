@@ -24,6 +24,7 @@ dependencies:
   serverpod_flutter: 2.5.1
   serverpod_auth_client: 2.5.1
   serverpod_auth_shared_flutter: 2.5.1
+  qr_flutter: ^4.1.0
   famylia_client:
     path: ../client
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../core/api/auth_repository.dart';
 import '../../core/api/family_repository.dart';
@@ -210,6 +211,63 @@ class _FamilyMembersSectionState extends State<_FamilyMembersSection> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
+  void _showQr(BuildContext context, String code) {
+    final scheme = Theme.of(context).colorScheme;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('QR Code invito', textAlign: TextAlign.center),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: QrImageView(
+                data: 'famylia://join/$code',
+                version: QrVersions.auto,
+                size: 200,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              code,
+              style: TextStyle(
+                fontFamily: 'monospace',
+                fontWeight: FontWeight.bold,
+                fontSize: 22,
+                letterSpacing: 3,
+                color: scheme.primary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Fai scansionare questo QR o condividi il codice',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: scheme.onSurface.withValues(alpha: 0.6)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: code));
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Codice copiato'), duration: Duration(seconds: 2)),
+              );
+            },
+            child: const Text('Copia codice'),
+          ),
+          FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('Chiudi')),
+        ],
+      ),
+    );
+  }
+
   Future<void> _load() async {
     final familyId = context.activeFamilyId;
     if (familyId == null) return;
@@ -277,7 +335,12 @@ class _FamilyMembersSectionState extends State<_FamilyMembersSection> {
                             ],
                           ),
                         ),
-                        Icon(Icons.copy_outlined, size: 18, color: scheme.onSurface.withValues(alpha: 0.4)),
+                        IconButton(
+                icon: Icon(Icons.qr_code_rounded, size: 20, color: scheme.primary),
+                tooltip: 'Mostra QR Code',
+                onPressed: () => _showQr(context, _inviteCode!),
+              ),
+              Icon(Icons.copy_outlined, size: 18, color: scheme.onSurface.withValues(alpha: 0.4)),
                       ],
                     ),
                   ),

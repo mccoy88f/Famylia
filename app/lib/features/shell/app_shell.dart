@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'quick_add_modal.dart';
+import 'nuova_attivita_modal.dart';
 
 class AppShell extends StatelessWidget {
   const AppShell({required this.child, super.key});
@@ -64,7 +64,7 @@ class _NarrowShell extends StatelessWidget {
           ],
         ),
         child: FloatingActionButton(
-          onPressed: () => QuickAddModal.show(context),
+          onPressed: () => NuovaAttivitaModal.show(context),
           elevation: 0,
           backgroundColor: scheme.primary,
           foregroundColor: scheme.onPrimary,
@@ -143,7 +143,7 @@ class _WideShell extends StatelessWidget {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => QuickAddModal.show(context),
+        onPressed: () => NuovaAttivitaModal.show(context),
         icon: const Icon(Icons.add),
         label: const Text('Aggiungi'),
         elevation: 2,

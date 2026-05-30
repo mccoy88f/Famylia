@@ -8,8 +8,29 @@ class TodoRepository {
 
   final Client _client;
 
-  Future<TodoItem> create(int familyId, String title) =>
-      _client.todo.createTodo(familyId, title);
+  Future<TodoItem> create(
+    int familyId,
+    String title, {
+    String? description,
+    TodoCategory? category,
+    TodoPriority? priority,
+    int? assignedTo,
+    DateTime? dueDate,
+  }) =>
+      _client.todo.createTodo(
+        familyId,
+        title,
+        description: description,
+        category: category,
+        priority: priority,
+        assignedTo: assignedTo,
+        dueDate: dueDate,
+      );
+
+  Future<List<TodoItem>> listAssignedTo(int familyId, int userId) async {
+    final all = await _client.todo.listTodos(familyId);
+    return all.where((t) => t.assignedTo == userId).toList();
+  }
 
   Future<List<TodoItem>> list(int familyId, {TodoStatus? status}) =>
       _client.todo.listTodos(familyId, status: status);
