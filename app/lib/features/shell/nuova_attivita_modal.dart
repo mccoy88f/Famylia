@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
-import '../../core/api/board_repository.dart';
 import '../../core/api/calendar_repository.dart';
 import '../../core/api/deadline_repository.dart';
 import '../../core/api/expense_repository.dart';
@@ -20,13 +19,25 @@ enum _Tipo {
   appuntamento(Icons.event_outlined, 'Appuntamento', Color(0xFF8B5CF6)),
   spesa(Icons.payments_outlined, 'Spesa', Color(0xFFF59E0B)),
   acquisto(Icons.shopping_cart_outlined, 'Acquisto', Color(0xFF10B981)),
-  scadenza(Icons.alarm_outlined, 'Scadenza', Color(0xFFEF4444)),
-  medico(Icons.favorite_outline, 'Medico', Color(0xFFEC4899));
+  scadenza(Icons.alarm_outlined, 'Scadenza', Color(0xFFEF4444));
 
   const _Tipo(this.icon, this.label, this.color);
   final IconData icon;
   final String label;
   final Color color;
+}
+
+// ── Sottotipo appuntamento ────────────────────────────────────────────────
+
+enum _TipoAppuntamento {
+  generico('Generico', Icons.event_outlined),
+  medico('Medico', Icons.favorite_outline),
+  dentista('Dentista', Icons.medical_services_outlined),
+  altro('Altro', Icons.more_horiz_outlined);
+
+  const _TipoAppuntamento(this.label, this.icon);
+  final String label;
+  final IconData icon;
 }
 
 // ── Stato del form ────────────────────────────────────────────────────────
@@ -42,6 +53,10 @@ class _FormData {
   DateTime? quando;
   double? importo;
   bool tuttoFamiglia = true;
+  _TipoAppuntamento tipoAppuntamento = _TipoAppuntamento.generico;
+  // Spese condivise
+  int? pagatoreId;
+  List<int> beneficiariIds = []; // vuoto = tutta la famiglia
 }
 
 // ── Entry point ───────────────────────────────────────────────────────────
@@ -182,11 +197,12 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
           _data.quando ?? DateTime.now().add(const Duration(hours: 2)),
         );
       case _Tipo.spesa:
+        final pagatore = _data.pagatoreId ?? me ?? 0;
         await ExpenseRepository().create(
           familyId,
           _data.titolo.trim(),
           _data.importo ?? 0,
-          _data.responsabile ?? me ?? 0,
+          pagatore,
         );
       case _Tipo.scadenza:
         await DeadlineRepository().create(
@@ -206,16 +222,6 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
           listId = l.id!;
         }
         await repo.addItem(listId, _data.titolo.trim());
-      case _Tipo.medico:
-        await TodoRepository().create(
-          familyId,
-          _data.titolo.trim(),
-          description: _data.descrizione.trim().isEmpty ? null : _data.descrizione.trim(),
-          category: TodoCategory.other,
-          priority: _data.priorita,
-          assignedTo: _data.responsabile,
-          dueDate: _data.quando,
-        );
     }
   }
 
@@ -224,35 +230,39 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
     final shadTheme = ShadTheme.of(context);
     final mq = MediaQuery.of(context);
     final isWide = mq.size.width >= 700;
-    final sheetWidth = isWide ? 560.0 : double.infinity;
+    final sheetWidth = isWide ? 720.0 : double.infinity;
+    final borderRadius = isWide
+        ? BorderRadius.circular(16)
+        : const BorderRadius.vertical(top: Radius.circular(20));
+    final pageHeight = (mq.size.height * 0.55).clamp(300.0, 500.0);
 
     return Center(
       child: Container(
         width: sheetWidth,
+        constraints: BoxConstraints(maxHeight: mq.size.height * 0.92),
         decoration: BoxDecoration(
           color: shadTheme.colorScheme.background,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          border: Border(
-            top: BorderSide(color: shadTheme.colorScheme.border),
-            left: isWide ? BorderSide(color: shadTheme.colorScheme.border) : BorderSide.none,
-            right: isWide ? BorderSide(color: shadTheme.colorScheme.border) : BorderSide.none,
-          ),
+          borderRadius: borderRadius,
+          border: Border.all(color: shadTheme.colorScheme.border),
         ),
         padding: EdgeInsets.only(bottom: mq.viewInsets.bottom),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle
-            const SizedBox(height: 12),
-            Center(
-              child: Container(
-                width: 36, height: 4,
-                decoration: BoxDecoration(
-                  color: shadTheme.colorScheme.border,
-                  borderRadius: BorderRadius.circular(2),
+            // Handle (mobile only)
+            if (!isWide) ...[
+              const SizedBox(height: 12),
+              Center(
+                child: Container(
+                  width: 36, height: 4,
+                  decoration: BoxDecoration(
+                    color: shadTheme.colorScheme.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
+            ] else
+              const SizedBox(height: 16),
             // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(4, 4, 12, 0),
@@ -280,13 +290,19 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
                 ],
               ),
             ),
-            // Progress dots
-            const SizedBox(height: 8),
-            _ProgressDots(current: _step, total: _totalSteps, colorScheme: shadTheme.colorScheme),
-            const SizedBox(height: 8),
+            // Step indicator
+            if (_step > 0) ...[
+              const SizedBox(height: 12),
+              _StepIndicator(
+                current: _step,
+                total: _totalSteps - 1,
+                shadTheme: shadTheme,
+              ),
+            ],
+            const SizedBox(height: 12),
             // Pages
             SizedBox(
-              height: _pageHeight,
+              height: pageHeight,
               child: PageView(
                 controller: _pageCtrl,
                 physics: const NeverScrollableScrollPhysics(),
@@ -296,7 +312,7 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
                   _StepChi(data: _data, members: _members, onChanged: () => setState(() {})),
                   _StepQuando(data: _data, onChanged: () => setState(() {})),
                   if (_hasBudget)
-                    _StepBudget(data: _data, onChanged: () => setState(() {})),
+                    _StepBudget(data: _data, members: _members, onChanged: () => setState(() {})),
                 ],
               ),
             ),
@@ -311,7 +327,9 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
                       ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))
                       : Text(_step >= _totalSteps - 1 ? 'Salva' : 'Avanti'),
                 ),
-              ),
+              )
+            else
+              const SizedBox(height: 8),
             SizedBox(height: mq.padding.bottom),
           ],
         ),
@@ -322,17 +340,10 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
   String get _stepTitle => switch (_step) {
         0 => 'Nuova attività',
         1 => _data.tipo?.label ?? 'Dettagli',
-        2 => 'Per chi?',
+        2 => _data.tipo == _Tipo.spesa ? 'Chi paga?' : 'Per chi?',
         3 => 'Quando?',
         4 => 'Importo',
         _ => '',
-      };
-
-  double get _pageHeight => switch (_step) {
-        0 => 280,
-        2 => _members.length * 64.0 + 180,
-        3 => 340,
-        _ => 260,
       };
 }
 
@@ -346,7 +357,7 @@ class _StepTipo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shadTheme = ShadTheme.of(context);
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: GridView.count(
         crossAxisCount: 3,
@@ -354,7 +365,7 @@ class _StepTipo extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
-        childAspectRatio: 1.15,
+        childAspectRatio: 1.2,
         children: _Tipo.values.map((t) {
           final sel = selected == t;
           return _TipoTile(tipo: t, selected: sel, onTap: () => onSelect(t), shadTheme: shadTheme);
@@ -420,7 +431,6 @@ class _StepCosa extends StatelessWidget {
         _Tipo.spesa => 'Es. Cena al ristorante',
         _Tipo.acquisto => 'Es. Latte, pane...',
         _Tipo.scadenza => 'Es. Bolletta luce',
-        _Tipo.medico => 'Es. Visita pediatrica Luca',
         _ => 'Titolo',
       };
 
@@ -451,8 +461,62 @@ class _StepCosa extends StatelessWidget {
             const SizedBox(height: 8),
             _PrioritaRow(value: data.priorita, onChanged: (p) { data.priorita = p; onChanged(); }),
           ],
+          if (data.tipo == _Tipo.appuntamento) ...[
+            const SizedBox(height: 16),
+            Text('Tipo appuntamento', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500)),
+            const SizedBox(height: 8),
+            _TipoAppuntamentoRow(value: data.tipoAppuntamento, onChanged: (t) { data.tipoAppuntamento = t; onChanged(); }),
+          ],
         ],
       ),
+    );
+  }
+}
+
+class _TipoAppuntamentoRow extends StatelessWidget {
+  const _TipoAppuntamentoRow({required this.value, required this.onChanged});
+  final _TipoAppuntamento value;
+  final void Function(_TipoAppuntamento) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: _TipoAppuntamento.values.map((t) {
+        final sel = value == t;
+        final primary = shadTheme.colorScheme.primary;
+        return GestureDetector(
+          onTap: () => onChanged(t),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: sel ? primary.withValues(alpha: 0.10) : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: sel ? primary.withValues(alpha: 0.5) : shadTheme.colorScheme.border,
+                width: sel ? 1.5 : 1,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(t.icon, size: 14, color: sel ? primary : shadTheme.colorScheme.mutedForeground),
+                const SizedBox(width: 6),
+                Text(
+                  t.label,
+                  style: shadTheme.textTheme.small.copyWith(
+                    color: sel ? primary : shadTheme.colorScheme.foreground,
+                    fontWeight: sel ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
@@ -547,6 +611,21 @@ class _StepChi extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (data.tipo == _Tipo.spesa) {
+      return _StepChiSpesa(data: data, members: members, onChanged: onChanged);
+    }
+    return _StepChiGenerica(data: data, members: members, onChanged: onChanged);
+  }
+}
+
+class _StepChiGenerica extends StatelessWidget {
+  const _StepChiGenerica({required this.data, required this.members, required this.onChanged});
+  final _FormData data;
+  final List<FamilyMemberInfo> members;
+  final VoidCallback onChanged;
+
+  @override
+  Widget build(BuildContext context) {
     final shadTheme = ShadTheme.of(context);
 
     return SingleChildScrollView(
@@ -616,6 +695,155 @@ class _StepChi extends StatelessWidget {
               ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _StepChiSpesa extends StatelessWidget {
+  const _StepChiSpesa({required this.data, required this.members, required this.onChanged});
+  final _FormData data;
+  final List<FamilyMemberInfo> members;
+  final VoidCallback onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.payments_outlined, size: 16, color: shadTheme.colorScheme.primary),
+              const SizedBox(width: 6),
+              Text('Chi ha pagato', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (members.isEmpty)
+            Text('Nessun membro trovato', style: shadTheme.textTheme.muted)
+          else
+            for (final m in members)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: _ChoiceRow(
+                  label: m.displayName,
+                  icon: Icons.person_outline,
+                  selected: data.pagatoreId == m.userId,
+                  onTap: () { data.pagatoreId = m.userId; onChanged(); },
+                  avatar: m.displayName[0].toUpperCase(),
+                  shadTheme: shadTheme,
+                ),
+              ),
+          const SizedBox(height: 16),
+          Divider(color: shadTheme.colorScheme.border),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Icon(Icons.group_outlined, size: 16, color: shadTheme.colorScheme.primary),
+              const SizedBox(width: 6),
+              Text('A carico di', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Seleziona chi divide questa spesa',
+            style: shadTheme.textTheme.muted.copyWith(fontSize: 12),
+          ),
+          const SizedBox(height: 8),
+          _MultiChoiceRow(
+            label: 'Tutta la famiglia',
+            icon: Icons.family_restroom,
+            selected: data.beneficiariIds.isEmpty,
+            onTap: () { data.beneficiariIds = []; onChanged(); },
+            shadTheme: shadTheme,
+          ),
+          const SizedBox(height: 6),
+          if (members.isNotEmpty)
+            for (final m in members)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: _MultiChoiceRow(
+                  label: m.displayName,
+                  icon: Icons.person_outline,
+                  selected: data.beneficiariIds.contains(m.userId),
+                  onTap: () {
+                    if (data.beneficiariIds.contains(m.userId)) {
+                      data.beneficiariIds.remove(m.userId);
+                    } else {
+                      data.beneficiariIds.add(m.userId);
+                    }
+                    onChanged();
+                  },
+                  avatar: m.displayName[0].toUpperCase(),
+                  shadTheme: shadTheme,
+                ),
+              ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MultiChoiceRow extends StatelessWidget {
+  const _MultiChoiceRow({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+    required this.shadTheme,
+    this.avatar,
+  });
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+  final ShadThemeData shadTheme;
+  final String? avatar;
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = shadTheme.colorScheme.primary;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? primary.withValues(alpha: 0.08) : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: selected ? primary.withValues(alpha: 0.5) : shadTheme.colorScheme.border,
+          ),
+        ),
+        child: Row(
+          children: [
+            if (avatar != null)
+              CircleAvatar(
+                radius: 14,
+                backgroundColor: selected ? primary : shadTheme.colorScheme.muted,
+                child: Text(avatar!,
+                    style: TextStyle(fontSize: 12, color: selected ? shadTheme.colorScheme.primaryForeground : shadTheme.colorScheme.mutedForeground)),
+              )
+            else
+              Icon(icon, size: 18, color: selected ? primary : shadTheme.colorScheme.mutedForeground),
+            const SizedBox(width: 10),
+            Expanded(child: Text(label, style: shadTheme.textTheme.p.copyWith(fontWeight: selected ? FontWeight.w600 : FontWeight.normal))),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 120),
+              width: 20, height: 20,
+              decoration: BoxDecoration(
+                color: selected ? primary : Colors.transparent,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: selected ? primary : shadTheme.colorScheme.border),
+              ),
+              child: selected ? Icon(Icons.check, size: 13, color: shadTheme.colorScheme.primaryForeground) : null,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -720,7 +948,7 @@ class _StepQuandoState extends State<_StepQuando> {
     final d = widget.data.quando;
     final primary = shadTheme.colorScheme.primary;
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -774,8 +1002,9 @@ class _StepQuandoState extends State<_StepQuando> {
 // ── Step 4 — Budget ───────────────────────────────────────────────────────
 
 class _StepBudget extends StatefulWidget {
-  const _StepBudget({required this.data, required this.onChanged});
+  const _StepBudget({required this.data, required this.members, required this.onChanged});
   final _FormData data;
+  final List<FamilyMemberInfo> members;
   final VoidCallback onChanged;
 
   @override
@@ -799,10 +1028,25 @@ class _StepBudgetState extends State<_StepBudget> {
     super.dispose();
   }
 
+  String get _splitSummary {
+    if (widget.data.beneficiariIds.isEmpty) return 'Tutta la famiglia';
+    final nomi = widget.data.beneficiariIds
+        .map((id) => widget.members.firstWhere((m) => m.userId == id, orElse: () => widget.members.first).displayName)
+        .join(', ');
+    return nomi;
+  }
+
   @override
   Widget build(BuildContext context) {
     final shadTheme = ShadTheme.of(context);
-    return Padding(
+    final hasBeneficiari = widget.data.beneficiariIds.isNotEmpty;
+    final count = hasBeneficiari ? widget.data.beneficiariIds.length : null;
+    final importo = widget.data.importo;
+    final splitAmount = (importo != null && count != null && count > 0)
+        ? importo / count
+        : null;
+
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -821,41 +1065,119 @@ class _StepBudgetState extends State<_StepBudget> {
               widget.onChanged();
             },
           ),
-          const SizedBox(height: 16),
-          _ComingSoon(icon: Icons.account_balance_wallet_outlined, label: 'Conto di addebito', subtitle: 'Cassa famiglia / Personale / Split...', shadTheme: shadTheme),
-          const SizedBox(height: 10),
-          _ComingSoon(icon: Icons.how_to_vote_outlined, label: 'Richiede approvazione', subtitle: 'Notifica agli altri membri per conferma', shadTheme: shadTheme),
+          if (importo != null && importo > 0) ...[
+            const SizedBox(height: 16),
+            ShadCard(
+              padding: const EdgeInsets.all(12),
+              backgroundColor: shadTheme.colorScheme.muted.withValues(alpha: 0.4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.receipt_outlined, size: 14, color: shadTheme.colorScheme.mutedForeground),
+                      const SizedBox(width: 6),
+                      Text('Riepilogo', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  if (widget.data.pagatoreId != null) ...[
+                    _SummaryRow(
+                      label: 'Pagato da',
+                      value: widget.members
+                          .firstWhere((m) => m.userId == widget.data.pagatoreId, orElse: () => widget.members.first)
+                          .displayName,
+                      shadTheme: shadTheme,
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                  _SummaryRow(label: 'A carico di', value: _splitSummary, shadTheme: shadTheme),
+                  if (splitAmount != null) ...[
+                    const SizedBox(height: 4),
+                    _SummaryRow(
+                      label: 'Quota per persona',
+                      value: '€ ${splitAmount.toStringAsFixed(2)}',
+                      shadTheme: shadTheme,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-// ── Shared widgets ────────────────────────────────────────────────────────
-
-class _ProgressDots extends StatelessWidget {
-  const _ProgressDots({required this.current, required this.total, required this.colorScheme});
-  final int current;
-  final int total;
-  final ShadColorScheme colorScheme;
+class _SummaryRow extends StatelessWidget {
+  const _SummaryRow({required this.label, required this.value, required this.shadTheme});
+  final String label;
+  final String value;
+  final ShadThemeData shadTheme;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(total, (i) {
-        final active = i == current;
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          width: active ? 20 : 6,
-          height: 6,
-          decoration: BoxDecoration(
-            color: active ? colorScheme.primary : colorScheme.border,
-            borderRadius: BorderRadius.circular(3),
+      children: [
+        Text(label, style: shadTheme.textTheme.small.copyWith(color: shadTheme.colorScheme.mutedForeground)),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            value,
+            style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w600),
+            textAlign: TextAlign.end,
           ),
-        );
-      }),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Shared widgets ────────────────────────────────────────────────────────
+
+class _StepIndicator extends StatelessWidget {
+  const _StepIndicator({required this.current, required this.total, required this.shadTheme});
+  final int current;
+  final int total;
+  final ShadThemeData shadTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = total > 0 ? current / total : 0.0;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text(
+                'Passo $current di $total',
+                style: shadTheme.textTheme.small.copyWith(
+                  color: shadTheme.colorScheme.mutedForeground,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: Container(
+              height: 3,
+              width: double.infinity,
+              color: shadTheme.colorScheme.border,
+              child: FractionallySizedBox(
+                widthFactor: progress.clamp(0.0, 1.0),
+                alignment: Alignment.centerLeft,
+                child: Container(color: shadTheme.colorScheme.primary),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
