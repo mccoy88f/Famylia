@@ -13,6 +13,7 @@ import 'core/router/app_router.dart';
 import 'core/session/app_state.dart';
 import 'core/session/family_context.dart';
 import 'core/theme/app_settings.dart';
+import 'core/theme/famylia_accent_presets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -91,17 +92,30 @@ class _FamyliaAppState extends State<FamyliaApp> {
         widget.appSettings,
       ]),
       builder: (context, _) {
+        final accent = FamyliaAccentPresets.colorFromHex(
+          widget.familyContext.accentColorHex,
+        );
+        final onAccent = accent.computeLuminance() > 0.5
+            ? const Color(0xFF1A1D26)
+            : Colors.white;
+
         return ShadApp.router(
           title: 'Famylia',
           debugShowCheckedModeBanner: false,
           themeMode: widget.appSettings.themeMode,
           theme: ShadThemeData(
             brightness: Brightness.light,
-            colorScheme: const ShadZincColorScheme.light(),
+            colorScheme: ShadZincColorScheme.light(
+              primary: accent,
+              primaryForeground: onAccent,
+            ),
           ),
           darkTheme: ShadThemeData(
             brightness: Brightness.dark,
-            colorScheme: const ShadZincColorScheme.dark(),
+            colorScheme: ShadZincColorScheme.dark(
+              primary: accent,
+              primaryForeground: onAccent,
+            ),
           ),
           routerConfig: widget.router,
         );
