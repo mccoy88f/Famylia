@@ -201,7 +201,7 @@ class _FeedScreenState extends State<FeedScreen> {
                       color: scheme.primary,
                       action: TextButton(
                         onPressed: () => context.go(AppRoutes.lista),
-                        child: const Text('Tutti'),
+                        child: const Text('Vedi tutti'),
                       ),
                     ),
                     const SizedBox(height: 8),
