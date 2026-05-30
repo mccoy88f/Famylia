@@ -2,6 +2,7 @@ import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/family_repository.dart';
 import '../../core/api/shopping_repository.dart';
@@ -36,21 +37,24 @@ class _ListaScreenState extends State<ListaScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
+    final shadTheme = ShadTheme.of(context);
     return Scaffold(
+      backgroundColor: shadTheme.colorScheme.background,
       appBar: AppBar(
-        title: const Text('Lista'),
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
+        title: Text('Attività', style: shadTheme.textTheme.h4),
         bottom: TabBar(
           controller: _tab,
           tabs: const [
-            Tab(icon: Icon(Icons.check_circle_outline), text: 'Todo'),
+            Tab(icon: Icon(Icons.task_alt_outlined), text: 'Todo'),
             Tab(icon: Icon(Icons.shopping_cart_outlined), text: 'Spesa'),
           ],
-          indicatorColor: scheme.primary,
-          labelColor: scheme.primary,
-          unselectedLabelColor: scheme.onSurface.withValues(alpha: 0.6),
+          indicatorColor: shadTheme.colorScheme.primary,
+          labelColor: shadTheme.colorScheme.primary,
+          unselectedLabelColor: shadTheme.colorScheme.mutedForeground,
+          labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          unselectedLabelStyle: const TextStyle(fontSize: 13),
         ),
       ),
       body: TabBarView(
@@ -82,8 +86,7 @@ class _TodoTabState extends State<_TodoTab> with AutomaticKeepAliveClientMixin {
   final _addCtrl = TextEditingController();
   List<TodoItem> _items = [];
   bool _loading = true;
-  bool _myDayOnly = false;
-  String? _error;
+  int _view = 0; // 0=tutti, 1=miei
 
   @override
   void initState() {
@@ -100,15 +103,14 @@ class _TodoTabState extends State<_TodoTab> with AutomaticKeepAliveClientMixin {
   Future<void> _load() async {
     final familyId = context.activeFamilyId;
     if (familyId == null) return;
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    setState(() => _loading = true);
     try {
-      final items = _myDayOnly ? await _repo.myDay(familyId) : await _repo.list(familyId);
+      final items = _view == 1 ? await _repo.myDay(familyId) : await _repo.list(familyId);
       if (mounted) setState(() => _items = items);
     } catch (e) {
-      if (mounted) setState(() => _error = _repo.errorMessage(e));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -123,9 +125,7 @@ class _TodoTabState extends State<_TodoTab> with AutomaticKeepAliveClientMixin {
       await _load();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_repo.errorMessage(e))),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
       }
     }
   }
@@ -137,9 +137,7 @@ class _TodoTabState extends State<_TodoTab> with AutomaticKeepAliveClientMixin {
       await _load();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_repo.errorMessage(e))),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
       }
     }
   }
@@ -150,29 +148,39 @@ class _TodoTabState extends State<_TodoTab> with AutomaticKeepAliveClientMixin {
     try {
       final members = await _families.listMembers(familyId);
       if (!mounted) return;
+      final shadTheme = ShadTheme.of(context);
       final me = context.read<AppState>().signedInUser?.id;
       final choice = await showModalBottomSheet<int?>(
         context: context,
+        backgroundColor: shadTheme.colorScheme.background,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
         builder: (ctx) => SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text('Assegna a', style: Theme.of(ctx).textTheme.titleMedium),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                child: Text('Assegna task a', style: shadTheme.textTheme.h4),
               ),
+              Divider(height: 1, color: shadTheme.colorScheme.border),
               ListTile(
-                leading: const Icon(Icons.person_off_outlined),
+                leading: CircleAvatar(backgroundColor: shadTheme.colorScheme.muted, child: const Icon(Icons.person_off_outlined, size: 16)),
                 title: const Text('Nessuno'),
                 onTap: () => Navigator.pop(ctx, -1),
               ),
               for (final m in members)
                 ListTile(
-                  leading: CircleAvatar(child: Text(m.displayName[0].toUpperCase())),
+                  leading: CircleAvatar(
+                    backgroundColor: shadTheme.colorScheme.muted,
+                    child: Text(m.displayName[0].toUpperCase(), style: TextStyle(color: shadTheme.colorScheme.mutedForeground)),
+                  ),
                   title: Text(m.userId == me ? '${m.displayName} (io)' : m.displayName),
-                  subtitle: Text(m.role.name),
+                  subtitle: Text(m.role.name, style: TextStyle(fontSize: 12, color: shadTheme.colorScheme.mutedForeground)),
                   onTap: () => Navigator.pop(ctx, m.userId),
                 ),
+              const SizedBox(height: 8),
             ],
           ),
         ),
@@ -182,9 +190,7 @@ class _TodoTabState extends State<_TodoTab> with AutomaticKeepAliveClientMixin {
       await _load();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_repo.errorMessage(e))),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
       }
     }
   }
@@ -192,73 +198,84 @@ class _TodoTabState extends State<_TodoTab> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final width = MediaQuery.of(context).size.width;
-    final isWide = width >= 900;
+    final shadTheme = ShadTheme.of(context);
+    final isWide = MediaQuery.of(context).size.width >= 900;
 
     final open = _items.where((t) => t.status != TodoStatus.done).toList();
     final done = _items.where((t) => t.status == TodoStatus.done).toList();
 
     return Column(
       children: [
-        _QuickAddBar(
-          controller: _addCtrl,
-          hintText: 'Aggiungi task veloce...',
-          onSubmit: _quickAdd,
-          trailing: FilterChip(
-            label: const Text('Oggi'),
-            selected: _myDayOnly,
-            onSelected: (v) {
-              setState(() => _myDayOnly = v);
-              _load();
-            },
+        // Quick add bar + filter
+        Container(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+          decoration: BoxDecoration(
+            color: shadTheme.colorScheme.background,
+            border: Border(bottom: BorderSide(color: shadTheme.colorScheme.border)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: ShadInput(
+                  controller: _addCtrl,
+                  placeholder: const Text('Nuovo task...'),
+                  leading: Icon(Icons.add_task_outlined, size: 18, color: shadTheme.colorScheme.mutedForeground),
+                  trailing: ShadButton.ghost(
+                    onPressed: () => _quickAdd(_addCtrl.text),
+                    size: ShadButtonSize.icon,
+                    child: Icon(Icons.send_rounded, size: 18, color: shadTheme.colorScheme.primary),
+                  ),
+                  onSubmitted: _quickAdd,
+                ),
+              ),
+              const SizedBox(width: 10),
+              SegmentedButton<int>(
+                segments: const [
+                  ButtonSegment(value: 0, label: Text('Tutti', style: TextStyle(fontSize: 12))),
+                  ButtonSegment(value: 1, icon: Icon(Icons.person_outline, size: 15), label: Text('Miei', style: TextStyle(fontSize: 12))),
+                ],
+                selected: {_view},
+                onSelectionChanged: (v) {
+                  setState(() => _view = v.first);
+                  _load();
+                },
+                style: const ButtonStyle(
+                  visualDensity: VisualDensity(horizontal: -2, vertical: -2),
+                ),
+              ),
+            ],
           ),
         ),
         Expanded(
           child: _loading
               ? const Center(child: CircularProgressIndicator())
-              : _error != null
-                  ? Center(child: Text(_error!))
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: isWide
-                          ? _TodoWideLayout(
-                              open: open,
-                              done: done,
-                              onToggle: _toggleDone,
-                              onAssign: _assign,
-                              onDelete: (t) async {
-                                await _repo.delete(t.id!);
-                                await _load();
-                              },
-                            )
-                          : _TodoNarrowLayout(
-                              open: open,
-                              done: done,
-                              onToggle: _toggleDone,
-                              onAssign: _assign,
-                              onDelete: (t) async {
-                                await _repo.delete(t.id!);
-                                await _load();
-                              },
-                            ),
-                    ),
+              : (open.isEmpty && done.isEmpty)
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.task_alt_outlined, size: 48, color: shadTheme.colorScheme.mutedForeground),
+                          const SizedBox(height: 12),
+                          Text('Nessun task', style: shadTheme.textTheme.muted),
+                          const SizedBox(height: 4),
+                          Text('Scrivilo sopra e premi invio',
+                              style: shadTheme.textTheme.muted.copyWith(fontSize: 12)),
+                        ],
+                      ),
+                    )
+                  : isWide
+                      ? _TodoWide(open: open, done: done, onToggle: _toggleDone, onAssign: _assign,
+                          onDelete: (t) async { await _repo.delete(t.id!); await _load(); })
+                      : _TodoNarrow(open: open, done: done, onToggle: _toggleDone, onAssign: _assign,
+                          onDelete: (t) async { await _repo.delete(t.id!); await _load(); }),
         ),
       ],
     );
   }
 }
 
-class _TodoNarrowLayout extends StatelessWidget {
-  const _TodoNarrowLayout({
-    required this.open,
-    required this.done,
-    required this.onToggle,
-    required this.onAssign,
-    required this.onDelete,
-  });
-
+class _TodoNarrow extends StatelessWidget {
+  const _TodoNarrow({required this.open, required this.done, required this.onToggle, required this.onAssign, required this.onDelete});
   final List<TodoItem> open;
   final List<TodoItem> done;
   final void Function(TodoItem) onToggle;
@@ -267,36 +284,27 @@ class _TodoNarrowLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (open.isEmpty && done.isEmpty) {
-      return const Center(child: Text('Nessun task. Aggiungine uno!'));
-    }
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 100),
-      children: [
-        if (open.isNotEmpty) ...[
-          _ListSectionLabel('Da fare · ${open.length}'),
-          for (final t in open)
-            _TodoTile(item: t, onToggle: onToggle, onAssign: onAssign, onDelete: onDelete),
+    return RefreshIndicator(
+      onRefresh: () async {},
+      child: ListView(
+        padding: const EdgeInsets.only(bottom: 120),
+        children: [
+          if (open.isNotEmpty) ...[
+            _SectionLabel('Da fare · ${open.length}'),
+            for (final t in open) _TodoTile(item: t, onToggle: onToggle, onAssign: onAssign, onDelete: onDelete),
+          ],
+          if (done.isNotEmpty) ...[
+            _SectionLabel('Completati · ${done.length}'),
+            for (final t in done) _TodoTile(item: t, onToggle: onToggle, onAssign: onAssign, onDelete: onDelete),
+          ],
         ],
-        if (done.isNotEmpty) ...[
-          _ListSectionLabel('Completati · ${done.length}'),
-          for (final t in done)
-            _TodoTile(item: t, onToggle: onToggle, onAssign: onAssign, onDelete: onDelete),
-        ],
-      ],
+      ),
     );
   }
 }
 
-class _TodoWideLayout extends StatelessWidget {
-  const _TodoWideLayout({
-    required this.open,
-    required this.done,
-    required this.onToggle,
-    required this.onAssign,
-    required this.onDelete,
-  });
-
+class _TodoWide extends StatelessWidget {
+  const _TodoWide({required this.open, required this.done, required this.onToggle, required this.onAssign, required this.onDelete});
   final List<TodoItem> open;
   final List<TodoItem> done;
   final void Function(TodoItem) onToggle;
@@ -305,27 +313,26 @@ class _TodoWideLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(0, 4, 0, 120),
             children: [
-              _ListSectionLabel('Da fare · ${open.length}'),
-              for (final t in open)
-                _TodoTile(item: t, onToggle: onToggle, onAssign: onAssign, onDelete: onDelete),
+              _SectionLabel('Da fare · ${open.length}'),
+              for (final t in open) _TodoTile(item: t, onToggle: onToggle, onAssign: onAssign, onDelete: onDelete),
             ],
           ),
         ),
-        const VerticalDivider(width: 1),
+        VerticalDivider(width: 1, color: shadTheme.colorScheme.border),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(0, 4, 0, 120),
             children: [
-              _ListSectionLabel('Completati · ${done.length}'),
-              for (final t in done)
-                _TodoTile(item: t, onToggle: onToggle, onAssign: onAssign, onDelete: onDelete),
+              _SectionLabel('Completati · ${done.length}'),
+              for (final t in done) _TodoTile(item: t, onToggle: onToggle, onAssign: onAssign, onDelete: onDelete),
             ],
           ),
         ),
@@ -335,13 +342,7 @@ class _TodoWideLayout extends StatelessWidget {
 }
 
 class _TodoTile extends StatelessWidget {
-  const _TodoTile({
-    required this.item,
-    required this.onToggle,
-    required this.onAssign,
-    required this.onDelete,
-  });
-
+  const _TodoTile({required this.item, required this.onToggle, required this.onAssign, required this.onDelete});
   final TodoItem item;
   final void Function(TodoItem) onToggle;
   final void Function(TodoItem) onAssign;
@@ -350,14 +351,18 @@ class _TodoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final done = item.status == TodoStatus.done;
+    final shadTheme = ShadTheme.of(context);
+    final isOverdue = !done && item.dueDate != null && item.dueDate!.isBefore(DateTime.now());
+
     return Dismissible(
       key: ValueKey(item.id),
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
         decoration: BoxDecoration(
-          color: Colors.red.shade300,
+          color: shadTheme.colorScheme.destructive,
           borderRadius: BorderRadius.circular(12),
         ),
         child: const Icon(Icons.delete_outline, color: Colors.white),
@@ -367,34 +372,57 @@ class _TodoTile extends StatelessWidget {
         onDelete(item);
         return true;
       },
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: InkWell(
-          onLongPress: () => onAssign(item),
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: CheckboxListTile(
-              value: done,
-              onChanged: (_) => onToggle(item),
-              controlAffinity: ListTileControlAffinity.leading,
-              title: Text(
-                item.title,
-                style: TextStyle(
-                  decoration: done ? TextDecoration.lineThrough : null,
-                  color: done ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5) : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+        child: ShadCard(
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+          child: InkWell(
+            onLongPress: () => onAssign(item),
+            borderRadius: BorderRadius.circular(12),
+            child: Row(
+              children: [
+                Checkbox(
+                  value: done,
+                  onChanged: (_) => onToggle(item),
+                  shape: const CircleBorder(),
                 ),
-              ),
-              subtitle: item.dueDate != null
-                  ? Text(
-                      'Scade ${item.dueDate!.day}/${item.dueDate!.month}',
-                      style: TextStyle(
-                        color: item.dueDate!.isBefore(DateTime.now()) && !done
-                            ? Theme.of(context).colorScheme.error
-                            : null,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.title,
+                        style: TextStyle(
+                          fontSize: 15,
+                          decoration: done ? TextDecoration.lineThrough : null,
+                          color: done ? shadTheme.colorScheme.mutedForeground : shadTheme.colorScheme.foreground,
+                          fontWeight: done ? FontWeight.normal : FontWeight.w500,
+                        ),
                       ),
-                    )
-                  : null,
+                      if (item.dueDate != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            'Scade ${item.dueDate!.day}/${item.dueDate!.month}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isOverdue ? shadTheme.colorScheme.destructive : shadTheme.colorScheme.mutedForeground,
+                              fontWeight: isOverdue ? FontWeight.w500 : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Icon(
+                    Icons.more_horiz,
+                    size: 18,
+                    color: shadTheme.colorScheme.mutedForeground.withValues(alpha: 0.4),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -417,6 +445,7 @@ class _SpesaTabState extends State<_SpesaTab> with AutomaticKeepAliveClientMixin
   bool get wantKeepAlive => true;
 
   final _repo = ShoppingRepository();
+  final _addCtrl = TextEditingController();
   List<ShoppingList> _lists = [];
   bool _loading = true;
   bool _offline = false;
@@ -425,6 +454,12 @@ class _SpesaTabState extends State<_SpesaTab> with AutomaticKeepAliveClientMixin
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+  }
+
+  @override
+  void dispose() {
+    _addCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -437,69 +472,185 @@ class _SpesaTabState extends State<_SpesaTab> with AutomaticKeepAliveClientMixin
       if (mounted) setState(() => _lists = lists);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_repo.errorMessage(e))),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
-  Future<void> _createList(String name) async {
+  Future<void> _quickAddItem(String name) async {
     final familyId = context.activeFamilyId;
     if (familyId == null || name.trim().isEmpty) return;
+    _addCtrl.clear();
+
+    if (_lists.isEmpty) {
+      try {
+        final list = await _repo.createList(familyId, 'Lista della spesa');
+        await _repo.addItem(list.id!, name.trim());
+        await _load();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Lista creata e articolo aggiunto'), duration: Duration(seconds: 2)),
+          );
+        }
+      } catch (e) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
+      }
+      return;
+    }
+
+    if (_lists.length == 1 && _lists.first.id != null) {
+      try {
+        await _repo.addItem(_lists.first.id!, name.trim());
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Aggiunto a "${_lists.first.name}"'), duration: const Duration(seconds: 2)),
+          );
+        }
+      } catch (e) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
+      }
+      return;
+    }
+
+    if (!mounted) return;
+    int? selectedId = _lists.first.id;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlg) => AlertDialog(
+          title: const Text('Aggiungi a quale lista?'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final l in _lists)
+                RadioListTile<int>(
+                  value: l.id!,
+                  groupValue: selectedId,
+                  title: Text(l.name),
+                  onChanged: (v) => setDlg(() => selectedId = v),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Aggiungi')),
+          ],
+        ),
+      ),
+    );
+    if (ok != true || selectedId == null) return;
+    try {
+      await _repo.addItem(selectedId!, name.trim());
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
+    }
+  }
+
+  Future<void> _createList() async {
+    final familyId = context.activeFamilyId;
+    if (familyId == null) return;
+    final ctrl = TextEditingController(text: 'Lista della spesa');
+    final shadTheme = ShadTheme.of(context);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: shadTheme.colorScheme.background,
+        title: Text('Nuova lista', style: shadTheme.textTheme.h4),
+        content: TextField(controller: ctrl, autofocus: true),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annulla')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, ctrl.text), child: const Text('Crea')),
+        ],
+      ),
+    );
+    if (name == null || name.trim().isEmpty) return;
     try {
       final list = await _repo.createList(familyId, name.trim());
-      if (mounted && list.id != null) {
-        context.push(AppRoutes.shoppingList(list.id!));
-      }
+      if (mounted && list.id != null) context.push(AppRoutes.shoppingList(list.id!));
       await _load();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_repo.errorMessage(e))),
-        );
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final shadTheme = ShadTheme.of(context);
+    final isWide = MediaQuery.of(context).size.width >= 600;
+
     return Column(
       children: [
         if (_offline)
           Container(
-            width: double.infinity,
-            color: Colors.orange.shade100,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
+            color: const Color(0xFFFEF3C7),
+            child: const Row(
               children: [
-                Icon(Icons.cloud_off, size: 16, color: Colors.orange.shade800),
-                const SizedBox(width: 8),
+                Icon(Icons.cloud_off, size: 15, color: Color(0xFFB45309)),
+                SizedBox(width: 8),
                 Text('Offline — modifiche salvate localmente',
-                    style: TextStyle(color: Colors.orange.shade900, fontSize: 12)),
+                    style: TextStyle(fontSize: 12, color: Color(0xFFB45309))),
               ],
             ),
           ),
-        _QuickAddBar(
-          hintText: 'Nuova lista (es. Spesa settimanale)...',
-          onSubmit: _createList,
+        Container(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+          decoration: BoxDecoration(
+            color: shadTheme.colorScheme.background,
+            border: Border(bottom: BorderSide(color: shadTheme.colorScheme.border)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: ShadInput(
+                  controller: _addCtrl,
+                  placeholder: const Text('Aggiungi articolo alla spesa...'),
+                  leading: Icon(Icons.add_shopping_cart_outlined, size: 18, color: shadTheme.colorScheme.mutedForeground),
+                  trailing: ShadButton.ghost(
+                    onPressed: () => _quickAddItem(_addCtrl.text),
+                    size: ShadButtonSize.icon,
+                    child: Icon(Icons.send_rounded, size: 18, color: shadTheme.colorScheme.primary),
+                  ),
+                  onSubmitted: _quickAddItem,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Tooltip(
+                message: 'Nuova lista',
+                child: ShadButton.outline(
+                  onPressed: _createList,
+                  size: ShadButtonSize.icon,
+                  child: const Icon(Icons.playlist_add_outlined, size: 18),
+                ),
+              ),
+            ],
+          ),
         ),
         Expanded(
           child: _loading
               ? const Center(child: CircularProgressIndicator())
               : _lists.isEmpty
-                  ? const Center(child: Text('Nessuna lista. Creane una!'))
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.shopping_cart_outlined, size: 48, color: shadTheme.colorScheme.mutedForeground),
+                          const SizedBox(height: 12),
+                          Text('Nessuna lista', style: shadTheme.textTheme.muted),
+                          const SizedBox(height: 4),
+                          Text('Crea una lista o aggiungi un articolo sopra',
+                              style: shadTheme.textTheme.muted.copyWith(fontSize: 12)),
+                        ],
+                      ),
+                    )
                   : RefreshIndicator(
                       onRefresh: _load,
-                      child: _ShoppingListsGrid(
-                        lists: _lists,
-                        onTap: (l) {
-                          if (l.id != null) context.push(AppRoutes.shoppingList(l.id!));
-                        },
-                      ),
+                      child: isWide
+                          ? _ShoppingGrid(lists: _lists)
+                          : _ShoppingListView(lists: _lists),
                     ),
         ),
       ],
@@ -507,80 +658,66 @@ class _SpesaTabState extends State<_SpesaTab> with AutomaticKeepAliveClientMixin
   }
 }
 
-class _ShoppingListsGrid extends StatelessWidget {
-  const _ShoppingListsGrid({required this.lists, required this.onTap});
+class _ShoppingListView extends StatelessWidget {
+  const _ShoppingListView({required this.lists});
   final List<ShoppingList> lists;
-  final void Function(ShoppingList) onTap;
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final crossCount = width >= 900 ? 3 : (width >= 600 ? 2 : 1);
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+      itemCount: lists.length,
+      itemBuilder: (_, i) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: _ShoppingCard(list: lists[i]),
+      ),
+    );
+  }
+}
 
-    if (crossCount == 1) {
-      return ListView.builder(
-        padding: const EdgeInsets.only(bottom: 100),
-        itemCount: lists.length,
-        itemBuilder: (_, i) => _ShoppingListTile(list: lists[i], onTap: onTap),
-      );
-    }
+class _ShoppingGrid extends StatelessWidget {
+  const _ShoppingGrid({required this.lists});
+  final List<ShoppingList> lists;
 
+  @override
+  Widget build(BuildContext context) {
+    final crossCount = MediaQuery.of(context).size.width >= 900 ? 3 : 2;
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossCount,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 2.2,
+        childAspectRatio: 2.4,
       ),
       itemCount: lists.length,
-      itemBuilder: (_, i) => _ShoppingListCard(list: lists[i], onTap: onTap),
+      itemBuilder: (_, i) => _ShoppingCard(list: lists[i]),
     );
   }
 }
 
-class _ShoppingListTile extends StatelessWidget {
-  const _ShoppingListTile({required this.list, required this.onTap});
+class _ShoppingCard extends StatelessWidget {
+  const _ShoppingCard({required this.list});
   final ShoppingList list;
-  final void Function(ShoppingList) onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.green.withValues(alpha: 0.15),
-          child: Icon(Icons.shopping_basket_outlined, color: Colors.green.shade600),
-        ),
-        title: Text(list.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: list.store != null ? Text(list.store!) : null,
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => onTap(list),
-      ),
-    );
-  }
-}
-
-class _ShoppingListCard extends StatelessWidget {
-  const _ShoppingListCard({required this.list, required this.onTap});
-  final ShoppingList list;
-  final void Function(ShoppingList) onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
+    final shadTheme = ShadTheme.of(context);
+    return ShadCard(
+      padding: EdgeInsets.zero,
       child: InkWell(
-        onTap: () => onTap(list),
-        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          if (list.id != null) context.push(AppRoutes.shoppingList(list.id!));
+        },
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: Colors.green.withValues(alpha: 0.15),
-                child: Icon(Icons.shopping_basket_outlined, color: Colors.green.shade600),
+                radius: 20,
+                backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.12),
+                child: const Icon(Icons.shopping_basket_outlined, color: Color(0xFF10B981), size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -588,13 +725,13 @@ class _ShoppingListCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(list.name, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                    Text(list.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
                     if (list.store != null)
-                      Text(list.store!, style: theme.textTheme.bodySmall),
+                      Text(list.store!, style: shadTheme.textTheme.muted),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right),
+              Icon(Icons.chevron_right, color: shadTheme.colorScheme.mutedForeground),
             ],
           ),
         ),
@@ -603,71 +740,24 @@ class _ShoppingListCard extends StatelessWidget {
   }
 }
 
-// ── Shared components ─────────────────────────────────────────────────────
+// ── Shared ────────────────────────────────────────────────────────────────
 
-class _QuickAddBar extends StatelessWidget {
-  const _QuickAddBar({
-    required this.hintText,
-    required this.onSubmit,
-    this.controller,
-    this.trailing,
-  });
-
-  final String hintText;
-  final void Function(String) onSubmit;
-  final TextEditingController? controller;
-  final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    final ctrl = controller ?? TextEditingController();
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        border: Border(bottom: BorderSide(color: scheme.outline.withValues(alpha: 0.2))),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: ctrl,
-              decoration: InputDecoration(
-                hintText: hintText,
-                prefixIcon: const Icon(Icons.add, size: 20),
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              ),
-              onSubmitted: onSubmit,
-              textInputAction: TextInputAction.done,
-            ),
-          ),
-          if (trailing != null) ...[
-            const SizedBox(width: 8),
-            trailing!,
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _ListSectionLabel extends StatelessWidget {
-  const _ListSectionLabel(this.label);
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.label);
   final String label;
 
   @override
   Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 16, 4),
       child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-              letterSpacing: 0.5,
-            ),
+        label.toUpperCase(),
+        style: shadTheme.textTheme.muted.copyWith(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.7,
+        ),
       ),
     );
   }

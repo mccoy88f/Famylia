@@ -2,10 +2,12 @@ import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/calendar_repository.dart';
 import '../../core/api/deadline_repository.dart';
 import '../../core/api/expense_repository.dart';
+import '../../core/api/family_repository.dart';
 import '../../core/extensions/context_extensions.dart';
 import '../../core/router/app_router.dart';
 
@@ -19,10 +21,15 @@ class AgendaScreen extends StatefulWidget {
 class _AgendaScreenState extends State<AgendaScreen> with SingleTickerProviderStateMixin {
   late TabController _tab;
 
+  final _calendarioKey = GlobalKey<_AppuntamentiTabState>();
+  final _scadenzeKey = GlobalKey<_ScadenzeTabState>();
+  final _speseKey = GlobalKey<_SpeseTabState>();
+
   @override
   void initState() {
     super.initState();
     _tab = TabController(length: 3, vsync: this);
+    _tab.addListener(() => setState(() {}));
   }
 
   @override
@@ -31,54 +38,80 @@ class _AgendaScreenState extends State<AgendaScreen> with SingleTickerProviderSt
     super.dispose();
   }
 
+  void _onFabTap() {
+    switch (_tab.index) {
+      case 0:
+        _calendarioKey.currentState?._add();
+      case 1:
+        _scadenzeKey.currentState?._add();
+      case 2:
+        context.push(AppRoutes.expenses);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final shadTheme = ShadTheme.of(context);
+
     return Scaffold(
+      backgroundColor: shadTheme.colorScheme.background,
       appBar: AppBar(
-        title: const Text('Agenda'),
+        backgroundColor: shadTheme.colorScheme.background,
+        surfaceTintColor: Colors.transparent,
+        title: Text('Agenda', style: shadTheme.textTheme.h4),
         bottom: TabBar(
           controller: _tab,
           tabs: const [
-            Tab(icon: Icon(Icons.calendar_month_outlined), text: 'Calendario'),
+            Tab(icon: Icon(Icons.event_outlined), text: 'Appuntamenti'),
             Tab(icon: Icon(Icons.alarm_outlined), text: 'Scadenze'),
             Tab(icon: Icon(Icons.payments_outlined), text: 'Spese'),
           ],
-          indicatorColor: scheme.primary,
-          labelColor: scheme.primary,
-          unselectedLabelColor: scheme.onSurface.withValues(alpha: 0.6),
+          indicatorColor: shadTheme.colorScheme.primary,
+          labelColor: shadTheme.colorScheme.primary,
+          unselectedLabelColor: shadTheme.colorScheme.mutedForeground,
+          labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          unselectedLabelStyle: const TextStyle(fontSize: 12),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'agenda_fab',
+        backgroundColor: shadTheme.colorScheme.primary,
+        foregroundColor: shadTheme.colorScheme.primaryForeground,
+        onPressed: _onFabTap,
+        tooltip: _tab.index == 2 ? 'Vai a Spese' : 'Aggiungi',
+        child: const Icon(Icons.add),
       ),
       body: TabBarView(
         controller: _tab,
-        children: const [
-          _CalendarioTab(),
-          _ScadenzeTab(),
-          _SpeseTab(),
+        children: [
+          _AppuntamentiTab(key: _calendarioKey),
+          _ScadenzeTab(key: _scadenzeKey),
+          _SpeseTab(key: _speseKey),
         ],
       ),
     );
   }
 }
 
-// ── Calendario ────────────────────────────────────────────────────────────
+// ── Appuntamenti ──────────────────────────────────────────────────────────
 
-class _CalendarioTab extends StatefulWidget {
-  const _CalendarioTab();
+class _AppuntamentiTab extends StatefulWidget {
+  const _AppuntamentiTab({super.key});
 
   @override
-  State<_CalendarioTab> createState() => _CalendarioTabState();
+  State<_AppuntamentiTab> createState() => _AppuntamentiTabState();
 }
 
-class _CalendarioTabState extends State<_CalendarioTab> with AutomaticKeepAliveClientMixin {
+class _AppuntamentiTabState extends State<_AppuntamentiTab> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
   final _repo = CalendarRepository();
   List<CalendarEvent> _events = [];
   bool _loading = true;
-  final _fmt = DateFormat('EEE d MMM · HH:mm', 'it');
-  final _dayFmt = DateFormat('EEEE d MMMM', 'it');
+  final _timeFmt = DateFormat('HH:mm');
+  final _dayKeyFmt = DateFormat('yyyy-MM-dd');
+  final _dayLabelFmt = DateFormat('EEEE d MMMM', 'it');
 
   @override
   void initState() {
@@ -92,15 +125,12 @@ class _CalendarioTabState extends State<_CalendarioTab> with AutomaticKeepAliveC
     setState(() => _loading = true);
     final now = DateTime.now();
     final from = DateTime(now.year, now.month, now.day);
-    final to = from.add(const Duration(days: 60));
     try {
-      final events = await _repo.list(familyId, from, to);
+      final events = await _repo.list(familyId, from, from.add(const Duration(days: 90)));
       if (mounted) setState(() => _events = events);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_repo.errorMessage(e))),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -112,45 +142,50 @@ class _CalendarioTabState extends State<_CalendarioTab> with AutomaticKeepAliveC
     if (familyId == null) return;
     final titleCtrl = TextEditingController();
     var date = DateTime.now().add(const Duration(hours: 2));
+    final shadTheme = ShadTheme.of(context);
+
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDlg) => AlertDialog(
-          title: const Text('Nuovo evento'),
+          backgroundColor: shadTheme.colorScheme.background,
+          title: Text('Nuovo appuntamento', style: shadTheme.textTheme.h4),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
+              ShadInput(
                 controller: titleCtrl,
                 autofocus: true,
-                decoration: const InputDecoration(labelText: 'Titolo evento'),
+                placeholder: const Text('Titolo'),
               ),
-              const SizedBox(height: 8),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.calendar_today_outlined),
-                title: Text('${date.day}/${date.month}/${date.year}'),
-                subtitle: Text('${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}'),
-                onTap: () async {
+              const SizedBox(height: 12),
+              ShadButton.outline(
+                onPressed: () async {
                   final picked = await showDatePicker(
                     context: ctx,
                     initialDate: date,
                     firstDate: DateTime.now().subtract(const Duration(days: 365)),
                     lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
                   );
-                  if (picked != null) {
+                  if (picked != null && ctx.mounted) {
                     final time = await showTimePicker(
                       context: ctx,
                       initialTime: TimeOfDay.fromDateTime(date),
                     );
                     setDlg(() {
-                      date = DateTime(
-                        picked.year, picked.month, picked.day,
-                        time?.hour ?? date.hour, time?.minute ?? date.minute,
-                      );
+                      date = DateTime(picked.year, picked.month, picked.day,
+                          time?.hour ?? date.hour, time?.minute ?? date.minute);
                     });
                   }
                 },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.calendar_today_outlined, size: 16),
+                    const SizedBox(width: 6),
+                    Text('${date.day}/${date.month}/${date.year}  ${_timeFmt.format(date)}'),
+                  ],
+                ),
               ),
             ],
           ),
@@ -167,60 +202,100 @@ class _CalendarioTabState extends State<_CalendarioTab> with AutomaticKeepAliveC
       await _load();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_repo.errorMessage(e))),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
       }
     }
   }
 
   Map<String, List<CalendarEvent>> _groupByDay() {
-    final result = <String, List<CalendarEvent>>{};
+    final map = <String, List<CalendarEvent>>{};
     for (final e in _events) {
-      final key = _dayFmt.format(e.startAt.toLocal());
-      (result[key] ??= []).add(e);
+      final key = _dayKeyFmt.format(e.startAt.toLocal());
+      (map[key] ??= []).add(e);
     }
-    return result;
+    return map;
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final scheme = Theme.of(context).colorScheme;
+    final shadTheme = ShadTheme.of(context);
     final groups = _groupByDay();
+    final now = DateTime.now();
+    final today = _dayKeyFmt.format(now);
+    final tomorrow = _dayKeyFmt.format(now.add(const Duration(days: 1)));
 
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: _add,
-        child: const Icon(Icons.add),
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_events.isEmpty) {
+      return _EmptyState(
+        icon: Icons.event_outlined,
+        message: 'Nessun appuntamento nei prossimi 90 giorni',
+        action: 'Aggiungi',
+        onAction: _add,
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.only(bottom: 120),
+        children: [
+          for (final entry in groups.entries) ...[
+            _DayHeader(
+              label: switch (entry.key) {
+                String k when k == today => 'Oggi · ${_dayLabelFmt.format(DateTime.parse(k))}',
+                String k when k == tomorrow => 'Domani · ${_dayLabelFmt.format(DateTime.parse(k))}',
+                _ => _dayLabelFmt.format(DateTime.parse(entry.key)),
+              },
+              isToday: entry.key == today,
+              shadTheme: shadTheme,
+            ),
+            for (final e in entry.value)
+              _EventCard(event: e, timeFmt: _timeFmt, shadTheme: shadTheme),
+          ],
+        ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _events.isEmpty
-              ? const Center(child: Text('Nessun evento nei prossimi 60 giorni'))
-              : RefreshIndicator(
-                  onRefresh: _load,
-                  child: ListView(
-                    padding: const EdgeInsets.only(bottom: 100),
-                    children: [
-                      for (final entry in groups.entries) ...[
-                        _DayHeader(label: entry.key),
-                        for (final e in entry.value)
-                          Card(
-                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: scheme.primary.withValues(alpha: 0.12),
-                                child: Icon(Icons.event, color: scheme.primary, size: 20),
-                              ),
-                              title: Text(e.title, style: const TextStyle(fontWeight: FontWeight.w500)),
-                              subtitle: Text(_fmt.format(e.startAt.toLocal())),
-                            ),
-                          ),
-                      ],
-                    ],
-                  ),
-                ),
+    );
+  }
+}
+
+class _EventCard extends StatelessWidget {
+  const _EventCard({required this.event, required this.timeFmt, required this.shadTheme});
+  final CalendarEvent event;
+  final DateFormat timeFmt;
+  final ShadThemeData shadTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = shadTheme.colorScheme.primary;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: ShadCard(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 3,
+              height: 38,
+              decoration: BoxDecoration(
+                color: primary,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(event.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                  const SizedBox(height: 2),
+                  Text(timeFmt.format(event.startAt.toLocal()),
+                      style: TextStyle(color: primary, fontWeight: FontWeight.w500, fontSize: 13)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -228,7 +303,7 @@ class _CalendarioTabState extends State<_CalendarioTab> with AutomaticKeepAliveC
 // ── Scadenze ──────────────────────────────────────────────────────────────
 
 class _ScadenzeTab extends StatefulWidget {
-  const _ScadenzeTab();
+  const _ScadenzeTab({super.key});
 
   @override
   State<_ScadenzeTab> createState() => _ScadenzeTabState();
@@ -239,9 +314,11 @@ class _ScadenzeTabState extends State<_ScadenzeTab> with AutomaticKeepAliveClien
   bool get wantKeepAlive => true;
 
   final _repo = DeadlineRepository();
+  final _families = FamilyRepository();
   List<Deadline> _items = [];
+  List<FamilyMemberInfo> _members = [];
   bool _loading = true;
-  final _dateFmt = DateFormat('d MMM yyyy');
+  final _dateFmt = DateFormat('d MMM yyyy', 'it');
   String _filter = 'pending';
 
   @override
@@ -255,13 +332,19 @@ class _ScadenzeTabState extends State<_ScadenzeTab> with AutomaticKeepAliveClien
     if (familyId == null) return;
     setState(() => _loading = true);
     try {
-      final items = await _repo.list(familyId);
-      if (mounted) setState(() => _items = items);
+      final results = await Future.wait([
+        _repo.list(familyId),
+        _families.listMembers(familyId),
+      ]);
+      if (mounted) {
+        setState(() {
+          _items = results[0] as List<Deadline>;
+          _members = results[1] as List<FamilyMemberInfo>;
+        });
+      }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_repo.errorMessage(e))),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -274,42 +357,70 @@ class _ScadenzeTabState extends State<_ScadenzeTab> with AutomaticKeepAliveClien
     final titleCtrl = TextEditingController();
     final amountCtrl = TextEditingController();
     var due = DateTime.now().add(const Duration(days: 30));
+    int? assignedTo;
+    final shadTheme = ShadTheme.of(context);
 
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDlg) => AlertDialog(
-          title: const Text('Nuova scadenza'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleCtrl,
-                autofocus: true,
-                decoration: const InputDecoration(labelText: 'Titolo'),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: amountCtrl,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(labelText: 'Importo (€)', prefixText: '€ '),
-              ),
-              const SizedBox(height: 8),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.alarm_outlined),
-                title: Text('Scade il ${_dateFmt.format(due)}'),
-                onTap: () async {
-                  final picked = await showDatePicker(
-                    context: ctx,
-                    initialDate: due,
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
-                  );
-                  if (picked != null) setDlg(() => due = picked);
-                },
-              ),
-            ],
+          backgroundColor: shadTheme.colorScheme.background,
+          title: Text('Nuova scadenza', style: shadTheme.textTheme.h4),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ShadInput(
+                  controller: titleCtrl,
+                  autofocus: true,
+                  placeholder: const Text('Titolo (es. Bolletta luce)'),
+                ),
+                const SizedBox(height: 10),
+                ShadInput(
+                  controller: amountCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  placeholder: const Text('Importo (€)'),
+                  leading: const Padding(
+                    padding: EdgeInsets.only(left: 4),
+                    child: Text('€', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ShadButton.outline(
+                  onPressed: () async {
+                    final picked = await showDatePicker(
+                      context: ctx,
+                      initialDate: due,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+                    );
+                    if (picked != null) setDlg(() => due = picked);
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.alarm_outlined, size: 16),
+                      const SizedBox(width: 6),
+                      Text('Scade ${due.day}/${due.month}/${due.year}'),
+                    ],
+                  ),
+                ),
+                if (_members.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<int?>(
+                    value: assignedTo,
+                    decoration: const InputDecoration(labelText: 'Assegna a'),
+                    items: [
+                      const DropdownMenuItem(value: null, child: Text('Nessuno')),
+                      for (final m in _members)
+                        DropdownMenuItem(value: m.userId, child: Text(m.displayName)),
+                    ],
+                    onChanged: (v) => setDlg(() => assignedTo = v),
+                  ),
+                ],
+              ],
+            ),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
@@ -330,29 +441,103 @@ class _ScadenzeTabState extends State<_ScadenzeTab> with AutomaticKeepAliveClien
       await _load();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_repo.errorMessage(e))),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
       }
     }
   }
 
-  List<Deadline> get _filtered {
-    return switch (_filter) {
-      'overdue' => _items.where((d) => d.status == DeadlineStatus.overdue).toList(),
-      'paid' => _items.where((d) => d.status == DeadlineStatus.paid).toList(),
-      _ => _items.where((d) => d.status != DeadlineStatus.paid && d.status != DeadlineStatus.cancelled).toList(),
-    };
-  }
-
-  Color _statusColor(DeadlineStatus s, ColorScheme scheme) => switch (s) {
-        DeadlineStatus.overdue => scheme.error,
-        DeadlineStatus.paid => Colors.green,
-        DeadlineStatus.cancelled => scheme.outline,
-        _ => scheme.primary,
+  List<Deadline> get _filtered => switch (_filter) {
+        'overdue' => _items.where((d) => d.status == DeadlineStatus.overdue).toList(),
+        'paid' => _items.where((d) => d.status == DeadlineStatus.paid).toList(),
+        _ => _items.where((d) => d.status != DeadlineStatus.paid && d.status != DeadlineStatus.cancelled).toList(),
       };
 
-  IconData _statusIcon(DeadlineStatus s) => switch (s) {
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final shadTheme = ShadTheme.of(context);
+    final filtered = _filtered;
+    final overdueCnt = _items.where((d) => d.status == DeadlineStatus.overdue).length;
+
+    if (_loading) return const Center(child: CircularProgressIndicator());
+
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          alignment: Alignment.centerLeft,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _FChip('Da pagare', _filter == 'pending', () => setState(() => _filter = 'pending'), shadTheme),
+                const SizedBox(width: 8),
+                _FChip(
+                  overdueCnt > 0 ? 'Scadute ($overdueCnt)' : 'Scadute',
+                  _filter == 'overdue',
+                  () => setState(() => _filter = 'overdue'),
+                  shadTheme,
+                  urgentColor: overdueCnt > 0 ? shadTheme.colorScheme.destructive : null,
+                ),
+                const SizedBox(width: 8),
+                _FChip('Pagate', _filter == 'paid', () => setState(() => _filter = 'paid'), shadTheme),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: filtered.isEmpty
+              ? _EmptyState(
+                  icon: Icons.alarm_outlined,
+                  message: 'Nessuna scadenza in questa categoria',
+                  action: 'Aggiungi',
+                  onAction: _add,
+                )
+              : RefreshIndicator(
+                  onRefresh: _load,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
+                    itemCount: filtered.length,
+                    itemBuilder: (_, i) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _DeadlineCard(
+                        deadline: filtered[i],
+                        dateFmt: _dateFmt,
+                        shadTheme: shadTheme,
+                        onPay: () async {
+                          await _repo.complete(filtered[i].id!);
+                          await _load();
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DeadlineCard extends StatelessWidget {
+  const _DeadlineCard({
+    required this.deadline,
+    required this.dateFmt,
+    required this.shadTheme,
+    required this.onPay,
+  });
+  final Deadline deadline;
+  final DateFormat dateFmt;
+  final ShadThemeData shadTheme;
+  final VoidCallback onPay;
+
+  Color _color(DeadlineStatus s) => switch (s) {
+        DeadlineStatus.overdue => shadTheme.colorScheme.destructive,
+        DeadlineStatus.paid => const Color(0xFF10B981),
+        DeadlineStatus.cancelled => shadTheme.colorScheme.mutedForeground,
+        _ => shadTheme.colorScheme.primary,
+      };
+
+  IconData _icon(DeadlineStatus s) => switch (s) {
         DeadlineStatus.paid => Icons.check_circle,
         DeadlineStatus.cancelled => Icons.cancel_outlined,
         DeadlineStatus.overdue => Icons.warning_amber_rounded,
@@ -361,83 +546,47 @@ class _ScadenzeTabState extends State<_ScadenzeTab> with AutomaticKeepAliveClien
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-    final scheme = Theme.of(context).colorScheme;
-    final filtered = _filtered;
+    final color = _color(deadline.status);
+    final isOverdue = deadline.status == DeadlineStatus.overdue;
 
-    final overdueCnt = _items.where((d) => d.status == DeadlineStatus.overdue).length;
-
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: _add,
-        child: const Icon(Icons.add),
-      ),
-      body: Column(
+    return ShadCard(
+      backgroundColor: isOverdue ? color.withValues(alpha: 0.04) : null,
+      border: isOverdue ? Border.all(color: color.withValues(alpha: 0.3)) : null,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: Row(
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: color.withValues(alpha: 0.12),
+            child: Icon(_icon(deadline.status), color: color, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _FilterChip(label: 'Da pagare', selected: _filter == 'pending', onTap: () => setState(() => _filter = 'pending')),
-                const SizedBox(width: 8),
-                _FilterChip(
-                  label: 'Scadute${overdueCnt > 0 ? ' ($overdueCnt)' : ''}',
-                  selected: _filter == 'overdue',
-                  onTap: () => setState(() => _filter = 'overdue'),
-                  urgentColor: overdueCnt > 0 ? scheme.error : null,
-                ),
-                const SizedBox(width: 8),
-                _FilterChip(label: 'Pagate', selected: _filter == 'paid', onTap: () => setState(() => _filter = 'paid')),
+                Text(deadline.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                const SizedBox(height: 2),
+                Text(dateFmt.format(deadline.dueDate),
+                    style: TextStyle(fontSize: 13, color: color, fontWeight: FontWeight.w500)),
               ],
             ),
           ),
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : filtered.isEmpty
-                    ? const Center(child: Text('Nessuna scadenza in questa categoria'))
-                    : RefreshIndicator(
-                        onRefresh: _load,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-                          itemCount: filtered.length,
-                          itemBuilder: (_, i) {
-                            final d = filtered[i];
-                            final color = _statusColor(d.status, scheme);
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: color.withValues(alpha: 0.12),
-                                  child: Icon(_statusIcon(d.status), color: color, size: 20),
-                                ),
-                                title: Text(d.title, style: const TextStyle(fontWeight: FontWeight.w500)),
-                                subtitle: Text(_dateFmt.format(d.dueDate)),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (d.amount != null)
-                                      Text(
-                                        '€${d.amount!.toStringAsFixed(2)}',
-                                        style: TextStyle(fontWeight: FontWeight.bold, color: color),
-                                      ),
-                                    if (d.status != DeadlineStatus.paid)
-                                      IconButton(
-                                        icon: Icon(Icons.check_circle_outline, color: scheme.primary),
-                                        tooltip: 'Segna pagata',
-                                        onPressed: () async {
-                                          await _repo.complete(d.id!);
-                                          await _load();
-                                        },
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-          ),
+          if (deadline.amount != null) ...[
+            const SizedBox(width: 8),
+            Text(
+              '€${deadline.amount!.toStringAsFixed(2)}',
+              style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 15),
+            ),
+          ],
+          if (deadline.status != DeadlineStatus.paid && deadline.status != DeadlineStatus.cancelled) ...[
+            const SizedBox(width: 4),
+            ShadButton.ghost(
+              onPressed: onPay,
+              size: ShadButtonSize.icon,
+              child: Icon(Icons.check_circle_outline, color: shadTheme.colorScheme.primary, size: 20),
+            ),
+          ],
         ],
       ),
     );
@@ -447,7 +596,7 @@ class _ScadenzeTabState extends State<_ScadenzeTab> with AutomaticKeepAliveClien
 // ── Spese ─────────────────────────────────────────────────────────────────
 
 class _SpeseTab extends StatefulWidget {
-  const _SpeseTab();
+  const _SpeseTab({super.key});
 
   @override
   State<_SpeseTab> createState() => _SpeseTabState();
@@ -460,7 +609,7 @@ class _SpeseTabState extends State<_SpeseTab> with AutomaticKeepAliveClientMixin
   final _repo = ExpenseRepository();
   List<Expense> _items = [];
   bool _loading = true;
-  final _dateFmt = DateFormat('d MMM');
+  final _dateFmt = DateFormat('d MMM', 'it');
 
   @override
   void initState() {
@@ -477,153 +626,215 @@ class _SpeseTabState extends State<_SpeseTab> with AutomaticKeepAliveClientMixin
       if (mounted) setState(() => _items = items);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_repo.errorMessage(e))),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
-  double get _totalSpeso => _items.fold(0, (sum, e) => sum + e.amount);
+  double get _total => _items.fold(0.0, (s, e) => s + e.amount);
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    final shadTheme = ShadTheme.of(context);
 
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'add_expense',
-        onPressed: () => context.push(AppRoutes.expenses),
-        child: const Icon(Icons.add),
-      ),
-      body: Column(
-        children: [
+    if (_loading) return const Center(child: CircularProgressIndicator());
+
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: CustomScrollView(
+        slivers: [
           if (_items.isNotEmpty)
-            Container(
-              margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: scheme.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: scheme.primary.withValues(alpha: 0.2)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Totale speso', style: theme.textTheme.labelMedium),
-                        Text(
-                          '€${_totalSpeso.toStringAsFixed(2)}',
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: scheme.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  OutlinedButton.icon(
-                    onPressed: () => context.push(AppRoutes.expenseBalance),
-                    icon: const Icon(Icons.account_balance_wallet_outlined),
-                    label: const Text('Bilancio'),
-                  ),
-                ],
-              ),
-            ),
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : _items.isEmpty
-                    ? const Center(child: Text('Nessuna spesa registrata'))
-                    : RefreshIndicator(
-                        onRefresh: _load,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-                          itemCount: _items.length,
-                          itemBuilder: (_, i) {
-                            final e = _items[i];
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: Colors.orange.withValues(alpha: 0.12),
-                                  child: Icon(Icons.payments_outlined, color: Colors.orange.shade600, size: 20),
-                                ),
-                                title: Text(e.title, style: const TextStyle(fontWeight: FontWeight.w500)),
-                                subtitle: Text(_dateFmt.format(e.expenseDate)),
-                                trailing: Text(
-                                  '€${e.amount.toStringAsFixed(2)}',
-                                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                                ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: ShadCard(
+                  backgroundColor: shadTheme.colorScheme.primary.withValues(alpha: 0.06),
+                  border: Border.all(color: shadTheme.colorScheme.primary.withValues(alpha: 0.2)),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Totale speso', style: shadTheme.textTheme.muted),
+                            const SizedBox(height: 2),
+                            Text(
+                              '€${_total.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: shadTheme.colorScheme.primary,
                               ),
-                            );
-                          },
+                            ),
+                          ],
                         ),
                       ),
-          ),
+                      ShadButton.outline(
+                        onPressed: () => context.push(AppRoutes.expenseBalance),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.account_balance_wallet_outlined, size: 16),
+                            SizedBox(width: 6),
+                            Text('Bilancio'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          _items.isEmpty
+              ? SliverFillRemaining(
+                  child: _EmptyState(
+                    icon: Icons.payments_outlined,
+                    message: 'Nessuna spesa registrata',
+                    action: 'Aggiungi spesa',
+                    onAction: () => context.push(AppRoutes.expenses),
+                  ),
+                )
+              : SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (_, i) {
+                        final e = _items[i];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: ShadCard(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 18,
+                                  backgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                                  child: const Icon(Icons.payments_outlined, color: Color(0xFFF59E0B), size: 18),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(e.title, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                                      Text(_dateFmt.format(e.expenseDate),
+                                          style: TextStyle(fontSize: 12, color: shadTheme.colorScheme.mutedForeground)),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  '€${e.amount.toStringAsFixed(2)}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                      childCount: _items.length,
+                    ),
+                  ),
+                ),
         ],
       ),
     );
   }
 }
 
-// ── Shared components ─────────────────────────────────────────────────────
+// ── Shared ────────────────────────────────────────────────────────────────
 
 class _DayHeader extends StatelessWidget {
-  const _DayHeader({required this.label});
+  const _DayHeader({required this.label, required this.shadTheme, this.isToday = false});
   final String label;
+  final bool isToday;
+  final ShadThemeData shadTheme;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 16, 4),
+      padding: const EdgeInsets.fromLTRB(20, 20, 16, 6),
       child: Text(
         label.toUpperCase(),
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.8,
-              color: scheme.primary,
-            ),
+        style: shadTheme.textTheme.muted.copyWith(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.8,
+          color: isToday ? shadTheme.colorScheme.primary : null,
+        ),
       ),
     );
   }
 }
 
-class _FilterChip extends StatelessWidget {
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-    this.urgentColor,
-  });
-
+class _FChip extends StatelessWidget {
+  const _FChip(this.label, this.selected, this.onTap, this.shadTheme, {this.urgentColor});
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final ShadThemeData shadTheme;
   final Color? urgentColor;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final color = urgentColor ?? scheme.primary;
+    final color = urgentColor ?? shadTheme.colorScheme.primary;
     return FilterChip(
-      label: Text(label),
+      label: Text(label, style: TextStyle(fontSize: 13, fontWeight: selected ? FontWeight.w600 : FontWeight.normal)),
       selected: selected,
       onSelected: (_) => onTap(),
-      selectedColor: color.withValues(alpha: 0.15),
+      selectedColor: color.withValues(alpha: 0.12),
       checkmarkColor: color,
-      labelStyle: TextStyle(
-        color: selected ? color : null,
-        fontWeight: selected ? FontWeight.w600 : null,
+      labelStyle: TextStyle(color: selected ? color : null),
+      side: BorderSide(color: selected ? color.withValues(alpha: 0.5) : shadTheme.colorScheme.border),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({
+    required this.icon,
+    required this.message,
+    this.action,
+    this.onAction,
+  });
+  final IconData icon;
+  final String message;
+  final String? action;
+  final VoidCallback? onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 48, color: shadTheme.colorScheme.mutedForeground),
+            const SizedBox(height: 12),
+            Text(message,
+                style: shadTheme.textTheme.muted,
+                textAlign: TextAlign.center),
+            if (action != null && onAction != null) ...[
+              const SizedBox(height: 16),
+              ShadButton.outline(
+                onPressed: onAction,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.add, size: 16),
+                    const SizedBox(width: 6),
+                    Text(action!),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
-      side: BorderSide(color: selected ? color : scheme.outline.withValues(alpha: 0.4)),
     );
   }
 }

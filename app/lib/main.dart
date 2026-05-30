@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/api/famylia_services.dart';
@@ -11,8 +12,6 @@ import 'core/router/app_router.dart';
 import 'core/session/app_state.dart';
 import 'core/session/family_context.dart';
 import 'core/theme/app_settings.dart';
-import 'core/theme/app_theme.dart';
-import 'core/theme/famylia_accent_presets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -90,15 +89,18 @@ class _FamyliaAppState extends State<FamyliaApp> {
         widget.appSettings,
       ]),
       builder: (context, _) {
-        final accent = FamyliaAccentPresets.colorFromHex(
-          widget.familyContext.accentColorHex,
-        );
-        return MaterialApp.router(
+        return ShadApp.router(
           title: 'Famylia',
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.light(accent: accent),
-          darkTheme: AppTheme.dark(accent: accent),
           themeMode: widget.appSettings.themeMode,
+          theme: ShadThemeData(
+            brightness: Brightness.light,
+            colorScheme: const ShadZincColorScheme.light(),
+          ),
+          darkTheme: ShadThemeData(
+            brightness: Brightness.dark,
+            colorScheme: const ShadZincColorScheme.dark(),
+          ),
           routerConfig: widget.router,
         );
       },
