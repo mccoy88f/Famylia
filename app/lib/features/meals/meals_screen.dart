@@ -4,11 +4,15 @@ import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/api/health_repository.dart';
 import '../../core/api/meal_repository.dart';
 import '../../core/extensions/context_extensions.dart';
 
 class MealsScreen extends StatefulWidget {
-  const MealsScreen({super.key});
+  const MealsScreen({this.linkedDietId, super.key});
+
+  /// Dieta da collegare al piano settimanale (query `?dietId=`).
+  final int? linkedDietId;
 
   @override
   State<MealsScreen> createState() => _MealsScreenState();
@@ -16,11 +20,14 @@ class MealsScreen extends StatefulWidget {
 
 class _MealsScreenState extends State<MealsScreen> with SingleTickerProviderStateMixin {
   final _repo = MealRepository();
+  final _health = HealthRepository();
   late final TabController _tabs;
   List<Recipe> _recipes = [];
   MealPlan? _plan;
   List<String> _shoppingItems = [];
+  HealthEntry? _linkedDiet;
   bool _loading = true;
+  bool _linkingDiet = false;
 
   DateTime get _weekStart {
     final now = DateTime.now();
@@ -49,11 +56,21 @@ class _MealsScreenState extends State<MealsScreen> with SingleTickerProviderStat
       final recipes = await _repo.listRecipes(familyId);
       final plan = await _repo.getPlan(familyId, _weekStart);
       final shop = await _repo.shoppingFromPlan(familyId, _weekStart);
+      HealthEntry? diet;
+      final dietId = widget.linkedDietId ?? plan?.linkedHealthEntryId;
+      if (dietId != null) {
+        final diets = await _health.list(
+          familyId,
+          type: HealthEntryType.diet,
+        );
+        diet = diets.where((d) => d.id == dietId).firstOrNull;
+      }
       if (mounted) {
         setState(() {
           _recipes = recipes;
           _plan = plan;
           _shoppingItems = shop;
+          _linkedDiet = diet;
         });
       }
     } catch (e) {
@@ -64,6 +81,30 @@ class _MealsScreenState extends State<MealsScreen> with SingleTickerProviderStat
       }
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _applyLinkedDiet() async {
+    final familyId = context.activeFamilyId;
+    final dietId = widget.linkedDietId ?? _linkedDiet?.id;
+    if (familyId == null || dietId == null) return;
+    setState(() => _linkingDiet = true);
+    try {
+      await _repo.applyDietToPlan(familyId, _weekStart, dietId);
+      await _load();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Dieta collegata al piano settimanale')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_repo.errorMessage(e))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _linkingDiet = false);
     }
   }
 
@@ -135,9 +176,12 @@ class _MealsScreenState extends State<MealsScreen> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     final weekLabel = DateFormat('d MMM yyyy').format(_weekStart);
+    final diet = _linkedDiet;
+    final showDietBanner = diet != null;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Meal planner'),
+        title: const Text('Pasti'),
         bottom: TabBar(
           controller: _tabs,
           tabs: const [
@@ -152,42 +196,96 @@ class _MealsScreenState extends State<MealsScreen> with SingleTickerProviderStat
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabs,
+          : Column(
               children: [
-                ListView.builder(
-                  itemCount: _recipes.length,
-                  itemBuilder: (_, i) => ListTile(
-                    leading: const Icon(Icons.restaurant_menu),
-                    title: Text(_recipes[i].title),
-                    subtitle: Text('${ _recipes[i].servings} porzioni'),
-                  ),
-                ),
-                ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    Text('Settimana dal $weekLabel'),
-                    const SizedBox(height: 12),
-                    if (_plan == null)
-                      const Text('Nessun piano — usa il pulsante salva per un esempio')
-                    else
-                      Text('Piano: ${_plan!.mealsJson}'),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Ingredienti per lista spesa',
-                      style: Theme.of(context).textTheme.titleMedium,
+                if (showDietBanner)
+                  Material(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Dieta: ${diet.title}',
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          if (diet.dietGoal != null)
+                            Text(
+                              diet.dietGoal!,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          const SizedBox(height: 8),
+                          FilledButton.tonal(
+                            onPressed: _linkingDiet ? null : _applyLinkedDiet,
+                            child: _linkingDiet
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const Text('Collega al piano settimanale'),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    if (_shoppingItems.isEmpty)
-                      const Text('Aggiungi pasti al piano')
-                    else
-                      for (final item in _shoppingItems)
-                        ListTile(
-                          dense: true,
-                          leading: const Icon(Icons.shopping_basket_outlined, size: 20),
-                          title: Text(item),
+                  ),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabs,
+                    children: [
+                      ListView.builder(
+                        itemCount: _recipes.length,
+                        itemBuilder: (_, i) => ListTile(
+                          leading: const Icon(Icons.restaurant_menu),
+                          title: Text(_recipes[i].title),
+                          subtitle: Text('${_recipes[i].servings} porzioni'),
                         ),
-                  ],
+                      ),
+                      ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          Text('Settimana dal $weekLabel'),
+                          const SizedBox(height: 12),
+                          if (_plan == null)
+                            const Text(
+                              'Nessun piano — collega una dieta o salva un esempio',
+                            )
+                          else ...[
+                            if (_plan!.linkedHealthEntryId != null)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Text(
+                                  'Collegata a dieta #${_plan!.linkedHealthEntryId}',
+                                  style: Theme.of(context).textTheme.labelMedium,
+                                ),
+                              ),
+                            Text('Piano: ${_plan!.mealsJson}'),
+                          ],
+                          const SizedBox(height: 24),
+                          Text(
+                            'Ingredienti per lista spesa',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          if (_shoppingItems.isEmpty)
+                            const Text('Aggiungi pasti al piano')
+                          else
+                            for (final item in _shoppingItems)
+                              ListTile(
+                                dense: true,
+                                leading: const Icon(
+                                  Icons.shopping_basket_outlined,
+                                  size: 20,
+                                ),
+                                title: Text(item),
+                              ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

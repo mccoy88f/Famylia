@@ -1,0 +1,6 @@
+enum: SportIntensity
+serialized: byName
+values:
+  - low
+  - medium
+  - high

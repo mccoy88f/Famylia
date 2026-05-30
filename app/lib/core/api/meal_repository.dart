@@ -30,6 +30,17 @@ class MealRepository {
   ) =>
       _client.meal.shoppingItemsFromPlan(familyId, weekStart);
 
+  Future<MealPlan> applyDietToPlan(
+    int familyId,
+    DateTime weekStart,
+    int healthEntryId,
+  ) =>
+      _client.meal.applyDietToMealPlan(
+        familyId,
+        weekStart,
+        healthEntryId,
+      );
+
   String errorMessage(Object e) {
     if (e is FamyliaException) return e.message;
     return 'Errore: $e';

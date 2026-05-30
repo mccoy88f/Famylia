@@ -1,0 +1,7 @@
+enum: HealthEntryStatus
+serialized: byName
+values:
+  - active
+  - planned
+  - completed
+  - cancelled

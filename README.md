@@ -16,6 +16,7 @@ Ideale per famiglie, conviventi e coppie che vogliono ridurre il carico di chi �
 | **Todo** | Compiti di casa con priorità, scadenza e assegnazione a un membro |
 | **Lista della spesa** | Liste condivise, spunta articoli, categorie colorate; funziona anche offline e si sincronizza quando torni online |
 | **Pasti** | Ricettario e piano settimanale; genera gli ingredienti per la lista spesa |
+| **Salute** | Visite mediche, diete familiari e attività sportive (pianificazione e stato) |
 
 ### Organizzazione di casa
 
@@ -98,20 +99,21 @@ Famylia/
 
 ### Avvio rapido sviluppo
 
+**Stack completo su Docker** (Postgres, Redis, MinIO, Serverpod):
+
 ```bash
 chmod +x scripts/*.sh
-./scripts/start-postgres.sh
-./scripts/setup-phase0.sh
-./scripts/run-tests.sh
+./scripts/docker-up.sh
 ```
 
-Server e app in due terminali:
+- API: `http://localhost:8080`
+- Log: `cd docker && docker compose logs -f server`
+
+**Solo DB in Docker + server locale** (porte 8090/8091):
 
 ```bash
-# Terminale 1 — backend
+./scripts/start-postgres.sh   # oppure: cd server && docker compose up -d
 cd server && dart run bin/main.dart --apply-migrations
-
-# Terminale 2 — app web
 cd app && flutter run -d web-server --web-hostname=127.0.0.1 --web-port=8081
 ```
 

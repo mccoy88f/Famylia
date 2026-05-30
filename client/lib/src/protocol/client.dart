@@ -40,28 +40,32 @@ import 'package:famylia_client/src/protocol/user_points.dart' as _i27;
 import 'package:famylia_client/src/protocol/leaderboard.dart' as _i28;
 import 'package:famylia_client/src/protocol/gdpr_export.dart' as _i29;
 import 'package:famylia_client/src/protocol/privacy_dashboard.dart' as _i30;
-import 'package:famylia_client/src/protocol/location_sharing.dart' as _i31;
+import 'package:famylia_client/src/protocol/health_entry.dart' as _i31;
+import 'package:famylia_client/src/protocol/health_entry_type.dart' as _i32;
+import 'package:famylia_client/src/protocol/health_entry_status.dart' as _i33;
+import 'package:famylia_client/src/protocol/sport_intensity.dart' as _i34;
+import 'package:famylia_client/src/protocol/location_sharing.dart' as _i35;
 import 'package:famylia_client/src/protocol/location_accuracy_level.dart'
-    as _i32;
-import 'package:famylia_client/src/protocol/location_history.dart' as _i33;
-import 'package:famylia_client/src/protocol/member_location.dart' as _i34;
-import 'package:famylia_client/src/protocol/safe_zone.dart' as _i35;
-import 'package:famylia_client/src/protocol/recipe.dart' as _i36;
-import 'package:famylia_client/src/protocol/meal_plan.dart' as _i37;
-import 'package:famylia_client/src/protocol/family_report.dart' as _i38;
+    as _i36;
+import 'package:famylia_client/src/protocol/location_history.dart' as _i37;
+import 'package:famylia_client/src/protocol/member_location.dart' as _i38;
+import 'package:famylia_client/src/protocol/safe_zone.dart' as _i39;
+import 'package:famylia_client/src/protocol/recipe.dart' as _i40;
+import 'package:famylia_client/src/protocol/meal_plan.dart' as _i41;
+import 'package:famylia_client/src/protocol/family_report.dart' as _i42;
 import 'package:famylia_client/src/protocol/shopping_list_with_items.dart'
-    as _i39;
-import 'package:famylia_client/src/protocol/shopping_list.dart' as _i40;
-import 'package:famylia_client/src/protocol/shopping_list_status.dart' as _i41;
-import 'package:famylia_client/src/protocol/shopping_item.dart' as _i42;
-import 'package:famylia_client/src/protocol/shopping_unit.dart' as _i43;
-import 'package:famylia_client/src/protocol/shopping_category.dart' as _i44;
-import 'package:famylia_client/src/protocol/todo_item.dart' as _i45;
-import 'package:famylia_client/src/protocol/todo_category.dart' as _i46;
-import 'package:famylia_client/src/protocol/todo_priority.dart' as _i47;
-import 'package:famylia_client/src/protocol/todo_status.dart' as _i48;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i49;
-import 'protocol.dart' as _i50;
+    as _i43;
+import 'package:famylia_client/src/protocol/shopping_list.dart' as _i44;
+import 'package:famylia_client/src/protocol/shopping_list_status.dart' as _i45;
+import 'package:famylia_client/src/protocol/shopping_item.dart' as _i46;
+import 'package:famylia_client/src/protocol/shopping_unit.dart' as _i47;
+import 'package:famylia_client/src/protocol/shopping_category.dart' as _i48;
+import 'package:famylia_client/src/protocol/todo_item.dart' as _i49;
+import 'package:famylia_client/src/protocol/todo_category.dart' as _i50;
+import 'package:famylia_client/src/protocol/todo_priority.dart' as _i51;
+import 'package:famylia_client/src/protocol/todo_status.dart' as _i52;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i53;
+import 'protocol.dart' as _i54;
 
 /// {@category Endpoint}
 class EndpointBoard extends _i1.EndpointRef {
@@ -609,6 +613,19 @@ class EndpointFamily extends _i1.EndpointRef {
         {'familyId': familyId},
       );
 
+  _i2.Future<_i23.Family> updateAccentColor(
+    int familyId,
+    String accentColor,
+  ) =>
+      caller.callServerEndpoint<_i23.Family>(
+        'family',
+        'updateAccentColor',
+        {
+          'familyId': familyId,
+          'accentColor': accentColor,
+        },
+      );
+
   _i2.Future<bool> leaveFamily(int familyId) => caller.callServerEndpoint<bool>(
         'family',
         'leaveFamily',
@@ -666,6 +683,106 @@ class EndpointGdpr extends _i1.EndpointRef {
       );
 }
 
+/// Modulo salute: visite mediche, diete e attività sportive.
+/// {@category Endpoint}
+class EndpointHealth extends _i1.EndpointRef {
+  EndpointHealth(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'health';
+
+  _i2.Future<_i31.HealthEntry> createEntry(
+    int familyId,
+    _i32.HealthEntryType type,
+    String title, {
+    String? description,
+    _i33.HealthEntryStatus? status,
+    int? assignedTo,
+    DateTime? scheduledAt,
+    DateTime? endAt,
+    String? providerName,
+    String? location,
+    String? dietGoal,
+    int? caloriesTarget,
+    String? sportType,
+    int? durationMinutes,
+    _i34.SportIntensity? intensity,
+    bool? isPrivate,
+  }) =>
+      caller.callServerEndpoint<_i31.HealthEntry>(
+        'health',
+        'createEntry',
+        {
+          'familyId': familyId,
+          'type': type,
+          'title': title,
+          'description': description,
+          'status': status,
+          'assignedTo': assignedTo,
+          'scheduledAt': scheduledAt,
+          'endAt': endAt,
+          'providerName': providerName,
+          'location': location,
+          'dietGoal': dietGoal,
+          'caloriesTarget': caloriesTarget,
+          'sportType': sportType,
+          'durationMinutes': durationMinutes,
+          'intensity': intensity,
+          'isPrivate': isPrivate,
+        },
+      );
+
+  _i2.Future<List<_i31.HealthEntry>> listEntries(
+    int familyId, {
+    _i32.HealthEntryType? type,
+    _i33.HealthEntryStatus? status,
+  }) =>
+      caller.callServerEndpoint<List<_i31.HealthEntry>>(
+        'health',
+        'listEntries',
+        {
+          'familyId': familyId,
+          'type': type,
+          'status': status,
+        },
+      );
+
+  _i2.Future<List<_i31.HealthEntry>> upcoming(
+    int familyId, {
+    required int days,
+    _i32.HealthEntryType? type,
+  }) =>
+      caller.callServerEndpoint<List<_i31.HealthEntry>>(
+        'health',
+        'upcoming',
+        {
+          'familyId': familyId,
+          'days': days,
+          'type': type,
+        },
+      );
+
+  _i2.Future<_i31.HealthEntry> updateEntry(_i31.HealthEntry entry) =>
+      caller.callServerEndpoint<_i31.HealthEntry>(
+        'health',
+        'updateEntry',
+        {'entry': entry},
+      );
+
+  _i2.Future<_i31.HealthEntry> completeEntry(int entryId) =>
+      caller.callServerEndpoint<_i31.HealthEntry>(
+        'health',
+        'completeEntry',
+        {'entryId': entryId},
+      );
+
+  _i2.Future<bool> deleteEntry(int entryId) => caller.callServerEndpoint<bool>(
+        'health',
+        'deleteEntry',
+        {'entryId': entryId},
+      );
+}
+
 /// {@category Endpoint}
 class EndpointLocation extends _i1.EndpointRef {
   EndpointLocation(_i1.EndpointCaller caller) : super(caller);
@@ -673,20 +790,20 @@ class EndpointLocation extends _i1.EndpointRef {
   @override
   String get name => 'location';
 
-  _i2.Future<_i31.LocationSharing> getStatus(int familyId) =>
-      caller.callServerEndpoint<_i31.LocationSharing>(
+  _i2.Future<_i35.LocationSharing> getStatus(int familyId) =>
+      caller.callServerEndpoint<_i35.LocationSharing>(
         'location',
         'getStatus',
         {'familyId': familyId},
       );
 
-  _i2.Future<_i31.LocationSharing> updateStatus(
+  _i2.Future<_i35.LocationSharing> updateStatus(
     int familyId,
     bool isEnabled, {
-    _i32.LocationAccuracyLevel? accuracyLevel,
+    _i36.LocationAccuracyLevel? accuracyLevel,
     int? autoDisableAfterHours,
   }) =>
-      caller.callServerEndpoint<_i31.LocationSharing>(
+      caller.callServerEndpoint<_i35.LocationSharing>(
         'location',
         'updateStatus',
         {
@@ -697,7 +814,7 @@ class EndpointLocation extends _i1.EndpointRef {
         },
       );
 
-  _i2.Future<_i33.LocationHistory> checkIn(
+  _i2.Future<_i37.LocationHistory> checkIn(
     int familyId,
     double latitude,
     double longitude, {
@@ -705,7 +822,7 @@ class EndpointLocation extends _i1.EndpointRef {
     String? address,
     int? batteryLevel,
   }) =>
-      caller.callServerEndpoint<_i33.LocationHistory>(
+      caller.callServerEndpoint<_i37.LocationHistory>(
         'location',
         'checkIn',
         {
@@ -718,28 +835,28 @@ class EndpointLocation extends _i1.EndpointRef {
         },
       );
 
-  _i2.Future<List<_i34.MemberLocation>> getFamilyLocations(int familyId) =>
-      caller.callServerEndpoint<List<_i34.MemberLocation>>(
+  _i2.Future<List<_i38.MemberLocation>> getFamilyLocations(int familyId) =>
+      caller.callServerEndpoint<List<_i38.MemberLocation>>(
         'location',
         'getFamilyLocations',
         {'familyId': familyId},
       );
 
-  _i2.Future<List<_i35.SafeZone>> listSafeZones(int familyId) =>
-      caller.callServerEndpoint<List<_i35.SafeZone>>(
+  _i2.Future<List<_i39.SafeZone>> listSafeZones(int familyId) =>
+      caller.callServerEndpoint<List<_i39.SafeZone>>(
         'location',
         'listSafeZones',
         {'familyId': familyId},
       );
 
-  _i2.Future<_i35.SafeZone> createSafeZone(
+  _i2.Future<_i39.SafeZone> createSafeZone(
     int familyId,
     String name,
     double latitude,
     double longitude, {
     int? radiusMeters,
   }) =>
-      caller.callServerEndpoint<_i35.SafeZone>(
+      caller.callServerEndpoint<_i39.SafeZone>(
         'location',
         'createSafeZone',
         {
@@ -759,14 +876,14 @@ class EndpointMeal extends _i1.EndpointRef {
   @override
   String get name => 'meal';
 
-  _i2.Future<_i36.Recipe> createRecipe(
+  _i2.Future<_i40.Recipe> createRecipe(
     int familyId,
     String title, {
     String? description,
     String? ingredientsJson,
     int? servings,
   }) =>
-      caller.callServerEndpoint<_i36.Recipe>(
+      caller.callServerEndpoint<_i40.Recipe>(
         'meal',
         'createRecipe',
         {
@@ -778,19 +895,19 @@ class EndpointMeal extends _i1.EndpointRef {
         },
       );
 
-  _i2.Future<List<_i36.Recipe>> listRecipes(int familyId) =>
-      caller.callServerEndpoint<List<_i36.Recipe>>(
+  _i2.Future<List<_i40.Recipe>> listRecipes(int familyId) =>
+      caller.callServerEndpoint<List<_i40.Recipe>>(
         'meal',
         'listRecipes',
         {'familyId': familyId},
       );
 
-  _i2.Future<_i37.MealPlan> saveMealPlan(
+  _i2.Future<_i41.MealPlan> saveMealPlan(
     int familyId,
     DateTime weekStart,
     String mealsJson,
   ) =>
-      caller.callServerEndpoint<_i37.MealPlan>(
+      caller.callServerEndpoint<_i41.MealPlan>(
         'meal',
         'saveMealPlan',
         {
@@ -800,11 +917,11 @@ class EndpointMeal extends _i1.EndpointRef {
         },
       );
 
-  _i2.Future<_i37.MealPlan?> getMealPlan(
+  _i2.Future<_i41.MealPlan?> getMealPlan(
     int familyId,
     DateTime weekStart,
   ) =>
-      caller.callServerEndpoint<_i37.MealPlan?>(
+      caller.callServerEndpoint<_i41.MealPlan?>(
         'meal',
         'getMealPlan',
         {
@@ -826,6 +943,22 @@ class EndpointMeal extends _i1.EndpointRef {
           'weekStart': weekStart,
         },
       );
+
+  /// Collega una dieta attiva al piano pasti della settimana.
+  _i2.Future<_i41.MealPlan> applyDietToMealPlan(
+    int familyId,
+    DateTime weekStart,
+    int healthEntryId,
+  ) =>
+      caller.callServerEndpoint<_i41.MealPlan>(
+        'meal',
+        'applyDietToMealPlan',
+        {
+          'familyId': familyId,
+          'weekStart': weekStart,
+          'healthEntryId': healthEntryId,
+        },
+      );
 }
 
 /// {@category Endpoint}
@@ -835,8 +968,8 @@ class EndpointReport extends _i1.EndpointRef {
   @override
   String get name => 'report';
 
-  _i2.Future<_i38.FamilyReport> getReport(int familyId) =>
-      caller.callServerEndpoint<_i38.FamilyReport>(
+  _i2.Future<_i42.FamilyReport> getReport(int familyId) =>
+      caller.callServerEndpoint<_i42.FamilyReport>(
         'report',
         'getReport',
         {'familyId': familyId},
@@ -851,23 +984,23 @@ class EndpointShopping extends _i1.EndpointRef {
   String get name => 'shopping';
 
   /// Stream real-time: primo evento = stato attuale, poi ad ogni modifica.
-  _i2.Stream<_i39.ShoppingListWithItems> watchList(int listId) =>
-      caller.callStreamingServerEndpoint<_i2.Stream<_i39.ShoppingListWithItems>,
-          _i39.ShoppingListWithItems>(
+  _i2.Stream<_i43.ShoppingListWithItems> watchList(int listId) =>
+      caller.callStreamingServerEndpoint<_i2.Stream<_i43.ShoppingListWithItems>,
+          _i43.ShoppingListWithItems>(
         'shopping',
         'watchList',
         {'listId': listId},
         {},
       );
 
-  _i2.Future<_i40.ShoppingList> createList(
+  _i2.Future<_i44.ShoppingList> createList(
     int familyId,
     String name, {
     String? store,
     int? assignedTo,
     DateTime? dueDate,
   }) =>
-      caller.callServerEndpoint<_i40.ShoppingList>(
+      caller.callServerEndpoint<_i44.ShoppingList>(
         'shopping',
         'createList',
         {
@@ -879,11 +1012,11 @@ class EndpointShopping extends _i1.EndpointRef {
         },
       );
 
-  _i2.Future<List<_i40.ShoppingList>> listLists(
+  _i2.Future<List<_i44.ShoppingList>> listLists(
     int familyId, {
-    _i41.ShoppingListStatus? status,
+    _i45.ShoppingListStatus? status,
   }) =>
-      caller.callServerEndpoint<List<_i40.ShoppingList>>(
+      caller.callServerEndpoint<List<_i44.ShoppingList>>(
         'shopping',
         'listLists',
         {
@@ -892,23 +1025,23 @@ class EndpointShopping extends _i1.EndpointRef {
         },
       );
 
-  _i2.Future<_i39.ShoppingListWithItems> getList(int listId) =>
-      caller.callServerEndpoint<_i39.ShoppingListWithItems>(
+  _i2.Future<_i43.ShoppingListWithItems> getList(int listId) =>
+      caller.callServerEndpoint<_i43.ShoppingListWithItems>(
         'shopping',
         'getList',
         {'listId': listId},
       );
 
-  _i2.Future<_i42.ShoppingItem> addItem(
+  _i2.Future<_i46.ShoppingItem> addItem(
     int listId,
     String name, {
     double? quantity,
-    _i43.ShoppingUnit? unit,
-    _i44.ShoppingCategory? category,
+    _i47.ShoppingUnit? unit,
+    _i48.ShoppingCategory? category,
     String? notes,
     bool? isUrgent,
   }) =>
-      caller.callServerEndpoint<_i42.ShoppingItem>(
+      caller.callServerEndpoint<_i46.ShoppingItem>(
         'shopping',
         'addItem',
         {
@@ -922,18 +1055,18 @@ class EndpointShopping extends _i1.EndpointRef {
         },
       );
 
-  _i2.Future<_i42.ShoppingItem> updateItem(_i42.ShoppingItem item) =>
-      caller.callServerEndpoint<_i42.ShoppingItem>(
+  _i2.Future<_i46.ShoppingItem> updateItem(_i46.ShoppingItem item) =>
+      caller.callServerEndpoint<_i46.ShoppingItem>(
         'shopping',
         'updateItem',
         {'item': item},
       );
 
-  _i2.Future<_i42.ShoppingItem> checkItem(
+  _i2.Future<_i46.ShoppingItem> checkItem(
     int itemId,
     bool isChecked,
   ) =>
-      caller.callServerEndpoint<_i42.ShoppingItem>(
+      caller.callServerEndpoint<_i46.ShoppingItem>(
         'shopping',
         'checkItem',
         {
@@ -948,8 +1081,8 @@ class EndpointShopping extends _i1.EndpointRef {
         {'itemId': itemId},
       );
 
-  _i2.Future<_i40.ShoppingList> completeList(int listId) =>
-      caller.callServerEndpoint<_i40.ShoppingList>(
+  _i2.Future<_i44.ShoppingList> completeList(int listId) =>
+      caller.callServerEndpoint<_i44.ShoppingList>(
         'shopping',
         'completeList',
         {'listId': listId},
@@ -963,16 +1096,16 @@ class EndpointTodo extends _i1.EndpointRef {
   @override
   String get name => 'todo';
 
-  _i2.Future<_i45.TodoItem> createTodo(
+  _i2.Future<_i49.TodoItem> createTodo(
     int familyId,
     String title, {
     String? description,
-    _i46.TodoCategory? category,
-    _i47.TodoPriority? priority,
+    _i50.TodoCategory? category,
+    _i51.TodoPriority? priority,
     int? assignedTo,
     DateTime? dueDate,
   }) =>
-      caller.callServerEndpoint<_i45.TodoItem>(
+      caller.callServerEndpoint<_i49.TodoItem>(
         'todo',
         'createTodo',
         {
@@ -986,11 +1119,11 @@ class EndpointTodo extends _i1.EndpointRef {
         },
       );
 
-  _i2.Future<List<_i45.TodoItem>> listTodos(
+  _i2.Future<List<_i49.TodoItem>> listTodos(
     int familyId, {
-    _i48.TodoStatus? status,
+    _i52.TodoStatus? status,
   }) =>
-      caller.callServerEndpoint<List<_i45.TodoItem>>(
+      caller.callServerEndpoint<List<_i49.TodoItem>>(
         'todo',
         'listTodos',
         {
@@ -1000,18 +1133,18 @@ class EndpointTodo extends _i1.EndpointRef {
       );
 
   /// Task di oggi per l'utente corrente (assegnati a me o senza assegnatario).
-  _i2.Future<List<_i45.TodoItem>> myDay(int familyId) =>
-      caller.callServerEndpoint<List<_i45.TodoItem>>(
+  _i2.Future<List<_i49.TodoItem>> myDay(int familyId) =>
+      caller.callServerEndpoint<List<_i49.TodoItem>>(
         'todo',
         'myDay',
         {'familyId': familyId},
       );
 
-  _i2.Future<_i45.TodoItem> assignTodo(
+  _i2.Future<_i49.TodoItem> assignTodo(
     int todoId,
     int? assignedTo,
   ) =>
-      caller.callServerEndpoint<_i45.TodoItem>(
+      caller.callServerEndpoint<_i49.TodoItem>(
         'todo',
         'assignTodo',
         {
@@ -1020,15 +1153,15 @@ class EndpointTodo extends _i1.EndpointRef {
         },
       );
 
-  _i2.Future<_i45.TodoItem> updateTodo(_i45.TodoItem item) =>
-      caller.callServerEndpoint<_i45.TodoItem>(
+  _i2.Future<_i49.TodoItem> updateTodo(_i49.TodoItem item) =>
+      caller.callServerEndpoint<_i49.TodoItem>(
         'todo',
         'updateTodo',
         {'item': item},
       );
 
-  _i2.Future<_i45.TodoItem> completeTodo(int todoId) =>
-      caller.callServerEndpoint<_i45.TodoItem>(
+  _i2.Future<_i49.TodoItem> completeTodo(int todoId) =>
+      caller.callServerEndpoint<_i49.TodoItem>(
         'todo',
         'completeTodo',
         {'todoId': todoId},
@@ -1043,10 +1176,10 @@ class EndpointTodo extends _i1.EndpointRef {
 
 class Modules {
   Modules(Client client) {
-    auth = _i49.Caller(client);
+    auth = _i53.Caller(client);
   }
 
-  late final _i49.Caller auth;
+  late final _i53.Caller auth;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -1065,7 +1198,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
           host,
-          _i50.Protocol(),
+          _i54.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,
@@ -1085,6 +1218,7 @@ class Client extends _i1.ServerpodClientShared {
     family = EndpointFamily(this);
     gamification = EndpointGamification(this);
     gdpr = EndpointGdpr(this);
+    health = EndpointHealth(this);
     location = EndpointLocation(this);
     meal = EndpointMeal(this);
     report = EndpointReport(this);
@@ -1113,6 +1247,8 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointGdpr gdpr;
 
+  late final EndpointHealth health;
+
   late final EndpointLocation location;
 
   late final EndpointMeal meal;
@@ -1137,6 +1273,7 @@ class Client extends _i1.ServerpodClientShared {
         'family': family,
         'gamification': gamification,
         'gdpr': gdpr,
+        'health': health,
         'location': location,
         'meal': meal,
         'report': report,

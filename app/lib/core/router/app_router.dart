@@ -18,6 +18,8 @@ import '../../features/expenses/expenses_screen.dart';
 import '../../features/gamification/leaderboard_screen.dart';
 import '../../features/emergency/emergency_screen.dart';
 import '../../features/location/location_screen.dart';
+import '../../features/health/health_screen.dart';
+import '../../features/settings/family_appearance_screen.dart';
 import '../../features/meals/meals_screen.dart';
 import '../../features/privacy/privacy_screen.dart';
 import '../../features/reports/reports_screen.dart';
@@ -41,6 +43,9 @@ abstract final class AppRoutes {
   static const board = '/board';
   static const documents = '/documents';
   static const meals = '/meals';
+  static const health = '/health';
+  static const appearance = '/settings/appearance';
+  static String mealsWithDiet(int dietId) => '/meals?dietId=$dietId';
   static const privacy = '/privacy';
   static const location = '/location';
   static const emergency = '/emergency';
@@ -147,7 +152,18 @@ GoRouter createAppRouter({
       ),
       GoRoute(
         path: AppRoutes.meals,
-        builder: (_, __) => const MealsScreen(),
+        builder: (context, state) {
+          final dietId = int.tryParse(state.uri.queryParameters['dietId'] ?? '');
+          return MealsScreen(linkedDietId: dietId);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.appearance,
+        builder: (_, __) => const FamilyAppearanceScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.health,
+        builder: (_, __) => const HealthScreen(),
       ),
       GoRoute(
         path: AppRoutes.privacy,

@@ -105,6 +105,7 @@ class MealEndpoint extends Endpoint {
     final decoded = jsonDecode(plan.mealsJson);
     if (decoded is List) {
       for (final entry in decoded) {
+        if (entry is Map && entry.containsKey('_meta')) continue;
         if (entry is Map && entry['ingredients'] is List) {
           for (final ing in entry['ingredients'] as List) {
             final name = ing is String ? ing : ing.toString();
@@ -114,5 +115,69 @@ class MealEndpoint extends Endpoint {
       }
     }
     return items.toList()..sort();
+  }
+
+  /// Collega una dieta attiva al piano pasti della settimana.
+  Future<MealPlan> applyDietToMealPlan(
+    Session session,
+    int familyId,
+    DateTime weekStart,
+    int healthEntryId,
+  ) async {
+    await requireFamilyMemberNotGuest(session, familyId);
+    final userId = await requireUserId(session);
+    final diet = await HealthEntry.db.findById(session, healthEntryId);
+    if (diet == null || diet.familyId != familyId) {
+      throw FamyliaException(message: 'Dieta non trovata.');
+    }
+    if (diet.type != HealthEntryType.diet) {
+      throw FamyliaException(message: 'La voce selezionata non è una dieta.');
+    }
+
+    final week = DateTime.utc(weekStart.year, weekStart.month, weekStart.day);
+    final meals = [
+      {
+        '_meta': {
+          'dietId': diet.id,
+          'dietTitle': diet.title,
+          'dietGoal': diet.dietGoal,
+          'caloriesTarget': diet.caloriesTarget,
+        },
+      },
+      for (final day in ['lun', 'mar', 'mer', 'gio', 'ven', 'sab', 'dom'])
+        {
+          'day': day,
+          'meal': 'pasti',
+          'title': diet.title,
+          'note': diet.dietGoal ?? diet.description ?? 'Seguire piano alimentare',
+          'ingredients': <String>[],
+        },
+    ];
+    final mealsJson = jsonEncode(meals);
+
+    final existing = await MealPlan.db.findFirstRow(
+      session,
+      where: (t) => t.familyId.equals(familyId) & t.weekStart.equals(week),
+    );
+    if (existing != null) {
+      return MealPlan.db.updateRow(
+        session,
+        existing.copyWith(
+          mealsJson: mealsJson,
+          linkedHealthEntryId: diet.id,
+        ),
+      );
+    }
+
+    return MealPlan.db.insertRow(
+      session,
+      MealPlan(
+        familyId: familyId,
+        createdBy: userId,
+        weekStart: week,
+        mealsJson: mealsJson,
+        linkedHealthEntryId: diet.id,
+      ),
+    );
   }
 }

@@ -20,6 +20,7 @@ abstract class MealPlan
     required this.createdBy,
     required this.weekStart,
     String? mealsJson,
+    this.linkedHealthEntryId,
   }) : mealsJson = mealsJson ?? '[]';
 
   factory MealPlan({
@@ -28,6 +29,7 @@ abstract class MealPlan
     required int createdBy,
     required DateTime weekStart,
     String? mealsJson,
+    int? linkedHealthEntryId,
   }) = _MealPlanImpl;
 
   factory MealPlan.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -38,6 +40,7 @@ abstract class MealPlan
       weekStart:
           _i1.DateTimeJsonExtension.fromJson(jsonSerialization['weekStart']),
       mealsJson: jsonSerialization['mealsJson'] as String,
+      linkedHealthEntryId: jsonSerialization['linkedHealthEntryId'] as int?,
     );
   }
 
@@ -56,6 +59,8 @@ abstract class MealPlan
 
   String mealsJson;
 
+  int? linkedHealthEntryId;
+
   @override
   _i1.Table<int> get table => t;
 
@@ -68,6 +73,7 @@ abstract class MealPlan
     int? createdBy,
     DateTime? weekStart,
     String? mealsJson,
+    int? linkedHealthEntryId,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -77,6 +83,8 @@ abstract class MealPlan
       'createdBy': createdBy,
       'weekStart': weekStart.toJson(),
       'mealsJson': mealsJson,
+      if (linkedHealthEntryId != null)
+        'linkedHealthEntryId': linkedHealthEntryId,
     };
   }
 
@@ -88,6 +96,8 @@ abstract class MealPlan
       'createdBy': createdBy,
       'weekStart': weekStart.toJson(),
       'mealsJson': mealsJson,
+      if (linkedHealthEntryId != null)
+        'linkedHealthEntryId': linkedHealthEntryId,
     };
   }
 
@@ -130,12 +140,14 @@ class _MealPlanImpl extends MealPlan {
     required int createdBy,
     required DateTime weekStart,
     String? mealsJson,
+    int? linkedHealthEntryId,
   }) : super._(
           id: id,
           familyId: familyId,
           createdBy: createdBy,
           weekStart: weekStart,
           mealsJson: mealsJson,
+          linkedHealthEntryId: linkedHealthEntryId,
         );
 
   /// Returns a shallow copy of this [MealPlan]
@@ -148,6 +160,7 @@ class _MealPlanImpl extends MealPlan {
     int? createdBy,
     DateTime? weekStart,
     String? mealsJson,
+    Object? linkedHealthEntryId = _Undefined,
   }) {
     return MealPlan(
       id: id is int? ? id : this.id,
@@ -155,6 +168,9 @@ class _MealPlanImpl extends MealPlan {
       createdBy: createdBy ?? this.createdBy,
       weekStart: weekStart ?? this.weekStart,
       mealsJson: mealsJson ?? this.mealsJson,
+      linkedHealthEntryId: linkedHealthEntryId is int?
+          ? linkedHealthEntryId
+          : this.linkedHealthEntryId,
     );
   }
 }
@@ -178,6 +194,10 @@ class MealPlanTable extends _i1.Table<int> {
       this,
       hasDefault: true,
     );
+    linkedHealthEntryId = _i1.ColumnInt(
+      'linkedHealthEntryId',
+      this,
+    );
   }
 
   late final _i1.ColumnInt familyId;
@@ -188,6 +208,8 @@ class MealPlanTable extends _i1.Table<int> {
 
   late final _i1.ColumnString mealsJson;
 
+  late final _i1.ColumnInt linkedHealthEntryId;
+
   @override
   List<_i1.Column> get columns => [
         id,
@@ -195,6 +217,7 @@ class MealPlanTable extends _i1.Table<int> {
         createdBy,
         weekStart,
         mealsJson,
+        linkedHealthEntryId,
       ];
 }
 

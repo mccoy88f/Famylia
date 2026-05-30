@@ -1,3 +1,4 @@
+import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -40,6 +41,8 @@ class _CreateFamilyScreenState extends State<CreateFamilyScreen> {
       await context.read<FamilyContext>().setActiveFamily(
             id: family.id!,
             name: family.name,
+            accentColor: family.accentColor,
+            role: FamilyRole.admin,
           );
       setState(() => _inviteCode = family.inviteCode);
     } catch (e) {

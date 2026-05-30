@@ -41,6 +41,8 @@ class _JoinFamilyScreenState extends State<JoinFamilyScreen> {
       await context.read<FamilyContext>().setActiveFamily(
             id: member.familyId,
             name: familyName,
+            accentColor: match?.family.accentColor,
+            role: match?.role,
           );
       if (!mounted) return;
       context.go(AppRoutes.home);

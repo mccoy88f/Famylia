@@ -1,0 +1,27 @@
+### Voce modulo salute: visita medica, dieta o attività sportiva.
+class: HealthEntry
+table: health_entry
+fields:
+  familyId: int, relation(parent=family)
+  createdBy: int
+  type: HealthEntryType
+  title: String
+  description: String?
+  status: HealthEntryStatus, default=planned
+  assignedTo: int?
+  scheduledAt: DateTime?
+  endAt: DateTime?
+  providerName: String?
+  location: String?
+  dietGoal: String?
+  caloriesTarget: int?
+  sportType: String?
+  durationMinutes: int?
+  intensity: SportIntensity?
+  isPrivate: bool, default=false
+  completedAt: DateTime?
+indexes:
+  health_entry_family_type_idx:
+    fields: familyId, type
+  health_entry_family_scheduled_idx:
+    fields: familyId, scheduledAt

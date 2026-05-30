@@ -49,6 +49,7 @@ family:
   - listMyFamilies:
   - getFamily:
   - listMembers:
+  - updateAccentColor:
   - leaveFamily:
 gamification:
   - getMyPoints:
@@ -57,6 +58,13 @@ gdpr:
   - exportMyData:
   - deleteMyAccount:
   - getPrivacyDashboard:
+health:
+  - createEntry:
+  - listEntries:
+  - upcoming:
+  - updateEntry:
+  - completeEntry:
+  - deleteEntry:
 location:
   - getStatus:
   - updateStatus:
@@ -70,6 +78,7 @@ meal:
   - saveMealPlan:
   - getMealPlan:
   - shoppingItemsFromPlan:
+  - applyDietToMealPlan:
 report:
   - getReport:
 shopping:

@@ -51,27 +51,29 @@ services:
       retries: 3
       start_period: 10s
 
-  # Serverpod — decommentare dopo build Dockerfile server (Fase 0+)
-  # server:
-  #   build:
-  #     context: ../server
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8080:8080"
-  #     - "8081:8081"
-  #     - "8082:8082"
-  #   environment:
-  #     RUNMODE: development
-  #     SERVERPOD_DATABASE_HOST: postgres
-  #     SERVERPOD_DATABASE_NAME: famylia
-  #     SERVERPOD_DATABASE_USER: famylia
-  #     SERVERPOD_DATABASE_PASSWORD: ${DB_PASSWORD}
-  #     SERVERPOD_REDIS_HOST: redis
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
+  server:
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+      - "8082:8082"
+    environment:
+      runmode: development
+      role: monolith
+      logging: normal
+      SERVERPOD_DATABASE_HOST: postgres
+      SERVERPOD_DATABASE_PORT: "5432"
+      SERVERPOD_REDIS_HOST: redis
+      SERVERPOD_REDIS_PORT: "6379"
+      SERVERPOD_REDIS_ENABLED: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
 volumes:
   postgres_data:

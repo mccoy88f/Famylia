@@ -19,6 +19,11 @@ class FamilyRepository {
   Future<List<FamilyMemberInfo>> listMembers(int familyId) =>
       _client.family.listMembers(familyId);
 
+  Future<Family> getFamily(int familyId) => _client.family.getFamily(familyId);
+
+  Future<Family> updateAccentColor(int familyId, String accentColor) =>
+      _client.family.updateAccentColor(familyId, accentColor);
+
   String userFacingError(Object error) {
     if (error is FamyliaException) return error.message;
     return error.toString();

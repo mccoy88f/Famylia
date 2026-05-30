@@ -6,6 +6,7 @@ fields:
   createdBy: int
   weekStart: DateTime
   mealsJson: String, default='[]'
+  linkedHealthEntryId: int?
 indexes:
   meal_plan_family_week_idx:
     fields: familyId, weekStart

@@ -46,48 +46,53 @@ import 'family_role.dart' as _i34;
 import 'family_with_role.dart' as _i35;
 import 'famylia_exception.dart' as _i36;
 import 'gdpr_export.dart' as _i37;
-import 'leaderboard.dart' as _i38;
-import 'leaderboard_entry.dart' as _i39;
-import 'location_accuracy_level.dart' as _i40;
-import 'location_history.dart' as _i41;
-import 'location_sharing.dart' as _i42;
-import 'meal_plan.dart' as _i43;
-import 'member_balance.dart' as _i44;
-import 'member_location.dart' as _i45;
-import 'poll_option.dart' as _i46;
-import 'privacy_dashboard.dart' as _i47;
-import 'recipe.dart' as _i48;
-import 'safe_zone.dart' as _i49;
-import 'settlement.dart' as _i50;
-import 'settlement_status.dart' as _i51;
-import 'settlement_suggestion.dart' as _i52;
-import 'shopping_category.dart' as _i53;
-import 'shopping_item.dart' as _i54;
-import 'shopping_list.dart' as _i55;
-import 'shopping_list_changed.dart' as _i56;
-import 'shopping_list_status.dart' as _i57;
-import 'shopping_list_with_items.dart' as _i58;
-import 'shopping_unit.dart' as _i59;
-import 'todo_category.dart' as _i60;
-import 'todo_item.dart' as _i61;
-import 'todo_priority.dart' as _i62;
-import 'todo_status.dart' as _i63;
-import 'user_points.dart' as _i64;
-import 'package:famylia_server/src/generated/board_post_with_poll.dart' as _i65;
-import 'package:famylia_server/src/generated/calendar_event.dart' as _i66;
-import 'package:famylia_server/src/generated/deadline.dart' as _i67;
-import 'package:famylia_server/src/generated/document_record.dart' as _i68;
-import 'package:famylia_server/src/generated/emergency_alert.dart' as _i69;
-import 'package:famylia_server/src/generated/emergency_contact.dart' as _i70;
-import 'package:famylia_server/src/generated/expense.dart' as _i71;
-import 'package:famylia_server/src/generated/settlement.dart' as _i72;
-import 'package:famylia_server/src/generated/family_with_role.dart' as _i73;
-import 'package:famylia_server/src/generated/family_member_info.dart' as _i74;
-import 'package:famylia_server/src/generated/member_location.dart' as _i75;
-import 'package:famylia_server/src/generated/safe_zone.dart' as _i76;
-import 'package:famylia_server/src/generated/recipe.dart' as _i77;
-import 'package:famylia_server/src/generated/shopping_list.dart' as _i78;
-import 'package:famylia_server/src/generated/todo_item.dart' as _i79;
+import 'health_entry.dart' as _i38;
+import 'health_entry_status.dart' as _i39;
+import 'health_entry_type.dart' as _i40;
+import 'leaderboard.dart' as _i41;
+import 'leaderboard_entry.dart' as _i42;
+import 'location_accuracy_level.dart' as _i43;
+import 'location_history.dart' as _i44;
+import 'location_sharing.dart' as _i45;
+import 'meal_plan.dart' as _i46;
+import 'member_balance.dart' as _i47;
+import 'member_location.dart' as _i48;
+import 'poll_option.dart' as _i49;
+import 'privacy_dashboard.dart' as _i50;
+import 'recipe.dart' as _i51;
+import 'safe_zone.dart' as _i52;
+import 'settlement.dart' as _i53;
+import 'settlement_status.dart' as _i54;
+import 'settlement_suggestion.dart' as _i55;
+import 'shopping_category.dart' as _i56;
+import 'shopping_item.dart' as _i57;
+import 'shopping_list.dart' as _i58;
+import 'shopping_list_changed.dart' as _i59;
+import 'shopping_list_status.dart' as _i60;
+import 'shopping_list_with_items.dart' as _i61;
+import 'shopping_unit.dart' as _i62;
+import 'sport_intensity.dart' as _i63;
+import 'todo_category.dart' as _i64;
+import 'todo_item.dart' as _i65;
+import 'todo_priority.dart' as _i66;
+import 'todo_status.dart' as _i67;
+import 'user_points.dart' as _i68;
+import 'package:famylia_server/src/generated/board_post_with_poll.dart' as _i69;
+import 'package:famylia_server/src/generated/calendar_event.dart' as _i70;
+import 'package:famylia_server/src/generated/deadline.dart' as _i71;
+import 'package:famylia_server/src/generated/document_record.dart' as _i72;
+import 'package:famylia_server/src/generated/emergency_alert.dart' as _i73;
+import 'package:famylia_server/src/generated/emergency_contact.dart' as _i74;
+import 'package:famylia_server/src/generated/expense.dart' as _i75;
+import 'package:famylia_server/src/generated/settlement.dart' as _i76;
+import 'package:famylia_server/src/generated/family_with_role.dart' as _i77;
+import 'package:famylia_server/src/generated/family_member_info.dart' as _i78;
+import 'package:famylia_server/src/generated/health_entry.dart' as _i79;
+import 'package:famylia_server/src/generated/member_location.dart' as _i80;
+import 'package:famylia_server/src/generated/safe_zone.dart' as _i81;
+import 'package:famylia_server/src/generated/recipe.dart' as _i82;
+import 'package:famylia_server/src/generated/shopping_list.dart' as _i83;
+import 'package:famylia_server/src/generated/todo_item.dart' as _i84;
 export 'board_changed.dart';
 export 'board_post.dart';
 export 'board_post_type.dart';
@@ -122,6 +127,9 @@ export 'family_role.dart';
 export 'family_with_role.dart';
 export 'famylia_exception.dart';
 export 'gdpr_export.dart';
+export 'health_entry.dart';
+export 'health_entry_status.dart';
+export 'health_entry_type.dart';
 export 'leaderboard.dart';
 export 'leaderboard_entry.dart';
 export 'location_accuracy_level.dart';
@@ -144,6 +152,7 @@ export 'shopping_list_changed.dart';
 export 'shopping_list_status.dart';
 export 'shopping_list_with_items.dart';
 export 'shopping_unit.dart';
+export 'sport_intensity.dart';
 export 'todo_category.dart';
 export 'todo_item.dart';
 export 'todo_priority.dart';
@@ -1226,6 +1235,13 @@ class Protocol extends _i1.SerializationManagerServer {
           dartType: 'String',
         ),
         _i2.ColumnDefinition(
+          name: 'accentColor',
+          columnType: _i2.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+          columnDefault: '\'#5B8DEF\'::text',
+        ),
+        _i2.ColumnDefinition(
           name: 'settings',
           columnType: _i2.ColumnType.text,
           isNullable: true,
@@ -1338,6 +1354,193 @@ class Protocol extends _i1.SerializationManagerServer {
           ],
           type: 'btree',
           isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _i2.TableDefinition(
+      name: 'health_entry',
+      dartName: 'HealthEntry',
+      schema: 'public',
+      module: 'famylia',
+      columns: [
+        _i2.ColumnDefinition(
+          name: 'id',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'nextval(\'health_entry_id_seq\'::regclass)',
+        ),
+        _i2.ColumnDefinition(
+          name: 'familyId',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _i2.ColumnDefinition(
+          name: 'createdBy',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _i2.ColumnDefinition(
+          name: 'type',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:HealthEntryType',
+        ),
+        _i2.ColumnDefinition(
+          name: 'title',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'description',
+          columnType: _i2.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'status',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:HealthEntryStatus',
+          columnDefault: '\'planned\'::text',
+        ),
+        _i2.ColumnDefinition(
+          name: 'assignedTo',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'scheduledAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'endAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'providerName',
+          columnType: _i2.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'location',
+          columnType: _i2.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'dietGoal',
+          columnType: _i2.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'caloriesTarget',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'sportType',
+          columnType: _i2.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'durationMinutes',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'intensity',
+          columnType: _i2.ColumnType.text,
+          isNullable: true,
+          dartType: 'protocol:SportIntensity?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'isPrivate',
+          columnType: _i2.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'false',
+        ),
+        _i2.ColumnDefinition(
+          name: 'completedAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+      ],
+      foreignKeys: [
+        _i2.ForeignKeyDefinition(
+          constraintName: 'health_entry_fk_0',
+          columns: ['familyId'],
+          referenceTable: 'family',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _i2.ForeignKeyAction.noAction,
+          onDelete: _i2.ForeignKeyAction.noAction,
+          matchType: null,
+        )
+      ],
+      indexes: [
+        _i2.IndexDefinition(
+          indexName: 'health_entry_pkey',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'id',
+            )
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: true,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'health_entry_family_type_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'familyId',
+            ),
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'type',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'health_entry_family_scheduled_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'familyId',
+            ),
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'scheduledAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
           isPrimary: false,
         ),
       ],
@@ -1607,6 +1810,12 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'String',
           columnDefault: '\'[]\'::text',
+        ),
+        _i2.ColumnDefinition(
+          name: 'linkedHealthEntryId',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
         ),
       ],
       foreignKeys: [
@@ -2612,86 +2821,98 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i37.GdprExport) {
       return _i37.GdprExport.fromJson(data) as T;
     }
-    if (t == _i38.Leaderboard) {
-      return _i38.Leaderboard.fromJson(data) as T;
+    if (t == _i38.HealthEntry) {
+      return _i38.HealthEntry.fromJson(data) as T;
     }
-    if (t == _i39.LeaderboardEntry) {
-      return _i39.LeaderboardEntry.fromJson(data) as T;
+    if (t == _i39.HealthEntryStatus) {
+      return _i39.HealthEntryStatus.fromJson(data) as T;
     }
-    if (t == _i40.LocationAccuracyLevel) {
-      return _i40.LocationAccuracyLevel.fromJson(data) as T;
+    if (t == _i40.HealthEntryType) {
+      return _i40.HealthEntryType.fromJson(data) as T;
     }
-    if (t == _i41.LocationHistory) {
-      return _i41.LocationHistory.fromJson(data) as T;
+    if (t == _i41.Leaderboard) {
+      return _i41.Leaderboard.fromJson(data) as T;
     }
-    if (t == _i42.LocationSharing) {
-      return _i42.LocationSharing.fromJson(data) as T;
+    if (t == _i42.LeaderboardEntry) {
+      return _i42.LeaderboardEntry.fromJson(data) as T;
     }
-    if (t == _i43.MealPlan) {
-      return _i43.MealPlan.fromJson(data) as T;
+    if (t == _i43.LocationAccuracyLevel) {
+      return _i43.LocationAccuracyLevel.fromJson(data) as T;
     }
-    if (t == _i44.MemberBalance) {
-      return _i44.MemberBalance.fromJson(data) as T;
+    if (t == _i44.LocationHistory) {
+      return _i44.LocationHistory.fromJson(data) as T;
     }
-    if (t == _i45.MemberLocation) {
-      return _i45.MemberLocation.fromJson(data) as T;
+    if (t == _i45.LocationSharing) {
+      return _i45.LocationSharing.fromJson(data) as T;
     }
-    if (t == _i46.PollOption) {
-      return _i46.PollOption.fromJson(data) as T;
+    if (t == _i46.MealPlan) {
+      return _i46.MealPlan.fromJson(data) as T;
     }
-    if (t == _i47.PrivacyDashboard) {
-      return _i47.PrivacyDashboard.fromJson(data) as T;
+    if (t == _i47.MemberBalance) {
+      return _i47.MemberBalance.fromJson(data) as T;
     }
-    if (t == _i48.Recipe) {
-      return _i48.Recipe.fromJson(data) as T;
+    if (t == _i48.MemberLocation) {
+      return _i48.MemberLocation.fromJson(data) as T;
     }
-    if (t == _i49.SafeZone) {
-      return _i49.SafeZone.fromJson(data) as T;
+    if (t == _i49.PollOption) {
+      return _i49.PollOption.fromJson(data) as T;
     }
-    if (t == _i50.Settlement) {
-      return _i50.Settlement.fromJson(data) as T;
+    if (t == _i50.PrivacyDashboard) {
+      return _i50.PrivacyDashboard.fromJson(data) as T;
     }
-    if (t == _i51.SettlementStatus) {
-      return _i51.SettlementStatus.fromJson(data) as T;
+    if (t == _i51.Recipe) {
+      return _i51.Recipe.fromJson(data) as T;
     }
-    if (t == _i52.SettlementSuggestion) {
-      return _i52.SettlementSuggestion.fromJson(data) as T;
+    if (t == _i52.SafeZone) {
+      return _i52.SafeZone.fromJson(data) as T;
     }
-    if (t == _i53.ShoppingCategory) {
-      return _i53.ShoppingCategory.fromJson(data) as T;
+    if (t == _i53.Settlement) {
+      return _i53.Settlement.fromJson(data) as T;
     }
-    if (t == _i54.ShoppingItem) {
-      return _i54.ShoppingItem.fromJson(data) as T;
+    if (t == _i54.SettlementStatus) {
+      return _i54.SettlementStatus.fromJson(data) as T;
     }
-    if (t == _i55.ShoppingList) {
-      return _i55.ShoppingList.fromJson(data) as T;
+    if (t == _i55.SettlementSuggestion) {
+      return _i55.SettlementSuggestion.fromJson(data) as T;
     }
-    if (t == _i56.ShoppingListChanged) {
-      return _i56.ShoppingListChanged.fromJson(data) as T;
+    if (t == _i56.ShoppingCategory) {
+      return _i56.ShoppingCategory.fromJson(data) as T;
     }
-    if (t == _i57.ShoppingListStatus) {
-      return _i57.ShoppingListStatus.fromJson(data) as T;
+    if (t == _i57.ShoppingItem) {
+      return _i57.ShoppingItem.fromJson(data) as T;
     }
-    if (t == _i58.ShoppingListWithItems) {
-      return _i58.ShoppingListWithItems.fromJson(data) as T;
+    if (t == _i58.ShoppingList) {
+      return _i58.ShoppingList.fromJson(data) as T;
     }
-    if (t == _i59.ShoppingUnit) {
-      return _i59.ShoppingUnit.fromJson(data) as T;
+    if (t == _i59.ShoppingListChanged) {
+      return _i59.ShoppingListChanged.fromJson(data) as T;
     }
-    if (t == _i60.TodoCategory) {
-      return _i60.TodoCategory.fromJson(data) as T;
+    if (t == _i60.ShoppingListStatus) {
+      return _i60.ShoppingListStatus.fromJson(data) as T;
     }
-    if (t == _i61.TodoItem) {
-      return _i61.TodoItem.fromJson(data) as T;
+    if (t == _i61.ShoppingListWithItems) {
+      return _i61.ShoppingListWithItems.fromJson(data) as T;
     }
-    if (t == _i62.TodoPriority) {
-      return _i62.TodoPriority.fromJson(data) as T;
+    if (t == _i62.ShoppingUnit) {
+      return _i62.ShoppingUnit.fromJson(data) as T;
     }
-    if (t == _i63.TodoStatus) {
-      return _i63.TodoStatus.fromJson(data) as T;
+    if (t == _i63.SportIntensity) {
+      return _i63.SportIntensity.fromJson(data) as T;
     }
-    if (t == _i64.UserPoints) {
-      return _i64.UserPoints.fromJson(data) as T;
+    if (t == _i64.TodoCategory) {
+      return _i64.TodoCategory.fromJson(data) as T;
+    }
+    if (t == _i65.TodoItem) {
+      return _i65.TodoItem.fromJson(data) as T;
+    }
+    if (t == _i66.TodoPriority) {
+      return _i66.TodoPriority.fromJson(data) as T;
+    }
+    if (t == _i67.TodoStatus) {
+      return _i67.TodoStatus.fromJson(data) as T;
+    }
+    if (t == _i68.UserPoints) {
+      return _i68.UserPoints.fromJson(data) as T;
     }
     if (t == _i1.getType<_i4.BoardChanged?>()) {
       return (data != null ? _i4.BoardChanged.fromJson(data) : null) as T;
@@ -2800,119 +3021,131 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i1.getType<_i37.GdprExport?>()) {
       return (data != null ? _i37.GdprExport.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i38.Leaderboard?>()) {
-      return (data != null ? _i38.Leaderboard.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i38.HealthEntry?>()) {
+      return (data != null ? _i38.HealthEntry.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i39.LeaderboardEntry?>()) {
-      return (data != null ? _i39.LeaderboardEntry.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i39.HealthEntryStatus?>()) {
+      return (data != null ? _i39.HealthEntryStatus.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i40.LocationAccuracyLevel?>()) {
-      return (data != null ? _i40.LocationAccuracyLevel.fromJson(data) : null)
+    if (t == _i1.getType<_i40.HealthEntryType?>()) {
+      return (data != null ? _i40.HealthEntryType.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i41.Leaderboard?>()) {
+      return (data != null ? _i41.Leaderboard.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i42.LeaderboardEntry?>()) {
+      return (data != null ? _i42.LeaderboardEntry.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i43.LocationAccuracyLevel?>()) {
+      return (data != null ? _i43.LocationAccuracyLevel.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i41.LocationHistory?>()) {
-      return (data != null ? _i41.LocationHistory.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i44.LocationHistory?>()) {
+      return (data != null ? _i44.LocationHistory.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i42.LocationSharing?>()) {
-      return (data != null ? _i42.LocationSharing.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i45.LocationSharing?>()) {
+      return (data != null ? _i45.LocationSharing.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i43.MealPlan?>()) {
-      return (data != null ? _i43.MealPlan.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i46.MealPlan?>()) {
+      return (data != null ? _i46.MealPlan.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i44.MemberBalance?>()) {
-      return (data != null ? _i44.MemberBalance.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i47.MemberBalance?>()) {
+      return (data != null ? _i47.MemberBalance.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i45.MemberLocation?>()) {
-      return (data != null ? _i45.MemberLocation.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i48.MemberLocation?>()) {
+      return (data != null ? _i48.MemberLocation.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i46.PollOption?>()) {
-      return (data != null ? _i46.PollOption.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i49.PollOption?>()) {
+      return (data != null ? _i49.PollOption.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i47.PrivacyDashboard?>()) {
-      return (data != null ? _i47.PrivacyDashboard.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i50.PrivacyDashboard?>()) {
+      return (data != null ? _i50.PrivacyDashboard.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i48.Recipe?>()) {
-      return (data != null ? _i48.Recipe.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i51.Recipe?>()) {
+      return (data != null ? _i51.Recipe.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i49.SafeZone?>()) {
-      return (data != null ? _i49.SafeZone.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i52.SafeZone?>()) {
+      return (data != null ? _i52.SafeZone.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i50.Settlement?>()) {
-      return (data != null ? _i50.Settlement.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i53.Settlement?>()) {
+      return (data != null ? _i53.Settlement.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i51.SettlementStatus?>()) {
-      return (data != null ? _i51.SettlementStatus.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i54.SettlementStatus?>()) {
+      return (data != null ? _i54.SettlementStatus.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i52.SettlementSuggestion?>()) {
-      return (data != null ? _i52.SettlementSuggestion.fromJson(data) : null)
+    if (t == _i1.getType<_i55.SettlementSuggestion?>()) {
+      return (data != null ? _i55.SettlementSuggestion.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i53.ShoppingCategory?>()) {
-      return (data != null ? _i53.ShoppingCategory.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i56.ShoppingCategory?>()) {
+      return (data != null ? _i56.ShoppingCategory.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i54.ShoppingItem?>()) {
-      return (data != null ? _i54.ShoppingItem.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i57.ShoppingItem?>()) {
+      return (data != null ? _i57.ShoppingItem.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i55.ShoppingList?>()) {
-      return (data != null ? _i55.ShoppingList.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i58.ShoppingList?>()) {
+      return (data != null ? _i58.ShoppingList.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i56.ShoppingListChanged?>()) {
-      return (data != null ? _i56.ShoppingListChanged.fromJson(data) : null)
+    if (t == _i1.getType<_i59.ShoppingListChanged?>()) {
+      return (data != null ? _i59.ShoppingListChanged.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i57.ShoppingListStatus?>()) {
-      return (data != null ? _i57.ShoppingListStatus.fromJson(data) : null)
+    if (t == _i1.getType<_i60.ShoppingListStatus?>()) {
+      return (data != null ? _i60.ShoppingListStatus.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i58.ShoppingListWithItems?>()) {
-      return (data != null ? _i58.ShoppingListWithItems.fromJson(data) : null)
+    if (t == _i1.getType<_i61.ShoppingListWithItems?>()) {
+      return (data != null ? _i61.ShoppingListWithItems.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i59.ShoppingUnit?>()) {
-      return (data != null ? _i59.ShoppingUnit.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i62.ShoppingUnit?>()) {
+      return (data != null ? _i62.ShoppingUnit.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i60.TodoCategory?>()) {
-      return (data != null ? _i60.TodoCategory.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i63.SportIntensity?>()) {
+      return (data != null ? _i63.SportIntensity.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i61.TodoItem?>()) {
-      return (data != null ? _i61.TodoItem.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i64.TodoCategory?>()) {
+      return (data != null ? _i64.TodoCategory.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i62.TodoPriority?>()) {
-      return (data != null ? _i62.TodoPriority.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i65.TodoItem?>()) {
+      return (data != null ? _i65.TodoItem.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i63.TodoStatus?>()) {
-      return (data != null ? _i63.TodoStatus.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i66.TodoPriority?>()) {
+      return (data != null ? _i66.TodoPriority.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i64.UserPoints?>()) {
-      return (data != null ? _i64.UserPoints.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i67.TodoStatus?>()) {
+      return (data != null ? _i67.TodoStatus.fromJson(data) : null) as T;
     }
-    if (t == List<_i46.PollOption>) {
-      return (data as List).map((e) => deserialize<_i46.PollOption>(e)).toList()
+    if (t == _i1.getType<_i68.UserPoints?>()) {
+      return (data != null ? _i68.UserPoints.fromJson(data) : null) as T;
+    }
+    if (t == List<_i49.PollOption>) {
+      return (data as List).map((e) => deserialize<_i49.PollOption>(e)).toList()
           as T;
     }
-    if (t == List<_i44.MemberBalance>) {
+    if (t == List<_i47.MemberBalance>) {
       return (data as List)
-          .map((e) => deserialize<_i44.MemberBalance>(e))
+          .map((e) => deserialize<_i47.MemberBalance>(e))
           .toList() as T;
     }
-    if (t == List<_i52.SettlementSuggestion>) {
+    if (t == List<_i55.SettlementSuggestion>) {
       return (data as List)
-          .map((e) => deserialize<_i52.SettlementSuggestion>(e))
+          .map((e) => deserialize<_i55.SettlementSuggestion>(e))
           .toList() as T;
     }
-    if (t == List<_i39.LeaderboardEntry>) {
+    if (t == List<_i42.LeaderboardEntry>) {
       return (data as List)
-          .map((e) => deserialize<_i39.LeaderboardEntry>(e))
+          .map((e) => deserialize<_i42.LeaderboardEntry>(e))
           .toList() as T;
     }
-    if (t == List<_i54.ShoppingItem>) {
+    if (t == List<_i57.ShoppingItem>) {
       return (data as List)
-          .map((e) => deserialize<_i54.ShoppingItem>(e))
+          .map((e) => deserialize<_i57.ShoppingItem>(e))
           .toList() as T;
     }
-    if (t == List<_i65.BoardPostWithPoll>) {
+    if (t == List<_i69.BoardPostWithPoll>) {
       return (data as List)
-          .map((e) => deserialize<_i65.BoardPostWithPoll>(e))
+          .map((e) => deserialize<_i69.BoardPostWithPoll>(e))
           .toList() as T;
     }
     if (t == _i1.getType<List<String>?>()) {
@@ -2920,71 +3153,76 @@ class Protocol extends _i1.SerializationManagerServer {
           ? (data as List).map((e) => deserialize<String>(e)).toList()
           : null) as T;
     }
-    if (t == List<_i66.CalendarEvent>) {
+    if (t == List<_i70.CalendarEvent>) {
       return (data as List)
-          .map((e) => deserialize<_i66.CalendarEvent>(e))
+          .map((e) => deserialize<_i70.CalendarEvent>(e))
           .toList() as T;
     }
-    if (t == List<_i67.Deadline>) {
-      return (data as List).map((e) => deserialize<_i67.Deadline>(e)).toList()
+    if (t == List<_i71.Deadline>) {
+      return (data as List).map((e) => deserialize<_i71.Deadline>(e)).toList()
           as T;
     }
-    if (t == List<_i68.DocumentRecord>) {
+    if (t == List<_i72.DocumentRecord>) {
       return (data as List)
-          .map((e) => deserialize<_i68.DocumentRecord>(e))
+          .map((e) => deserialize<_i72.DocumentRecord>(e))
           .toList() as T;
     }
-    if (t == List<_i69.EmergencyAlert>) {
+    if (t == List<_i73.EmergencyAlert>) {
       return (data as List)
-          .map((e) => deserialize<_i69.EmergencyAlert>(e))
+          .map((e) => deserialize<_i73.EmergencyAlert>(e))
           .toList() as T;
     }
-    if (t == List<_i70.EmergencyContact>) {
+    if (t == List<_i74.EmergencyContact>) {
       return (data as List)
-          .map((e) => deserialize<_i70.EmergencyContact>(e))
+          .map((e) => deserialize<_i74.EmergencyContact>(e))
           .toList() as T;
     }
-    if (t == List<_i71.Expense>) {
-      return (data as List).map((e) => deserialize<_i71.Expense>(e)).toList()
+    if (t == List<_i75.Expense>) {
+      return (data as List).map((e) => deserialize<_i75.Expense>(e)).toList()
           as T;
     }
-    if (t == List<_i72.Settlement>) {
-      return (data as List).map((e) => deserialize<_i72.Settlement>(e)).toList()
+    if (t == List<_i76.Settlement>) {
+      return (data as List).map((e) => deserialize<_i76.Settlement>(e)).toList()
           as T;
     }
-    if (t == List<_i73.FamilyWithRole>) {
+    if (t == List<_i77.FamilyWithRole>) {
       return (data as List)
-          .map((e) => deserialize<_i73.FamilyWithRole>(e))
+          .map((e) => deserialize<_i77.FamilyWithRole>(e))
           .toList() as T;
     }
-    if (t == List<_i74.FamilyMemberInfo>) {
+    if (t == List<_i78.FamilyMemberInfo>) {
       return (data as List)
-          .map((e) => deserialize<_i74.FamilyMemberInfo>(e))
+          .map((e) => deserialize<_i78.FamilyMemberInfo>(e))
           .toList() as T;
     }
-    if (t == List<_i75.MemberLocation>) {
+    if (t == List<_i79.HealthEntry>) {
       return (data as List)
-          .map((e) => deserialize<_i75.MemberLocation>(e))
+          .map((e) => deserialize<_i79.HealthEntry>(e))
           .toList() as T;
     }
-    if (t == List<_i76.SafeZone>) {
-      return (data as List).map((e) => deserialize<_i76.SafeZone>(e)).toList()
+    if (t == List<_i80.MemberLocation>) {
+      return (data as List)
+          .map((e) => deserialize<_i80.MemberLocation>(e))
+          .toList() as T;
+    }
+    if (t == List<_i81.SafeZone>) {
+      return (data as List).map((e) => deserialize<_i81.SafeZone>(e)).toList()
           as T;
     }
-    if (t == List<_i77.Recipe>) {
-      return (data as List).map((e) => deserialize<_i77.Recipe>(e)).toList()
+    if (t == List<_i82.Recipe>) {
+      return (data as List).map((e) => deserialize<_i82.Recipe>(e)).toList()
           as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    if (t == List<_i78.ShoppingList>) {
+    if (t == List<_i83.ShoppingList>) {
       return (data as List)
-          .map((e) => deserialize<_i78.ShoppingList>(e))
+          .map((e) => deserialize<_i83.ShoppingList>(e))
           .toList() as T;
     }
-    if (t == List<_i79.TodoItem>) {
-      return (data as List).map((e) => deserialize<_i79.TodoItem>(e)).toList()
+    if (t == List<_i84.TodoItem>) {
+      return (data as List).map((e) => deserialize<_i84.TodoItem>(e)).toList()
           as T;
     }
     try {
@@ -3102,85 +3340,97 @@ class Protocol extends _i1.SerializationManagerServer {
     if (data is _i37.GdprExport) {
       return 'GdprExport';
     }
-    if (data is _i38.Leaderboard) {
+    if (data is _i38.HealthEntry) {
+      return 'HealthEntry';
+    }
+    if (data is _i39.HealthEntryStatus) {
+      return 'HealthEntryStatus';
+    }
+    if (data is _i40.HealthEntryType) {
+      return 'HealthEntryType';
+    }
+    if (data is _i41.Leaderboard) {
       return 'Leaderboard';
     }
-    if (data is _i39.LeaderboardEntry) {
+    if (data is _i42.LeaderboardEntry) {
       return 'LeaderboardEntry';
     }
-    if (data is _i40.LocationAccuracyLevel) {
+    if (data is _i43.LocationAccuracyLevel) {
       return 'LocationAccuracyLevel';
     }
-    if (data is _i41.LocationHistory) {
+    if (data is _i44.LocationHistory) {
       return 'LocationHistory';
     }
-    if (data is _i42.LocationSharing) {
+    if (data is _i45.LocationSharing) {
       return 'LocationSharing';
     }
-    if (data is _i43.MealPlan) {
+    if (data is _i46.MealPlan) {
       return 'MealPlan';
     }
-    if (data is _i44.MemberBalance) {
+    if (data is _i47.MemberBalance) {
       return 'MemberBalance';
     }
-    if (data is _i45.MemberLocation) {
+    if (data is _i48.MemberLocation) {
       return 'MemberLocation';
     }
-    if (data is _i46.PollOption) {
+    if (data is _i49.PollOption) {
       return 'PollOption';
     }
-    if (data is _i47.PrivacyDashboard) {
+    if (data is _i50.PrivacyDashboard) {
       return 'PrivacyDashboard';
     }
-    if (data is _i48.Recipe) {
+    if (data is _i51.Recipe) {
       return 'Recipe';
     }
-    if (data is _i49.SafeZone) {
+    if (data is _i52.SafeZone) {
       return 'SafeZone';
     }
-    if (data is _i50.Settlement) {
+    if (data is _i53.Settlement) {
       return 'Settlement';
     }
-    if (data is _i51.SettlementStatus) {
+    if (data is _i54.SettlementStatus) {
       return 'SettlementStatus';
     }
-    if (data is _i52.SettlementSuggestion) {
+    if (data is _i55.SettlementSuggestion) {
       return 'SettlementSuggestion';
     }
-    if (data is _i53.ShoppingCategory) {
+    if (data is _i56.ShoppingCategory) {
       return 'ShoppingCategory';
     }
-    if (data is _i54.ShoppingItem) {
+    if (data is _i57.ShoppingItem) {
       return 'ShoppingItem';
     }
-    if (data is _i55.ShoppingList) {
+    if (data is _i58.ShoppingList) {
       return 'ShoppingList';
     }
-    if (data is _i56.ShoppingListChanged) {
+    if (data is _i59.ShoppingListChanged) {
       return 'ShoppingListChanged';
     }
-    if (data is _i57.ShoppingListStatus) {
+    if (data is _i60.ShoppingListStatus) {
       return 'ShoppingListStatus';
     }
-    if (data is _i58.ShoppingListWithItems) {
+    if (data is _i61.ShoppingListWithItems) {
       return 'ShoppingListWithItems';
     }
-    if (data is _i59.ShoppingUnit) {
+    if (data is _i62.ShoppingUnit) {
       return 'ShoppingUnit';
     }
-    if (data is _i60.TodoCategory) {
+    if (data is _i63.SportIntensity) {
+      return 'SportIntensity';
+    }
+    if (data is _i64.TodoCategory) {
       return 'TodoCategory';
     }
-    if (data is _i61.TodoItem) {
+    if (data is _i65.TodoItem) {
       return 'TodoItem';
     }
-    if (data is _i62.TodoPriority) {
+    if (data is _i66.TodoPriority) {
       return 'TodoPriority';
     }
-    if (data is _i63.TodoStatus) {
+    if (data is _i67.TodoStatus) {
       return 'TodoStatus';
     }
-    if (data is _i64.UserPoints) {
+    if (data is _i68.UserPoints) {
       return 'UserPoints';
     }
     className = _i2.Protocol().getClassNameForObject(data);
@@ -3191,10 +3441,10 @@ class Protocol extends _i1.SerializationManagerServer {
     if (className != null) {
       return 'serverpod_auth.$className';
     }
-    if (data is List<_i65.BoardPostWithPoll>) {
+    if (data is List<_i69.BoardPostWithPoll>) {
       return 'List<BoardPostWithPoll>';
     }
-    if (data is List<_i69.EmergencyAlert>) {
+    if (data is List<_i73.EmergencyAlert>) {
       return 'List<EmergencyAlert>';
     }
     return null;
@@ -3308,86 +3558,98 @@ class Protocol extends _i1.SerializationManagerServer {
     if (dataClassName == 'GdprExport') {
       return deserialize<_i37.GdprExport>(data['data']);
     }
+    if (dataClassName == 'HealthEntry') {
+      return deserialize<_i38.HealthEntry>(data['data']);
+    }
+    if (dataClassName == 'HealthEntryStatus') {
+      return deserialize<_i39.HealthEntryStatus>(data['data']);
+    }
+    if (dataClassName == 'HealthEntryType') {
+      return deserialize<_i40.HealthEntryType>(data['data']);
+    }
     if (dataClassName == 'Leaderboard') {
-      return deserialize<_i38.Leaderboard>(data['data']);
+      return deserialize<_i41.Leaderboard>(data['data']);
     }
     if (dataClassName == 'LeaderboardEntry') {
-      return deserialize<_i39.LeaderboardEntry>(data['data']);
+      return deserialize<_i42.LeaderboardEntry>(data['data']);
     }
     if (dataClassName == 'LocationAccuracyLevel') {
-      return deserialize<_i40.LocationAccuracyLevel>(data['data']);
+      return deserialize<_i43.LocationAccuracyLevel>(data['data']);
     }
     if (dataClassName == 'LocationHistory') {
-      return deserialize<_i41.LocationHistory>(data['data']);
+      return deserialize<_i44.LocationHistory>(data['data']);
     }
     if (dataClassName == 'LocationSharing') {
-      return deserialize<_i42.LocationSharing>(data['data']);
+      return deserialize<_i45.LocationSharing>(data['data']);
     }
     if (dataClassName == 'MealPlan') {
-      return deserialize<_i43.MealPlan>(data['data']);
+      return deserialize<_i46.MealPlan>(data['data']);
     }
     if (dataClassName == 'MemberBalance') {
-      return deserialize<_i44.MemberBalance>(data['data']);
+      return deserialize<_i47.MemberBalance>(data['data']);
     }
     if (dataClassName == 'MemberLocation') {
-      return deserialize<_i45.MemberLocation>(data['data']);
+      return deserialize<_i48.MemberLocation>(data['data']);
     }
     if (dataClassName == 'PollOption') {
-      return deserialize<_i46.PollOption>(data['data']);
+      return deserialize<_i49.PollOption>(data['data']);
     }
     if (dataClassName == 'PrivacyDashboard') {
-      return deserialize<_i47.PrivacyDashboard>(data['data']);
+      return deserialize<_i50.PrivacyDashboard>(data['data']);
     }
     if (dataClassName == 'Recipe') {
-      return deserialize<_i48.Recipe>(data['data']);
+      return deserialize<_i51.Recipe>(data['data']);
     }
     if (dataClassName == 'SafeZone') {
-      return deserialize<_i49.SafeZone>(data['data']);
+      return deserialize<_i52.SafeZone>(data['data']);
     }
     if (dataClassName == 'Settlement') {
-      return deserialize<_i50.Settlement>(data['data']);
+      return deserialize<_i53.Settlement>(data['data']);
     }
     if (dataClassName == 'SettlementStatus') {
-      return deserialize<_i51.SettlementStatus>(data['data']);
+      return deserialize<_i54.SettlementStatus>(data['data']);
     }
     if (dataClassName == 'SettlementSuggestion') {
-      return deserialize<_i52.SettlementSuggestion>(data['data']);
+      return deserialize<_i55.SettlementSuggestion>(data['data']);
     }
     if (dataClassName == 'ShoppingCategory') {
-      return deserialize<_i53.ShoppingCategory>(data['data']);
+      return deserialize<_i56.ShoppingCategory>(data['data']);
     }
     if (dataClassName == 'ShoppingItem') {
-      return deserialize<_i54.ShoppingItem>(data['data']);
+      return deserialize<_i57.ShoppingItem>(data['data']);
     }
     if (dataClassName == 'ShoppingList') {
-      return deserialize<_i55.ShoppingList>(data['data']);
+      return deserialize<_i58.ShoppingList>(data['data']);
     }
     if (dataClassName == 'ShoppingListChanged') {
-      return deserialize<_i56.ShoppingListChanged>(data['data']);
+      return deserialize<_i59.ShoppingListChanged>(data['data']);
     }
     if (dataClassName == 'ShoppingListStatus') {
-      return deserialize<_i57.ShoppingListStatus>(data['data']);
+      return deserialize<_i60.ShoppingListStatus>(data['data']);
     }
     if (dataClassName == 'ShoppingListWithItems') {
-      return deserialize<_i58.ShoppingListWithItems>(data['data']);
+      return deserialize<_i61.ShoppingListWithItems>(data['data']);
     }
     if (dataClassName == 'ShoppingUnit') {
-      return deserialize<_i59.ShoppingUnit>(data['data']);
+      return deserialize<_i62.ShoppingUnit>(data['data']);
+    }
+    if (dataClassName == 'SportIntensity') {
+      return deserialize<_i63.SportIntensity>(data['data']);
     }
     if (dataClassName == 'TodoCategory') {
-      return deserialize<_i60.TodoCategory>(data['data']);
+      return deserialize<_i64.TodoCategory>(data['data']);
     }
     if (dataClassName == 'TodoItem') {
-      return deserialize<_i61.TodoItem>(data['data']);
+      return deserialize<_i65.TodoItem>(data['data']);
     }
     if (dataClassName == 'TodoPriority') {
-      return deserialize<_i62.TodoPriority>(data['data']);
+      return deserialize<_i66.TodoPriority>(data['data']);
     }
     if (dataClassName == 'TodoStatus') {
-      return deserialize<_i63.TodoStatus>(data['data']);
+      return deserialize<_i67.TodoStatus>(data['data']);
     }
     if (dataClassName == 'UserPoints') {
-      return deserialize<_i64.UserPoints>(data['data']);
+      return deserialize<_i68.UserPoints>(data['data']);
     }
     if (dataClassName.startsWith('serverpod.')) {
       data['className'] = dataClassName.substring(10);
@@ -3398,10 +3660,10 @@ class Protocol extends _i1.SerializationManagerServer {
       return _i3.Protocol().deserializeByClassName(data);
     }
     if (dataClassName == 'List<BoardPostWithPoll>') {
-      return deserialize<List<_i65.BoardPostWithPoll>>(data['data']);
+      return deserialize<List<_i69.BoardPostWithPoll>>(data['data']);
     }
     if (dataClassName == 'List<EmergencyAlert>') {
-      return deserialize<List<_i69.EmergencyAlert>>(data['data']);
+      return deserialize<List<_i73.EmergencyAlert>>(data['data']);
     }
     return super.deserializeByClassName(data);
   }
@@ -3441,28 +3703,30 @@ class Protocol extends _i1.SerializationManagerServer {
         return _i29.Family.t;
       case _i31.FamilyMember:
         return _i31.FamilyMember.t;
-      case _i41.LocationHistory:
-        return _i41.LocationHistory.t;
-      case _i42.LocationSharing:
-        return _i42.LocationSharing.t;
-      case _i43.MealPlan:
-        return _i43.MealPlan.t;
-      case _i46.PollOption:
-        return _i46.PollOption.t;
-      case _i48.Recipe:
-        return _i48.Recipe.t;
-      case _i49.SafeZone:
-        return _i49.SafeZone.t;
-      case _i50.Settlement:
-        return _i50.Settlement.t;
-      case _i54.ShoppingItem:
-        return _i54.ShoppingItem.t;
-      case _i55.ShoppingList:
-        return _i55.ShoppingList.t;
-      case _i61.TodoItem:
-        return _i61.TodoItem.t;
-      case _i64.UserPoints:
-        return _i64.UserPoints.t;
+      case _i38.HealthEntry:
+        return _i38.HealthEntry.t;
+      case _i44.LocationHistory:
+        return _i44.LocationHistory.t;
+      case _i45.LocationSharing:
+        return _i45.LocationSharing.t;
+      case _i46.MealPlan:
+        return _i46.MealPlan.t;
+      case _i49.PollOption:
+        return _i49.PollOption.t;
+      case _i51.Recipe:
+        return _i51.Recipe.t;
+      case _i52.SafeZone:
+        return _i52.SafeZone.t;
+      case _i53.Settlement:
+        return _i53.Settlement.t;
+      case _i57.ShoppingItem:
+        return _i57.ShoppingItem.t;
+      case _i58.ShoppingList:
+        return _i58.ShoppingList.t;
+      case _i65.TodoItem:
+        return _i65.TodoItem.t;
+      case _i68.UserPoints:
+        return _i68.UserPoints.t;
     }
     return null;
   }

@@ -4,6 +4,7 @@ table: family
 fields:
   name: String
   inviteCode: String
+  accentColor: String?, default='#5B8DEF'
   settings: String?, defaultPersist="{}"
 indexes:
   family_invite_code_idx:

@@ -1,0 +1,6 @@
+enum: HealthEntryType
+serialized: byName
+values:
+  - medicalVisit
+  - diet
+  - sportActivity

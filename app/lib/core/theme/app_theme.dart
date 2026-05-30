@@ -1,35 +1,80 @@
 import 'package:flutter/material.dart';
 
-/// Palette calda Famylia — arancio, verde acqua, blu pastello.
-abstract final class FamyliaColors {
-  static const primary = Color(0xFFE87A3B);
-  static const primaryDark = Color(0xFFC45E28);
-  static const secondary = Color(0xFF4DB6AC);
-  static const tertiary = Color(0xFF7EB8DA);
-  static const surfaceLight = Color(0xFFFFFBF7);
-  static const surfaceDark = Color(0xFF1A1A1E);
-  static const onSurfaceDark = Color(0xFFE8E6E3);
-}
+import 'famylia_accent_presets.dart';
 
+/// Tema pulito giorno/notte con accento famiglia configurabile.
 abstract final class AppTheme {
-  static ThemeData light() {
-    final base = ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: FamyliaColors.primary,
-        primary: FamyliaColors.primary,
-        secondary: FamyliaColors.secondary,
-        tertiary: FamyliaColors.tertiary,
-        surface: FamyliaColors.surfaceLight,
-        brightness: Brightness.light,
-      ),
-      fontFamily: 'Roboto',
+  static ThemeData light({required Color accent}) {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: accent,
+      brightness: Brightness.light,
+      surface: const Color(0xFFF8F9FC),
+      onSurface: const Color(0xFF1A1D26),
+      surfaceContainerHighest: const Color(0xFFEEF0F5),
+      outline: const Color(0xFFD8DCE6),
     );
-    return base.copyWith(
-      appBarTheme: const AppBarTheme(centerTitle: true, elevation: 0),
+    return _base(scheme, accent);
+  }
+
+  static ThemeData dark({required Color accent}) {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: accent,
+      brightness: Brightness.dark,
+      surface: const Color(0xFF12141A),
+      onSurface: const Color(0xFFE8EAEF),
+      surfaceContainerHighest: const Color(0xFF1E222C),
+      outline: const Color(0xFF3A4050),
+    );
+    return _base(scheme, accent);
+  }
+
+  static ThemeData _base(ColorScheme scheme, Color accent) {
+    final isDark = scheme.brightness == Brightness.dark;
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: scheme.copyWith(
+        primary: accent,
+        onPrimary: _onAccent(accent),
+        secondary: accent.withValues(alpha: 0.75),
+        tertiary: isDark ? const Color(0xFF8BA4C4) : const Color(0xFF6B7A94),
+      ),
+      scaffoldBackgroundColor: scheme.surface,
+      cardTheme: CardThemeData(
+        elevation: 0,
+        color: isDark ? const Color(0xFF1A1E28) : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
+        ),
+      ),
+      appBarTheme: AppBarTheme(
+        centerTitle: true,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: scheme.surface,
+        foregroundColor: scheme.onSurface,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        elevation: 0,
+        backgroundColor: isDark ? const Color(0xFF1A1E28) : Colors.white,
+        indicatorColor: accent.withValues(alpha: 0.18),
+        labelTextStyle: WidgetStatePropertyAll(
+          TextStyle(
+            fontSize: 12,
+            color: scheme.onSurface.withValues(alpha: 0.85),
+          ),
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        side: BorderSide(color: scheme.outline.withValues(alpha: 0.4)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
+        fillColor: isDark
+            ? const Color(0xFF1E222C)
+            : const Color(0xFFF0F2F7),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -37,34 +82,19 @@ abstract final class AppTheme {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
+      dividerTheme: DividerThemeData(
+        color: scheme.outline.withValues(alpha: 0.35),
+        thickness: 1,
+      ),
+      fontFamily: 'Roboto',
     );
   }
 
-  static ThemeData dark() {
-    final base = ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: FamyliaColors.primary,
-        primary: FamyliaColors.primary,
-        secondary: FamyliaColors.secondary,
-        brightness: Brightness.dark,
-        surface: FamyliaColors.surfaceDark,
-      ),
-      fontFamily: 'Roboto',
-    );
-    return base.copyWith(
-      scaffoldBackgroundColor: FamyliaColors.surfaceDark,
-      appBarTheme: const AppBarTheme(centerTitle: true, elevation: 0),
-      inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        filled: true,
-      ),
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          minimumSize: const Size.fromHeight(48),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      ),
-    );
+  static Color _onAccent(Color accent) {
+    final luminance = accent.computeLuminance();
+    return luminance > 0.5 ? const Color(0xFF1A1D26) : Colors.white;
   }
+
+  static Color accentFromFamily(String? hex) =>
+      FamyliaAccentPresets.colorFromHex(hex);
 }

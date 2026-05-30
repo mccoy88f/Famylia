@@ -143,6 +143,34 @@ class FamilyEndpoint extends Endpoint {
     return 'Utente #$userId';
   }
 
+  Future<Family> updateAccentColor(
+    Session session,
+    int familyId,
+    String accentColor,
+  ) async {
+    await requireFamilyAdmin(session, familyId);
+    final hex = _normalizeAccentHex(accentColor);
+    final family = await Family.db.findById(session, familyId);
+    if (family == null) {
+      throw FamyliaException(message: 'Famiglia non trovata.');
+    }
+    return Family.db.updateRow(
+      session,
+      family.copyWith(accentColor: hex),
+    );
+  }
+
+  String _normalizeAccentHex(String raw) {
+    var hex = raw.trim().toUpperCase();
+    if (!hex.startsWith('#')) hex = '#$hex';
+    if (!RegExp(r'^#[0-9A-F]{6}$').hasMatch(hex)) {
+      throw FamyliaException(
+        message: 'Colore non valido. Usa il formato #RRGGBB.',
+      );
+    }
+    return hex;
+  }
+
   Future<bool> leaveFamily(Session session, int familyId) async {
     final userId = await requireUserId(session);
     final membership = await FamilyMember.db.findFirstRow(

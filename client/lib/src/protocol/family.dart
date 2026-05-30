@@ -17,13 +17,15 @@ abstract class Family implements _i1.SerializableModel {
     this.id,
     required this.name,
     required this.inviteCode,
+    String? accentColor,
     this.settings,
-  });
+  }) : accentColor = accentColor ?? '#5B8DEF';
 
   factory Family({
     int? id,
     required String name,
     required String inviteCode,
+    String? accentColor,
     String? settings,
   }) = _FamilyImpl;
 
@@ -32,6 +34,7 @@ abstract class Family implements _i1.SerializableModel {
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       inviteCode: jsonSerialization['inviteCode'] as String,
+      accentColor: jsonSerialization['accentColor'] as String?,
       settings: jsonSerialization['settings'] as String?,
     );
   }
@@ -45,6 +48,8 @@ abstract class Family implements _i1.SerializableModel {
 
   String inviteCode;
 
+  String? accentColor;
+
   String? settings;
 
   /// Returns a shallow copy of this [Family]
@@ -54,6 +59,7 @@ abstract class Family implements _i1.SerializableModel {
     int? id,
     String? name,
     String? inviteCode,
+    String? accentColor,
     String? settings,
   });
   @override
@@ -62,6 +68,7 @@ abstract class Family implements _i1.SerializableModel {
       if (id != null) 'id': id,
       'name': name,
       'inviteCode': inviteCode,
+      if (accentColor != null) 'accentColor': accentColor,
       if (settings != null) 'settings': settings,
     };
   }
@@ -79,11 +86,13 @@ class _FamilyImpl extends Family {
     int? id,
     required String name,
     required String inviteCode,
+    String? accentColor,
     String? settings,
   }) : super._(
           id: id,
           name: name,
           inviteCode: inviteCode,
+          accentColor: accentColor,
           settings: settings,
         );
 
@@ -95,12 +104,14 @@ class _FamilyImpl extends Family {
     Object? id = _Undefined,
     String? name,
     String? inviteCode,
+    Object? accentColor = _Undefined,
     Object? settings = _Undefined,
   }) {
     return Family(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       inviteCode: inviteCode ?? this.inviteCode,
+      accentColor: accentColor is String? ? accentColor : this.accentColor,
       settings: settings is String? ? settings : this.settings,
     );
   }

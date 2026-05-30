@@ -28,3 +28,12 @@ Future<void> requireFamilyMemberNotGuest(Session session, int familyId) async {
     throw FamyliaException(message: 'I guest possono solo visualizzare.');
   }
 }
+
+Future<void> requireFamilyAdmin(Session session, int familyId) async {
+  final member = await requireFamilyMember(session, familyId);
+  if (member.role != FamilyRole.admin) {
+    throw FamyliaException(
+      message: 'Solo gli admin possono modificare le impostazioni famiglia.',
+    );
+  }
+}

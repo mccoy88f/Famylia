@@ -136,17 +136,44 @@ Future<void> main() async {
   );
   stdout.writeln('    ${ingredients.length} ingredienti da piano');
 
-  stdout.writeln('==> 14. GDPR export');
+  stdout.writeln('==> 14. Salute');
+  await client.health.createEntry(
+    familyId,
+    HealthEntryType.medicalVisit,
+    'Visita pediatrica',
+    scheduledAt: DateTime.now().add(const Duration(days: 5)),
+    providerName: 'Dr. Rossi',
+  );
+  await client.health.createEntry(
+    familyId,
+    HealthEntryType.diet,
+    'Dieta mediterranea',
+    dietGoal: 'Equilibrio',
+    caloriesTarget: 2000,
+  );
+  await client.health.createEntry(
+    familyId,
+    HealthEntryType.sportActivity,
+    'Corsa',
+    scheduledAt: DateTime.now().add(const Duration(days: 2)),
+    sportType: 'Running',
+    durationMinutes: 45,
+    intensity: SportIntensity.medium,
+  );
+  final healthItems = await client.health.listEntries(familyId);
+  stdout.writeln('    ${healthItems.length} voci salute');
+
+  stdout.writeln('==> 15. GDPR export');
   final gdpr = await client.gdpr.exportMyData();
   stdout.writeln('    export ${gdpr.payloadJson.length} chars');
 
-  stdout.writeln('==> 15. Location');
+  stdout.writeln('==> 16. Location');
   await client.location.updateStatus(familyId, true);
   await client.location.checkIn(familyId, 45.46, 9.19, address: 'Milano');
   final locs = await client.location.getFamilyLocations(familyId);
   stdout.writeln('    ${locs.length} posizioni famiglia');
 
-  stdout.writeln('==> 16. Emergenza (test)');
+  stdout.writeln('==> 17. Emergenza (test)');
   await client.emergency.triggerAlert(
     familyId,
     EmergencyAlertType.medical,
@@ -156,16 +183,16 @@ Future<void> main() async {
   final active = await client.emergency.listActive(familyId);
   stdout.writeln('    ${active.length} allerte attive');
 
-  stdout.writeln('==> 17. Gamification');
+  stdout.writeln('==> 18. Gamification');
   final points = await client.gamification.getMyPoints(familyId);
   stdout.writeln('    ${points.points} punti');
 
-  stdout.writeln('==> 18. Report');
+  stdout.writeln('==> 19. Report');
   final report = await client.report.getReport(familyId);
   stdout.writeln('    spese €${report.totalExpenses.toStringAsFixed(2)}');
 
   stdout.writeln('');
-  stdout.writeln('✅ Smoke test OK (Fase 1–3)');
+  stdout.writeln('✅ Smoke test OK (Fase 1–3 + Salute)');
 }
 
 String? _readVerificationCodeFromServerLog(String email) {

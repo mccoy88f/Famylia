@@ -10,7 +10,9 @@ import 'core/sync/connectivity_sync.dart';
 import 'core/router/app_router.dart';
 import 'core/session/app_state.dart';
 import 'core/session/family_context.dart';
+import 'core/theme/app_settings.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/famylia_accent_presets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +24,8 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
   final familyContext = FamilyContext(prefs);
   await familyContext.load();
+  final appSettings = AppSettings(prefs);
+  await appSettings.load();
 
   final appState = AppState();
 
@@ -35,8 +39,13 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider.value(value: appState),
         ChangeNotifierProvider.value(value: familyContext),
+        ChangeNotifierProvider.value(value: appSettings),
       ],
-      child: FamyliaApp(router: router, familyContext: familyContext),
+      child: FamyliaApp(
+        router: router,
+        familyContext: familyContext,
+        appSettings: appSettings,
+      ),
     ),
   );
 }
@@ -45,11 +54,13 @@ class FamyliaApp extends StatefulWidget {
   const FamyliaApp({
     required this.router,
     required this.familyContext,
+    required this.appSettings,
     super.key,
   });
 
   final GoRouter router;
   final FamilyContext familyContext;
+  final AppSettings appSettings;
 
   @override
   State<FamyliaApp> createState() => _FamyliaAppState();
@@ -73,13 +84,24 @@ class _FamyliaAppState extends State<FamyliaApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Famylia',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.system,
-      routerConfig: widget.router,
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        widget.familyContext,
+        widget.appSettings,
+      ]),
+      builder: (context, _) {
+        final accent = FamyliaAccentPresets.colorFromHex(
+          widget.familyContext.accentColorHex,
+        );
+        return MaterialApp.router(
+          title: 'Famylia',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light(accent: accent),
+          darkTheme: AppTheme.dark(accent: accent),
+          themeMode: widget.appSettings.themeMode,
+          routerConfig: widget.router,
+        );
+      },
     );
   }
 }

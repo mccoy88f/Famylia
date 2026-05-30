@@ -1,10 +1,12 @@
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/api/auth_repository.dart';
 import '../../core/api/deadline_repository.dart';
+import '../../core/api/health_repository.dart';
 import '../../core/api/shopping_repository.dart';
 import '../../core/api/todo_repository.dart';
 import '../../core/extensions/context_extensions.dart';
@@ -23,11 +25,14 @@ class _HomeScreenState extends State<HomeScreen> {
   final _todos = TodoRepository();
   final _shopping = ShoppingRepository();
   final _deadlines = DeadlineRepository();
+  final _health = HealthRepository();
   int _openTodos = 0;
   int _uncheckedItems = 0;
   int _upcomingDeadlines = 0;
+  List<HealthEntry> _upcomingVisits = [];
   bool _loading = true;
   bool _offline = false;
+  final _visitFmt = DateFormat('EEE d MMM · HH:mm');
 
   @override
   void initState() {
@@ -44,6 +49,11 @@ class _HomeScreenState extends State<HomeScreen> {
       final todos = await _todos.list(familyId);
       final open = todos.where((t) => t.status != TodoStatus.done).length;
       final upcoming = await _deadlines.upcoming(familyId, days: 30);
+      final visits = await _health.upcoming(
+        familyId,
+        days: 30,
+        type: HealthEntryType.medicalVisit,
+      );
       var unchecked = 0;
       final lists = await _shopping.listLists(familyId);
       for (final list in lists) {
@@ -56,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _openTodos = open;
           _uncheckedItems = unchecked;
           _upcomingDeadlines = upcoming.length;
+          _upcomingVisits = visits;
           _loading = false;
         });
       }
@@ -81,6 +92,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           PopupMenuButton<String>(
             onSelected: (value) async {
+              if (value == 'appearance') {
+                if (context.mounted) context.push(AppRoutes.appearance);
+                return;
+              }
               if (value == 'privacy') {
                 if (context.mounted) context.push(AppRoutes.privacy);
                 return;
@@ -92,6 +107,16 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             },
             itemBuilder: (_) => [
+              const PopupMenuItem(
+                value: 'appearance',
+                child: Row(
+                  children: [
+                    Icon(Icons.palette_outlined),
+                    SizedBox(width: 8),
+                    Text('Aspetto'),
+                  ],
+                ),
+              ),
               const PopupMenuItem(
                 value: 'privacy',
                 child: Row(
@@ -151,6 +176,51 @@ class _HomeScreenState extends State<HomeScreen> {
                 value: '$_upcomingDeadlines',
                 onTap: () => context.push(AppRoutes.deadlines),
               ),
+              if (_upcomingVisits.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Prossime visite',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => context.push(AppRoutes.health),
+                      child: const Text('Tutte'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Card(
+                  child: Column(
+                    children: [
+                      for (var i = 0; i < _upcomingVisits.length && i < 3; i++)
+                        ListTile(
+                          leading: Icon(
+                            Icons.medical_services_outlined,
+                            color: theme.colorScheme.primary,
+                          ),
+                          title: Text(_upcomingVisits[i].title),
+                          subtitle: Text(
+                            [
+                              if (_upcomingVisits[i].providerName != null)
+                                _upcomingVisits[i].providerName!,
+                              if (_upcomingVisits[i].scheduledAt != null)
+                                _visitFmt.format(
+                                  _upcomingVisits[i].scheduledAt!.toLocal(),
+                                ),
+                            ].join(' · '),
+                          ),
+                          onTap: () => context.push(AppRoutes.health),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
               Text(
                 'Organizzazione',
@@ -187,6 +257,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: Icons.restaurant_outlined,
                     label: 'Pasti',
                     onTap: () => context.push(AppRoutes.meals),
+                  ),
+                  _ModuleChip(
+                    icon: Icons.favorite_outline,
+                    label: 'Salute',
+                    onTap: () => context.push(AppRoutes.health),
                   ),
                 ],
               ),
