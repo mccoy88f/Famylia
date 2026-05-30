@@ -7,6 +7,7 @@ import '../../core/api/family_repository.dart';
 import '../../core/api/todo_repository.dart';
 import '../../core/extensions/context_extensions.dart';
 import '../../core/session/app_state.dart';
+import '../../core/utils/registra_spesa_dialog.dart';
 
 class TodosScreen extends StatefulWidget {
   const TodosScreen({super.key});
@@ -139,10 +140,21 @@ class _TodosScreenState extends State<TodosScreen> {
       if (item.status == TodoStatus.done) {
         // MVP: no uncomplete endpoint — refresh only
         await _load();
-      } else {
-        await _repo.complete(item.id!);
-        await _load();
+        return;
       }
+      final familyId = context.activeFamilyId;
+      final preventivato = parsePreventivato(item.description);
+      if (familyId != null && (preventivato != null)) {
+        await showRegistraSpesaDialog(
+          context,
+          titolo: item.title,
+          familyId: familyId,
+          costoPreventivato: preventivato,
+        );
+      }
+      if (!mounted) return;
+      await _repo.complete(item.id!);
+      await _load();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

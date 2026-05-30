@@ -10,6 +10,7 @@ import '../../core/api/expense_repository.dart';
 import '../../core/api/family_repository.dart';
 import '../../core/extensions/context_extensions.dart';
 import '../../core/router/app_router.dart';
+import '../../core/utils/registra_spesa_dialog.dart';
 
 class AgendaScreen extends StatefulWidget {
   const AgendaScreen({super.key});
@@ -207,6 +208,18 @@ class _AppuntamentiTabState extends State<_AppuntamentiTab> with AutomaticKeepAl
     }
   }
 
+  Future<void> _registraCosto(CalendarEvent event) async {
+    final familyId = context.activeFamilyId;
+    if (familyId == null) return;
+    final preventivato = parsePreventivato(event.description);
+    await showRegistraSpesaDialog(
+      context,
+      titolo: event.title,
+      familyId: familyId,
+      costoPreventivato: preventivato,
+    );
+  }
+
   Map<String, List<CalendarEvent>> _groupByDay() {
     final map = <String, List<CalendarEvent>>{};
     for (final e in _events) {
@@ -250,7 +263,7 @@ class _AppuntamentiTabState extends State<_AppuntamentiTab> with AutomaticKeepAl
               shadTheme: shadTheme,
             ),
             for (final e in entry.value)
-              _EventCard(event: e, timeFmt: _timeFmt, shadTheme: shadTheme),
+              _EventCard(event: e, timeFmt: _timeFmt, shadTheme: shadTheme, onTap: () => _registraCosto(e)),
           ],
         ],
       ),
@@ -259,41 +272,58 @@ class _AppuntamentiTabState extends State<_AppuntamentiTab> with AutomaticKeepAl
 }
 
 class _EventCard extends StatelessWidget {
-  const _EventCard({required this.event, required this.timeFmt, required this.shadTheme});
+  const _EventCard({required this.event, required this.timeFmt, required this.shadTheme, this.onTap});
   final CalendarEvent event;
   final DateFormat timeFmt;
   final ShadThemeData shadTheme;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final primary = shadTheme.colorScheme.primary;
+    final preventivato = parsePreventivato(event.description);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-      child: ShadCard(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            Container(
-              width: 3,
-              height: 38,
-              decoration: BoxDecoration(
-                color: primary,
-                borderRadius: BorderRadius.circular(2),
+      child: GestureDetector(
+        onTap: onTap,
+        child: ShadCard(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 3,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: primary,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(event.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-                  const SizedBox(height: 2),
-                  Text(timeFmt.format(event.startAt.toLocal()),
-                      style: TextStyle(color: primary, fontWeight: FontWeight.w500, fontSize: 13)),
-                ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(event.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Text(timeFmt.format(event.startAt.toLocal()),
+                            style: TextStyle(color: primary, fontWeight: FontWeight.w500, fontSize: 13)),
+                        if (preventivato != null) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            '· €${preventivato.toStringAsFixed(2)} prev.',
+                            style: TextStyle(color: shadTheme.colorScheme.mutedForeground, fontSize: 12),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              Icon(Icons.euro_outlined, size: 16, color: shadTheme.colorScheme.mutedForeground),
+            ],
+          ),
         ),
       ),
     );

@@ -15,6 +15,7 @@ class CalendarRepository {
     DateTime? endAt,
     CalendarEventCategory? category,
     String? location,
+    String? description,
   }) =>
       _client.calendar.createEvent(
         familyId,
@@ -23,6 +24,7 @@ class CalendarRepository {
         endAt: endAt,
         category: category,
         location: location,
+        description: description,
       );
 
   Future<List<CalendarEvent>> list(

@@ -11,6 +11,7 @@ import '../../core/api/shopping_repository.dart';
 import '../../core/api/todo_repository.dart';
 import '../../core/extensions/context_extensions.dart';
 import '../../core/session/app_state.dart';
+import '../../core/utils/registra_spesa_dialog.dart';
 
 // ── Tipo attività ─────────────────────────────────────────────────────────
 
@@ -57,6 +58,8 @@ class _FormData {
   // Spese condivise
   int? pagatoreId;
   List<int> beneficiariIds = []; // vuoto = tutta la famiglia
+  // Costo preventivato (solo task/appuntamento)
+  double? costoPreventivato;
 }
 
 // ── Entry point ───────────────────────────────────────────────────────────
@@ -177,6 +180,13 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
     }
   }
 
+  String? _buildDescription(String base) {
+    if (_data.costoPreventivato != null && _data.costoPreventivato! > 0) {
+      return encodePreventivato(base, _data.costoPreventivato!);
+    }
+    return base.isEmpty ? null : base;
+  }
+
   Future<void> _save(int familyId) async {
     final me = context.read<AppState>().signedInUser?.id;
     switch (_data.tipo!) {
@@ -184,7 +194,7 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
         await TodoRepository().create(
           familyId,
           _data.titolo.trim(),
-          description: _data.descrizione.trim().isEmpty ? null : _data.descrizione.trim(),
+          description: _buildDescription(_data.descrizione.trim()),
           category: _data.categoria,
           priority: _data.priorita,
           assignedTo: _data.responsabile,
@@ -195,6 +205,7 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
           familyId,
           _data.titolo.trim(),
           _data.quando ?? DateTime.now().add(const Duration(hours: 2)),
+          description: _buildDescription(_data.descrizione.trim()),
         );
       case _Tipo.spesa:
         final pagatore = _data.pagatoreId ?? me ?? 0;
@@ -467,8 +478,76 @@ class _StepCosa extends StatelessWidget {
             const SizedBox(height: 8),
             _TipoAppuntamentoRow(value: data.tipoAppuntamento, onChanged: (t) { data.tipoAppuntamento = t; onChanged(); }),
           ],
+          if (data.tipo == _Tipo.task || data.tipo == _Tipo.appuntamento) ...[
+            const SizedBox(height: 20),
+            Divider(color: ShadTheme.of(context).colorScheme.border),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(Icons.euro_outlined, size: 14, color: shadTheme.colorScheme.mutedForeground),
+                const SizedBox(width: 6),
+                Text('Costo preventivato', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500)),
+                const SizedBox(width: 6),
+                Text('(opzionale)', style: shadTheme.textTheme.muted.copyWith(fontSize: 11)),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Ti verrà chiesto il costo effettivo al completamento',
+              style: shadTheme.textTheme.muted.copyWith(fontSize: 11),
+            ),
+            const SizedBox(height: 8),
+            _CampoPreventivato(data: data, onChanged: onChanged),
+          ],
         ],
       ),
+    );
+  }
+}
+
+class _CampoPreventivato extends StatefulWidget {
+  const _CampoPreventivato({required this.data, required this.onChanged});
+  final _FormData data;
+  final VoidCallback onChanged;
+
+  @override
+  State<_CampoPreventivato> createState() => _CampoPreventivatiState();
+}
+
+class _CampoPreventivatiState extends State<_CampoPreventivato> {
+  late final TextEditingController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = TextEditingController(
+      text: widget.data.costoPreventivato != null
+          ? widget.data.costoPreventivato!.toStringAsFixed(2)
+          : '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final shadTheme = ShadTheme.of(context);
+    return ShadInput(
+      controller: _ctrl,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      placeholder: const Text('0.00'),
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 4),
+        child: Text('€', style: shadTheme.textTheme.p.copyWith(fontWeight: FontWeight.w600)),
+      ),
+      onChanged: (v) {
+        widget.data.costoPreventivato = double.tryParse(v.replaceAll(',', '.'));
+        widget.onChanged();
+      },
     );
   }
 }
