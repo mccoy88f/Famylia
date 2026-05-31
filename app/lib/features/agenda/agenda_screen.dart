@@ -9,6 +9,7 @@ import '../../core/api/deadline_repository.dart';
 import '../../core/api/expense_repository.dart';
 import '../../core/api/family_repository.dart';
 import '../../core/extensions/context_extensions.dart';
+import '../../core/session/activity_refresh.dart';
 import '../../core/router/app_router.dart';
 import '../../core/utils/registra_spesa_dialog.dart';
 
@@ -30,11 +31,37 @@ class _AgendaScreenState extends State<AgendaScreen> with SingleTickerProviderSt
   void initState() {
     super.initState();
     _tab = TabController(length: 3, vsync: this);
-    _tab.addListener(() => setState(() {}));
+    _tab.addListener(_onTabChanged);
+    ActivityRefresh.instance.addListener(_reloadAllTabs);
+  }
+
+  void _onTabChanged() {
+    if (_tab.indexIsChanging) return;
+    setState(() {});
+    _reloadTab(_tab.index);
+  }
+
+  void _reloadTab(int index) {
+    switch (index) {
+      case 0:
+        _calendarioKey.currentState?.refresh();
+      case 1:
+        _scadenzeKey.currentState?.refresh();
+      case 2:
+        _speseKey.currentState?.refresh();
+    }
+  }
+
+  void _reloadAllTabs() {
+    _reloadTab(0);
+    _reloadTab(1);
+    _reloadTab(2);
   }
 
   @override
   void dispose() {
+    ActivityRefresh.instance.removeListener(_reloadAllTabs);
+    _tab.removeListener(_onTabChanged);
     _tab.dispose();
     super.dispose();
   }
@@ -137,6 +164,8 @@ class _AppuntamentiTabState extends State<_AppuntamentiTab> with AutomaticKeepAl
       if (mounted) setState(() => _loading = false);
     }
   }
+
+  void refresh() => _load();
 
   Future<void> _add() async {
     final familyId = context.activeFamilyId;
@@ -380,6 +409,8 @@ class _ScadenzeTabState extends State<_ScadenzeTab> with AutomaticKeepAliveClien
       if (mounted) setState(() => _loading = false);
     }
   }
+
+  void refresh() => _load();
 
   Future<void> _add() async {
     final familyId = context.activeFamilyId;
@@ -662,6 +693,8 @@ class _SpeseTabState extends State<_SpeseTab> with AutomaticKeepAliveClientMixin
       if (mounted) setState(() => _loading = false);
     }
   }
+
+  void refresh() => _load();
 
   double get _total => _items.fold(0.0, (s, e) => s + e.amount);
 

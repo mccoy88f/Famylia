@@ -11,7 +11,10 @@ import '../../core/api/shopping_repository.dart';
 import '../../core/api/todo_repository.dart';
 import '../../core/api/ai_repository.dart';
 import '../../core/extensions/context_extensions.dart';
+import '../../core/session/activity_refresh.dart';
 import '../../core/session/app_state.dart';
+import '../../core/utils/activity_duplicate_checker.dart';
+import '../../core/utils/duplicate_activity_dialog.dart';
 import '../../core/utils/registra_spesa_dialog.dart';
 
 // ── Tipo attività ─────────────────────────────────────────────────────────
@@ -220,9 +223,44 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
   Future<void> _submit() async {
     final familyId = context.activeFamilyId;
     if (familyId == null) return;
+    if (_data.tipo == _Tipo.spesa && (_data.importo == null || _data.importo! <= 0)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Inserisci un importo maggiore di zero')),
+      );
+      return;
+    }
     setState(() => _loading = true);
     try {
+      final me = context.read<AppState>().signedInUser?.id;
+      int? shoppingListId;
+      if (_data.tipo == _Tipo.acquisto && _shoppingLists.isNotEmpty) {
+        shoppingListId = _shoppingLists.first.id;
+      }
+
+      ActivityDuplicateMatch? duplicate;
+      try {
+        duplicate = await const ActivityDuplicateChecker().find(
+          familyId: familyId,
+          activityType: _data.tipo!.name,
+          title: _data.titolo.trim(),
+          quando: _data.quando,
+          importo: _data.importo,
+          assignedTo: _data.responsabile,
+          paidBy: _data.pagatoreId ?? me,
+          shoppingListId: shoppingListId,
+        );
+      } catch (_) {
+        duplicate = null;
+      }
+
+      if (!mounted) return;
+      if (duplicate != null) {
+        final proceed = await showDuplicateActivityDialog(context, duplicate);
+        if (!proceed) return;
+      }
+
       await _save(familyId);
+      ActivityRefresh.instance.notifyChanged();
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -308,111 +346,136 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
     final borderRadius = isWide
         ? BorderRadius.circular(16)
         : const BorderRadius.vertical(top: Radius.circular(20));
-    final pageHeight = (mq.size.height * 0.55).clamp(300.0, 500.0);
+    final keyboardInset = mq.viewInsets.bottom;
+    final maxSheetHeight = (mq.size.height * 0.92 - keyboardInset).clamp(280.0, mq.size.height * 0.92);
 
-    return Center(
-      child: Container(
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboardInset),
+      child: Center(
+        child: Container(
         width: sheetWidth,
-        constraints: BoxConstraints(maxHeight: mq.size.height * 0.92),
+        constraints: BoxConstraints(maxHeight: maxSheetHeight),
         decoration: BoxDecoration(
           color: shadTheme.colorScheme.background,
           borderRadius: borderRadius,
           border: Border.all(color: shadTheme.colorScheme.border),
         ),
-        padding: EdgeInsets.only(bottom: mq.viewInsets.bottom),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle (mobile only)
-            if (!isWide) ...[
-              const SizedBox(height: 12),
-              Center(
-                child: Container(
-                  width: 36, height: 4,
-                  decoration: BoxDecoration(
-                    color: shadTheme.colorScheme.border,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-            ] else
-              const SizedBox(height: 16),
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(4, 4, 12, 0),
-              child: Row(
-                children: [
-                  if (_step > 0)
-                    ShadButton.ghost(
-                      onPressed: _back,
-                     
-                      child: const Icon(Icons.arrow_back_rounded, size: 18),
-                    )
-                  else
-                    const SizedBox(width: 44),
-                  Expanded(
-                    child: Text(
-                      _stepTitle,
-                      style: shadTheme.textTheme.h4,
-                      textAlign: TextAlign.center,
+        child: LayoutBuilder(
+          builder: (context, box) {
+            const handleH = 16.0;
+            const headerRowH = 48.0;
+            const indicatorBlockH = 36.0;
+            const dividerBlockH = 9.0;
+            const footerBlockH = 76.0;
+            final chromeH = (isWide ? 16.0 : 12.0 + handleH) +
+                headerRowH +
+                (_step > 0 ? 12.0 + indicatorBlockH : 0) +
+                dividerBlockH +
+                (_step > 0 ? footerBlockH : 8.0) +
+                mq.padding.bottom;
+            final pageH = (box.maxHeight - chromeH).clamp(180.0, mq.size.height * 0.55);
+
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle (mobile only)
+                if (!isWide) ...[
+                  const SizedBox(height: 12),
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: shadTheme.colorScheme.border,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
-                  ShadButton.ghost(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Annulla'),
+                ] else
+                  const SizedBox(height: 16),
+                // Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 4, 12, 0),
+                  child: Row(
+                    children: [
+                      if (_step > 0)
+                        ShadButton.ghost(
+                          onPressed: _back,
+                          child: const Icon(Icons.arrow_back_rounded, size: 18),
+                        )
+                      else
+                        const SizedBox(width: 44),
+                      Expanded(
+                        child: Text(
+                          _stepTitle,
+                          style: shadTheme.textTheme.h4,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      ShadButton.ghost(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Annulla'),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            // Step indicator
-            if (_step > 0) ...[
-              const SizedBox(height: 12),
-              _StepIndicator(
-                current: _step,
-                total: _totalSteps - 1,
-                shadTheme: shadTheme,
-              ),
-            ],
-            const SizedBox(height: 12),
-            // Pages
-            SizedBox(
-              height: pageHeight,
-              child: PageView(
-                controller: _pageCtrl,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _StepTipo(selected: _data.tipo, onSelect: (t) { setState(() => _data.tipo = t); _next(); }),
-                  _StepCosa(
-                    data: _data,
-                    members: _members,
-                    fromAi: widget.fromAi,
-                    onChangeTipo: () => _goTo(0),
-                    onChanged: () => setState(() {}),
-                  ),
-                  _StepChi(data: _data, members: _members, onChanged: () => setState(() {})),
-                  _StepQuando(data: _data, onChanged: () => setState(() {})),
-                  if (_hasBudget)
-                    _StepBudget(data: _data, members: _members, onChanged: () => setState(() {})),
-                ],
-              ),
-            ),
-            // Bottom button
-            if (_step > 0)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                child: ShadButton(
-                  onPressed: _canNext && !_loading ? _next : null,
-                  width: double.infinity,
-                  child: _loading
-                      ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                      : Text(_step >= _totalSteps - 1 ? 'Salva' : 'Avanti'),
                 ),
-              )
-            else
-              const SizedBox(height: 8),
-            SizedBox(height: mq.padding.bottom),
-          ],
+                if (_step > 0) ...[
+                  const SizedBox(height: 12),
+                  _StepIndicator(
+                    current: _step,
+                    total: _totalSteps - 1,
+                    shadTheme: shadTheme,
+                  ),
+                ],
+                const SizedBox(height: 8),
+                Divider(height: 1, thickness: 1, color: shadTheme.colorScheme.border),
+                SizedBox(
+                  height: pageH,
+                  child: PageView(
+                    controller: _pageCtrl,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      _StepTipo(selected: _data.tipo, onSelect: (t) {
+                        setState(() => _data.tipo = t);
+                        _next();
+                      }),
+                      _StepCosa(
+                        data: _data,
+                        members: _members,
+                        fromAi: widget.fromAi,
+                        onChangeTipo: () => _goTo(0),
+                        onChanged: () => setState(() {}),
+                      ),
+                      _StepChi(data: _data, members: _members, onChanged: () => setState(() {})),
+                      _StepQuando(data: _data, onChanged: () => setState(() {})),
+                      if (_hasBudget)
+                        _StepBudget(data: _data, members: _members, onChanged: () => setState(() {})),
+                    ],
+                  ),
+                ),
+                if (_step > 0)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                    child: ShadButton(
+                      onPressed: _canNext && !_loading ? _next : null,
+                      width: double.infinity,
+                      child: _loading
+                          ? const SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Text(_step >= _totalSteps - 1 ? 'Salva' : 'Avanti'),
+                    ),
+                  )
+                else
+                  const SizedBox(height: 8),
+                SizedBox(height: mq.padding.bottom),
+              ],
+            );
+          },
         ),
+      ),
       ),
     );
   }
@@ -1309,13 +1372,14 @@ class _StepBudgetState extends State<_StepBudget> {
         : null;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text('Importo', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500)),
+          const SizedBox(height: 8),
           ShadInput(
             controller: _ctrl,
-            autofocus: true,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             placeholder: const Text('0.00'),
             leading: Padding(
