@@ -1,0 +1,57 @@
+{
+  "actions": [
+    {
+      "type": "createTable",
+      "createTable": {
+        "name": "ai_config",
+        "dartName": "AiConfig",
+        "module": "famylia",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "nextval('ai_config_id_seq'::regclass)",
+            "dartType": "int?"
+          },
+          {
+            "name": "openRouterApiKey",
+            "columnType": 0,
+            "isNullable": false,
+            "dartType": "String"
+          },
+          {
+            "name": "defaultModel",
+            "columnType": 0,
+            "isNullable": false,
+            "columnDefault": "'google/gemini-2.5-flash-preview'::text",
+            "dartType": "String"
+          },
+          {
+            "name": "updatedAt",
+            "columnType": 3,
+            "isNullable": false,
+            "dartType": "DateTime"
+          }
+        ],
+        "foreignKeys": [],
+        "indexes": [
+          {
+            "indexName": "ai_config_pkey",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "id"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": true
+          }
+        ],
+        "managed": true
+      }
+    }
+  ]
+}

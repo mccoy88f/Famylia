@@ -55,6 +55,14 @@ class AiRepository {
 
   Future<bool> isConfigured() => _client.ai.isConfigured();
 
+  Future<Map<String, dynamic>> getAiConfig() async {
+    final json = await _client.ai.getAiConfig();
+    return jsonDecode(json) as Map<String, dynamic>;
+  }
+
+  Future<bool> saveAiConfig(String openRouterApiKey, String defaultModel) =>
+      _client.ai.saveAiConfig(openRouterApiKey, defaultModel);
+
   Future<AiExtractionResult> extractActivity(
     int familyId, {
     String? text,

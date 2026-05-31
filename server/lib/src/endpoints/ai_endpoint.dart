@@ -10,19 +10,71 @@ class AiEndpoint extends Endpoint {
   @override
   bool get requireLogin => true;
 
-  /// Returns true if the OpenRouter API key is configured in passwords.yaml.
+  // ── Config ────────────────────────────────────────────────────────────────
+
+  /// Returns true if an OpenRouter API key is stored in the DB.
   Future<bool> isConfigured(Session session) async {
     await requireUserId(session);
-    return session.passwords['openRouterApiKey']?.isNotEmpty == true;
+    final key = await _readKey(session);
+    return key != null && key.isNotEmpty;
   }
+
+  /// Returns current config (key masked, model visible). Admin use only.
+  Future<String> getAiConfig(Session session) async {
+    await requireUserId(session);
+    final rows = await session.db.unsafeQuery(
+      'SELECT "openRouterApiKey", "defaultModel" FROM "ai_config" LIMIT 1',
+    );
+    if (rows.isEmpty) {
+      return jsonEncode({'hasKey': false, 'defaultModel': 'google/gemini-2.5-flash-preview'});
+    }
+    final row = rows.first;
+    final key = row[0] as String? ?? '';
+    final model = row[1] as String? ?? 'google/gemini-2.5-flash-preview';
+    return jsonEncode({
+      'hasKey': key.isNotEmpty,
+      'keyPreview': key.isNotEmpty ? '${key.substring(0, key.length.clamp(0, 8))}••••••••' : '',
+      'defaultModel': model,
+    });
+  }
+
+  /// Saves OpenRouter API key and default model. Admin use only.
+  Future<bool> saveAiConfig(
+    Session session,
+    String openRouterApiKey,
+    String defaultModel,
+  ) async {
+    await requireUserId(session);
+    final trimmedKey = openRouterApiKey.trim();
+    final trimmedModel = defaultModel.trim();
+    if (trimmedModel.isEmpty) {
+      throw FamyliaException(message: 'Modello non valido.');
+    }
+    await session.db.unsafeExecute(
+      '''
+      INSERT INTO "ai_config" ("openRouterApiKey", "defaultModel", "updatedAt")
+      VALUES (\$1, \$2, now())
+      ON CONFLICT DO NOTHING
+      ''',
+      parameters: QueryParameters.positional([trimmedKey, trimmedModel]),
+    );
+    // If row already exists, update it
+    await session.db.unsafeExecute(
+      'UPDATE "ai_config" SET "openRouterApiKey" = \$1, "defaultModel" = \$2, "updatedAt" = now()',
+      parameters: QueryParameters.positional([trimmedKey, trimmedModel]),
+    );
+    return true;
+  }
+
+  // ── Extraction ────────────────────────────────────────────────────────────
 
   /// Extracts a family activity from text and/or images.
   ///
   /// [payload] is a JSON string with:
   ///   - text: String? — raw text (email body, clipboard, etc.)
   ///   - base64Images: List<String>? — base64-encoded images or PDFs
-  ///   - mimeTypes: List<String>? — MIME types for each image (e.g. image/jpeg)
-  ///   - model: String? — OpenRouter model ID (optional override)
+  ///   - mimeTypes: List<String>? — MIME types for each image
+  ///   - model: String? — model override for this call
   ///
   /// Returns a JSON string with the extraction result.
   Future<String> extractActivity(
@@ -32,11 +84,10 @@ class AiEndpoint extends Endpoint {
   ) async {
     await requireFamilyMemberNotGuest(session, familyId);
 
-    final apiKey = session.passwords['openRouterApiKey'];
+    final apiKey = await _readKey(session);
     if (apiKey == null || apiKey.isEmpty) {
       throw FamyliaException(
-        message:
-            'OpenRouter API key non configurata. Aggiungila in passwords.yaml come openRouterApiKey.',
+        message: 'OpenRouter API key non configurata. Impostala nella schermata Admin AI.',
       );
     }
 
@@ -50,17 +101,36 @@ class AiEndpoint extends Endpoint {
     final text = data['text'] as String?;
     final base64Images = (data['base64Images'] as List?)?.cast<String>();
     final mimeTypes = (data['mimeTypes'] as List?)?.cast<String>();
-    final model = data['model'] as String? ??
-        'google/gemini-2.5-flash-preview';
+    final modelOverride = data['model'] as String?;
 
     if ((text == null || text.trim().isEmpty) &&
         (base64Images == null || base64Images.isEmpty)) {
-      throw FamyliaException(
-        message: 'Fornisci almeno un testo o un\'immagine.',
-      );
+      throw FamyliaException(message: 'Fornisci almeno un testo o un\'immagine.');
     }
 
+    final model = modelOverride?.isNotEmpty == true
+        ? modelOverride!
+        : await _readModel(session);
+
     return _callOpenRouter(apiKey, model, text, base64Images, mimeTypes);
+  }
+
+  // ── Private helpers ───────────────────────────────────────────────────────
+
+  Future<String?> _readKey(Session session) async {
+    final rows = await session.db.unsafeQuery(
+      'SELECT "openRouterApiKey" FROM "ai_config" LIMIT 1',
+    );
+    if (rows.isEmpty) return null;
+    return rows.first[0] as String?;
+  }
+
+  Future<String> _readModel(Session session) async {
+    final rows = await session.db.unsafeQuery(
+      'SELECT "defaultModel" FROM "ai_config" LIMIT 1',
+    );
+    if (rows.isEmpty) return 'google/gemini-2.5-flash-preview';
+    return (rows.first[0] as String?) ?? 'google/gemini-2.5-flash-preview';
   }
 
   Future<String> _callOpenRouter(
@@ -123,11 +193,8 @@ class AiEndpoint extends Endpoint {
         throw FamyliaException(message: 'Nessuna risposta dal modello AI.');
       }
 
-      final messageContent =
-          (choices[0] as Map)['message']['content'] as String;
-
-      // Validate the content is valid JSON before returning
-      jsonDecode(messageContent);
+      final messageContent = (choices[0] as Map)['message']['content'] as String;
+      jsonDecode(messageContent); // validate JSON
       return messageContent;
     } on FamyliaException {
       rethrow;

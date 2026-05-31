@@ -17,37 +17,77 @@ class AiAdminScreen extends StatefulWidget {
 
 class _AiAdminScreenState extends State<AiAdminScreen> {
   final _repo = AiRepository();
-  final _textCtrl = TextEditingController();
-  final _modelCtrl = TextEditingController(text: 'google/gemini-2.5-flash-preview');
 
-  bool _checkingConfig = true;
-  bool _isConfigured = false;
-  bool _loading = false;
-  String? _error;
+  // Config section
+  final _keyCtrl = TextEditingController();
+  final _modelCtrl = TextEditingController(text: 'google/gemini-2.5-flash-preview');
+  bool _loadingConfig = true;
+  bool _savingConfig = false;
+  bool _obscureKey = true;
+  String? _keyPreview;
+  bool _hasKey = false;
+  String? _configError;
+  String? _configSuccess;
+
+  // Test section
+  final _textCtrl = TextEditingController();
+  final _testModelCtrl = TextEditingController();
+  bool _testing = false;
+  String? _testError;
   String? _rawResult;
   AiExtractionResult? _result;
-
   final List<_Attachment> _attachments = [];
 
   @override
   void initState() {
     super.initState();
-    _checkConfig();
+    _loadConfig();
   }
 
   @override
   void dispose() {
-    _textCtrl.dispose();
+    _keyCtrl.dispose();
     _modelCtrl.dispose();
+    _textCtrl.dispose();
+    _testModelCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _checkConfig() async {
+  Future<void> _loadConfig() async {
+    setState(() { _loadingConfig = true; _configError = null; });
     try {
-      final ok = await _repo.isConfigured();
-      if (mounted) setState(() { _isConfigured = ok; _checkingConfig = false; });
-    } catch (_) {
-      if (mounted) setState(() { _isConfigured = false; _checkingConfig = false; });
+      final cfg = await _repo.getAiConfig();
+      if (mounted) {
+        setState(() {
+          _hasKey = cfg['hasKey'] as bool? ?? false;
+          _keyPreview = cfg['keyPreview'] as String?;
+          _modelCtrl.text = cfg['defaultModel'] as String? ?? 'google/gemini-2.5-flash-preview';
+          _testModelCtrl.text = _modelCtrl.text;
+          _loadingConfig = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() { _loadingConfig = false; _configError = _repo.errorMessage(e); });
+    }
+  }
+
+  Future<void> _saveConfig() async {
+    final key = _keyCtrl.text.trim();
+    final model = _modelCtrl.text.trim();
+    if (model.isEmpty) {
+      setState(() => _configError = 'Il modello non può essere vuoto.');
+      return;
+    }
+    setState(() { _savingConfig = true; _configError = null; _configSuccess = null; });
+    try {
+      await _repo.saveAiConfig(key.isEmpty ? '' : key, model);
+      if (mounted) {
+        _keyCtrl.clear();
+        setState(() { _savingConfig = false; _configSuccess = 'Configurazione salvata.'; });
+        await _loadConfig();
+      }
+    } catch (e) {
+      if (mounted) setState(() { _savingConfig = false; _configError = _repo.errorMessage(e); });
     }
   }
 
@@ -67,8 +107,7 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
     setState(() {
       for (final f in result.files) {
         if (f.bytes == null) continue;
-        final mime = _mimeFromExt(f.extension ?? '');
-        _attachments.add(_Attachment(name: f.name, base64: base64Encode(f.bytes!), mimeType: mime));
+        _attachments.add(_Attachment(name: f.name, base64: base64Encode(f.bytes!), mimeType: _mimeFromExt(f.extension ?? '')));
       }
     });
   }
@@ -86,28 +125,27 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
     if (familyId == null) return;
     final text = _textCtrl.text.trim();
     if (text.isEmpty && _attachments.isEmpty) {
-      setState(() => _error = 'Inserisci testo o file.');
+      setState(() => _testError = 'Inserisci testo o file.');
       return;
     }
-    setState(() { _loading = true; _error = null; _result = null; _rawResult = null; });
+    setState(() { _testing = true; _testError = null; _result = null; _rawResult = null; });
     try {
       final result = await _repo.extractActivity(
         familyId,
         text: text.isEmpty ? null : text,
         base64Images: _attachments.isEmpty ? null : _attachments.map((a) => a.base64).toList(),
         mimeTypes: _attachments.isEmpty ? null : _attachments.map((a) => a.mimeType).toList(),
-        model: _modelCtrl.text.trim().isEmpty ? null : _modelCtrl.text.trim(),
+        model: _testModelCtrl.text.trim().isEmpty ? null : _testModelCtrl.text.trim(),
       );
       if (mounted) {
         setState(() {
           _result = result;
           _rawResult = const JsonEncoder.withIndent('  ').convert(result.raw);
+          _testing = false;
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _error = _repo.errorMessage(e));
-    } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) setState(() { _testError = _repo.errorMessage(e); _testing = false; });
     }
   }
 
@@ -127,30 +165,94 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Config status
-              _ConfigStatus(isConfigured: _isConfigured, checking: _checkingConfig, shadTheme: shadTheme),
-              const SizedBox(height: 20),
+              // ── Config section ──────────────────────────────────────────
+              _SectionHeader(icon: Icons.settings_outlined, label: 'Configurazione OpenRouter', shadTheme: shadTheme),
+              const SizedBox(height: 16),
+              if (_loadingConfig)
+                const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()))
+              else ...[
+                // Status
+                _StatusChip(hasKey: _hasKey, keyPreview: _keyPreview, shadTheme: shadTheme),
+                const SizedBox(height: 16),
+                // API key input
+                Text('Nuova API key', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ShadInput(
+                        controller: _keyCtrl,
+                        placeholder: Text(_hasKey ? 'Lascia vuoto per mantenere la chiave attuale' : 'sk-or-v1-...'),
+                        obscureText: _obscureKey,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ShadButton.ghost(
+                      size: ShadButtonSize.icon,
+                      onPressed: () => setState(() => _obscureKey = !_obscureKey),
+                      child: Icon(_obscureKey ? Icons.visibility_outlined : Icons.visibility_off_outlined, size: 18),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text('Ottieni la chiave su openrouter.ai/keys', style: shadTheme.textTheme.muted.copyWith(fontSize: 11)),
+                const SizedBox(height: 16),
+                // Model
+                Text('Modello predefinito', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 6),
+                ShadInput(
+                  controller: _modelCtrl,
+                  placeholder: const Text('google/gemini-2.5-flash-preview'),
+                  leading: Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Icon(Icons.memory_outlined, size: 16, color: shadTheme.colorScheme.mutedForeground),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Esempi:\n'
+                  '• google/gemini-2.5-flash-preview  (vision, veloce)\n'
+                  '• anthropic/claude-3.5-haiku  (testo, economico)\n'
+                  '• meta-llama/llama-3.2-11b-vision-instruct:free  (gratuito)',
+                  style: shadTheme.textTheme.muted.copyWith(fontSize: 11),
+                ),
+                const SizedBox(height: 16),
+                if (_configError != null) ...[
+                  _InlineError(message: _configError!, shadTheme: shadTheme),
+                  const SizedBox(height: 12),
+                ],
+                if (_configSuccess != null) ...[
+                  _InlineSuccess(message: _configSuccess!, shadTheme: shadTheme),
+                  const SizedBox(height: 12),
+                ],
+                ShadButton(
+                  onPressed: _savingConfig ? null : _saveConfig,
+                  width: double.infinity,
+                  child: _savingConfig
+                      ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Salva configurazione'),
+                ),
+              ],
 
-              // Model
-              Text('Modello OpenRouter', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500)),
+              const SizedBox(height: 32),
+              Divider(color: shadTheme.colorScheme.border),
+              const SizedBox(height: 24),
+
+              // ── Test section ────────────────────────────────────────────
+              _SectionHeader(icon: Icons.science_outlined, label: 'Test estrazione', shadTheme: shadTheme),
+              const SizedBox(height: 16),
+              // Model override for test
+              Text('Modello per questo test (opzionale)', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500)),
               const SizedBox(height: 6),
               ShadInput(
-                controller: _modelCtrl,
-                placeholder: const Text('google/gemini-2.5-flash-preview'),
-                leading: Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: Icon(Icons.memory_outlined, size: 16, color: shadTheme.colorScheme.mutedForeground),
-                ),
+                controller: _testModelCtrl,
+                placeholder: const Text('Lascia vuoto per usare il predefinito'),
               ),
-              const SizedBox(height: 4),
-              Text('Esempi: google/gemini-2.5-flash-preview · anthropic/claude-3.5-haiku · meta-llama/llama-3.2-11b-vision-instruct:free',
-                  style: shadTheme.textTheme.muted.copyWith(fontSize: 11)),
-              const SizedBox(height: 20),
-
-              // Input testo
+              const SizedBox(height: 16),
+              // Text input
               Row(
                 children: [
-                  Expanded(child: Text('Testo di test', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500))),
+                  Expanded(child: Text('Testo', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500))),
                   ShadButton.ghost(
                     size: ShadButtonSize.sm,
                     onPressed: _pasteClipboard,
@@ -161,15 +263,14 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
               const SizedBox(height: 6),
               ShadInput(
                 controller: _textCtrl,
-                placeholder: const Text('Incolla testo da analizzare...'),
+                placeholder: const Text('Testo da analizzare...'),
                 maxLines: 5,
               ),
               const SizedBox(height: 16),
-
-              // Allegati
+              // File attachments
               Row(
                 children: [
-                  Expanded(child: Text('File allegati (${_attachments.length})', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500))),
+                  Expanded(child: Text('File (${_attachments.length})', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500))),
                   ShadButton.ghost(
                     size: ShadButtonSize.sm,
                     onPressed: _pickFiles,
@@ -177,56 +278,46 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
                   ),
                 ],
               ),
-              if (_attachments.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                for (var i = 0; i < _attachments.length; i++)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: ShadCard(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      child: Row(
-                        children: [
-                          Icon(_attachments[i].mimeType.startsWith('image') ? Icons.image_outlined : Icons.picture_as_pdf_outlined, size: 16, color: shadTheme.colorScheme.primary),
-                          const SizedBox(width: 8),
-                          Expanded(child: Text(_attachments[i].name, style: shadTheme.textTheme.small)),
-                          ShadButton.ghost(size: ShadButtonSize.icon, onPressed: () => setState(() => _attachments.removeAt(i)), child: Icon(Icons.close, size: 14)),
-                        ],
-                      ),
+              for (var i = 0; i < _attachments.length; i++)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: ShadCard(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        Icon(_attachments[i].mimeType.startsWith('image') ? Icons.image_outlined : Icons.picture_as_pdf_outlined, size: 16, color: shadTheme.colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(_attachments[i].name, style: shadTheme.textTheme.small)),
+                        ShadButton.ghost(size: ShadButtonSize.icon, onPressed: () => setState(() => _attachments.removeAt(i)), child: const Icon(Icons.close, size: 14)),
+                      ],
                     ),
                   ),
-              ],
+                ),
               const SizedBox(height: 20),
-
+              if (_testError != null) ...[
+                _InlineError(message: _testError!, shadTheme: shadTheme),
+                const SizedBox(height: 12),
+              ],
               ShadButton(
-                onPressed: (_isConfigured && !_loading) ? _test : null,
+                onPressed: (!_hasKey || _testing) ? null : _test,
                 width: double.infinity,
-                child: _loading
+                child: _testing
                     ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))
                     : const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.science_outlined, size: 16), SizedBox(width: 8), Text('Testa estrazione')]),
               ),
-
-              if (_error != null) ...[
-                const SizedBox(height: 16),
-                ShadCard(
-                  backgroundColor: shadTheme.colorScheme.destructive.withValues(alpha: 0.1),
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    children: [
-                      Icon(Icons.error_outline, size: 16, color: shadTheme.colorScheme.destructive),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text(_error!, style: TextStyle(color: shadTheme.colorScheme.destructive, fontSize: 13))),
-                    ],
-                  ),
+              if (!_hasKey && !_loadingConfig)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text('Configura prima la chiave API.', style: shadTheme.textTheme.muted.copyWith(fontSize: 12), textAlign: TextAlign.center),
                 ),
-              ],
 
               if (_result != null) ...[
                 const SizedBox(height: 20),
-                Text('Risultato', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
+                _SectionHeader(icon: Icons.check_circle_outline, label: 'Risultato', shadTheme: shadTheme),
+                const SizedBox(height: 12),
                 _ResultSummary(result: _result!, shadTheme: shadTheme),
                 const SizedBox(height: 16),
-                Text('JSON raw', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w600)),
+                _SectionHeader(icon: Icons.code_outlined, label: 'JSON raw', shadTheme: shadTheme),
                 const SizedBox(height: 8),
                 ShadCard(
                   padding: const EdgeInsets.all(12),
@@ -237,9 +328,7 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
                   ),
                 ),
               ],
-
               const SizedBox(height: 40),
-              _ConfigInstructions(shadTheme: shadTheme),
             ],
           ),
         ),
@@ -248,36 +337,98 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
   }
 }
 
-class _ConfigStatus extends StatelessWidget {
-  const _ConfigStatus({required this.isConfigured, required this.checking, required this.shadTheme});
-  final bool isConfigured;
-  final bool checking;
+// ── Sub-widgets ───────────────────────────────────────────────────────────
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.icon, required this.label, required this.shadTheme});
+  final IconData icon;
+  final String label;
   final ShadThemeData shadTheme;
 
   @override
   Widget build(BuildContext context) {
-    if (checking) {
-      return ShadCard(
-        padding: const EdgeInsets.all(14),
-        child: Row(children: [
-          const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-          const SizedBox(width: 12),
-          Text('Verifica configurazione...', style: shadTheme.textTheme.small),
-        ]),
-      );
-    }
-    final color = isConfigured ? const Color(0xFF10B981) : shadTheme.colorScheme.destructive;
-    final icon = isConfigured ? Icons.check_circle_outline : Icons.error_outline;
-    final msg = isConfigured ? 'OpenRouter API key configurata' : 'OpenRouter API key non trovata';
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: shadTheme.colorScheme.primary),
+        const SizedBox(width: 8),
+        Text(label, style: shadTheme.textTheme.h4),
+      ],
+    );
+  }
+}
 
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({required this.hasKey, required this.keyPreview, required this.shadTheme});
+  final bool hasKey;
+  final String? keyPreview;
+  final ShadThemeData shadTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = hasKey ? const Color(0xFF10B981) : shadTheme.colorScheme.destructive;
     return ShadCard(
       padding: const EdgeInsets.all(14),
       backgroundColor: color.withValues(alpha: 0.08),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: color),
+          Icon(hasKey ? Icons.check_circle_outline : Icons.error_outline, size: 18, color: color),
           const SizedBox(width: 10),
-          Expanded(child: Text(msg, style: shadTheme.textTheme.small.copyWith(color: color, fontWeight: FontWeight.w500))),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  hasKey ? 'API key configurata' : 'Nessuna API key',
+                  style: shadTheme.textTheme.small.copyWith(color: color, fontWeight: FontWeight.w600),
+                ),
+                if (hasKey && keyPreview != null)
+                  Text(keyPreview!, style: shadTheme.textTheme.muted.copyWith(fontSize: 11)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InlineError extends StatelessWidget {
+  const _InlineError({required this.message, required this.shadTheme});
+  final String message;
+  final ShadThemeData shadTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return ShadCard(
+      padding: const EdgeInsets.all(12),
+      backgroundColor: shadTheme.colorScheme.destructive.withValues(alpha: 0.08),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, size: 16, color: shadTheme.colorScheme.destructive),
+          const SizedBox(width: 8),
+          Expanded(child: Text(message, style: TextStyle(color: shadTheme.colorScheme.destructive, fontSize: 13))),
+        ],
+      ),
+    );
+  }
+}
+
+class _InlineSuccess extends StatelessWidget {
+  const _InlineSuccess({required this.message, required this.shadTheme});
+  final String message;
+  final ShadThemeData shadTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    const green = Color(0xFF10B981);
+    return ShadCard(
+      padding: const EdgeInsets.all(12),
+      backgroundColor: green.withValues(alpha: 0.08),
+      child: Row(
+        children: [
+          const Icon(Icons.check_circle_outline, size: 16, color: green),
+          const SizedBox(width: 8),
+          Expanded(child: Text(message, style: const TextStyle(color: green, fontSize: 13))),
         ],
       ),
     );
@@ -302,55 +453,23 @@ class _ResultSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(child: Text(result.titolo, style: shadTheme.textTheme.p.copyWith(fontWeight: FontWeight.w700))),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(color: c.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
-                child: Text('${(result.confidenza * 100).round()}%', style: TextStyle(fontSize: 11, color: c, fontWeight: FontWeight.w700)),
-              ),
-            ],
-          ),
+          Row(children: [
+            Expanded(child: Text(result.titolo, style: shadTheme.textTheme.p.copyWith(fontWeight: FontWeight.w700))),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(color: c.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
+              child: Text('${(result.confidenza * 100).round()}%', style: TextStyle(fontSize: 11, color: c, fontWeight: FontWeight.w700)),
+            ),
+          ]),
           const SizedBox(height: 6),
-          Text('Tipo: ${result.tipo}${result.tipoAppuntamento != null ? ' (${result.tipoAppuntamento})' : ''}',
+          Text('tipo: ${result.tipo}${result.tipoAppuntamento != null ? ' / ${result.tipoAppuntamento}' : ''}',
               style: shadTheme.textTheme.small.copyWith(color: shadTheme.colorScheme.mutedForeground)),
           if (result.importo != null)
-            Text('Importo: €${result.importo!.toStringAsFixed(2)}', style: shadTheme.textTheme.small),
+            Text('importo: €${result.importo!.toStringAsFixed(2)}', style: shadTheme.textTheme.small),
           if (result.quando != null)
-            Text('Data: ${result.quando!.toLocal()}', style: shadTheme.textTheme.small),
+            Text('quando: ${result.quando!.toLocal()}', style: shadTheme.textTheme.small),
           const SizedBox(height: 6),
           Text(result.motivazione, style: shadTheme.textTheme.muted.copyWith(fontSize: 11, fontStyle: FontStyle.italic)),
-        ],
-      ),
-    );
-  }
-}
-
-class _ConfigInstructions extends StatelessWidget {
-  const _ConfigInstructions({required this.shadTheme});
-  final ShadThemeData shadTheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return ShadCard(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            Icon(Icons.settings_outlined, size: 16, color: shadTheme.colorScheme.mutedForeground),
-            const SizedBox(width: 6),
-            Text('Come configurare', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w600)),
-          ]),
-          const SizedBox(height: 12),
-          Text(
-            'Aggiungi la tua chiave OpenRouter in server/config/passwords.yaml:\n\n'
-            'development:\n'
-            '  openRouterApiKey: \'sk-or-v1-...\'\n\n'
-            'Ottieni la chiave su openrouter.ai — i modelli gratuiti (suffisso :free) non richiedono credito.',
-            style: shadTheme.textTheme.small.copyWith(color: shadTheme.colorScheme.mutedForeground, fontFamily: 'monospace'),
-          ),
         ],
       ),
     );

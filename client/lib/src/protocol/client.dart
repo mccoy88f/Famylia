@@ -1299,6 +1299,16 @@ class EndpointAi extends _i1.EndpointRef {
   _i2.Future<bool> isConfigured() =>
       caller.callServerEndpoint<bool>('ai', 'isConfigured', {});
 
+  _i2.Future<String> getAiConfig() =>
+      caller.callServerEndpoint<String>('ai', 'getAiConfig', {});
+
+  _i2.Future<bool> saveAiConfig(String openRouterApiKey, String defaultModel) =>
+      caller.callServerEndpoint<bool>(
+        'ai',
+        'saveAiConfig',
+        {'openRouterApiKey': openRouterApiKey, 'defaultModel': defaultModel},
+      );
+
   _i2.Future<String> extractActivity(int familyId, String payload) =>
       caller.callServerEndpoint<String>(
         'ai',

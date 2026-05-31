@@ -2533,6 +2533,39 @@ class Endpoints extends _i1.EndpointDispatch {
           ) async =>
               (endpoints['ai'] as _i45.AiEndpoint).isConfigured(session),
         ),
+        'getAiConfig': _i1.MethodConnector(
+          name: 'getAiConfig',
+          params: {},
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['ai'] as _i45.AiEndpoint).getAiConfig(session),
+        ),
+        'saveAiConfig': _i1.MethodConnector(
+          name: 'saveAiConfig',
+          params: {
+            'openRouterApiKey': _i1.ParameterDescription(
+              name: 'openRouterApiKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'defaultModel': _i1.ParameterDescription(
+              name: 'defaultModel',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['ai'] as _i45.AiEndpoint).saveAiConfig(
+            session,
+            params['openRouterApiKey'],
+            params['defaultModel'],
+          ),
+        ),
         'extractActivity': _i1.MethodConnector(
           name: 'extractActivity',
           params: {
