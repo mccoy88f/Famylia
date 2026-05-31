@@ -352,7 +352,7 @@ class _FamilyMembersSectionState extends State<_FamilyMembersSection> {
                         ),
                         ShadButton.ghost(
                           onPressed: () => _showQr(context, _inviteCode!),
-                          size: ShadButtonSize.icon,
+                         
                           child: Icon(Icons.qr_code_rounded, size: 18, color: shadTheme.colorScheme.primary),
                         ),
                         Icon(Icons.copy_outlined, size: 16, color: shadTheme.colorScheme.mutedForeground),

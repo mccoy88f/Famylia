@@ -1,3 +1,9 @@
+ai:
+  - isConfigured:
+  - getAiConfig:
+  - saveAiConfig:
+  - listVisionModels:
+  - extractActivity:
 board:
   - watchBoard:
   - listPosts:

@@ -21,9 +21,9 @@ class _FamilyAppearanceScreenState extends State<FamilyAppearanceScreen> {
   String? _error;
 
   @override
-  void initState() {
-    super.initState();
-    _selectedHex = context.read<FamilyContext>().accentColorHex;
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _selectedHex ??= context.read<FamilyContext>().accentColorHex;
   }
 
   Future<void> _saveAccent() async {

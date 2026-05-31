@@ -314,7 +314,7 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
                   if (_step > 0)
                     ShadButton.ghost(
                       onPressed: _back,
-                      size: ShadButtonSize.icon,
+                     
                       child: const Icon(Icons.arrow_back_rounded, size: 18),
                     )
                   else

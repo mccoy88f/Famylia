@@ -182,7 +182,7 @@ class _ShoppingListDetailScreenState extends State<ShoppingListDetailScreen> {
                 const SizedBox(width: 8),
                 ShadButton(
                   onPressed: _addItem,
-                  size: ShadButtonSize.icon,
+                 
                   child: const Icon(Icons.add, size: 18),
                 ),
               ],

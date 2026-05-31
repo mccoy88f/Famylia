@@ -222,7 +222,7 @@ class _TodoTabState extends State<_TodoTab> with AutomaticKeepAliveClientMixin {
                   leading: Icon(Icons.add_task_outlined, size: 18, color: shadTheme.colorScheme.mutedForeground),
                   trailing: ShadButton.ghost(
                     onPressed: () => _quickAdd(_addCtrl.text),
-                    size: ShadButtonSize.icon,
+                   
                     child: Icon(Icons.send_rounded, size: 18, color: shadTheme.colorScheme.primary),
                   ),
                   onSubmitted: _quickAdd,
@@ -611,7 +611,7 @@ class _SpesaTabState extends State<_SpesaTab> with AutomaticKeepAliveClientMixin
                   leading: Icon(Icons.add_shopping_cart_outlined, size: 18, color: shadTheme.colorScheme.mutedForeground),
                   trailing: ShadButton.ghost(
                     onPressed: () => _quickAddItem(_addCtrl.text),
-                    size: ShadButtonSize.icon,
+                   
                     child: Icon(Icons.send_rounded, size: 18, color: shadTheme.colorScheme.primary),
                   ),
                   onSubmitted: _quickAddItem,
@@ -622,7 +622,7 @@ class _SpesaTabState extends State<_SpesaTab> with AutomaticKeepAliveClientMixin
                 message: 'Nuova lista',
                 child: ShadButton.outline(
                   onPressed: _createList,
-                  size: ShadButtonSize.icon,
+                 
                   child: const Icon(Icons.playlist_add_outlined, size: 18),
                 ),
               ),

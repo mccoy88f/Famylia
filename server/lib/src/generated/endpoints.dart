@@ -10,160 +10,250 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
-import '../endpoints/board_endpoint.dart' as _i2;
-import '../endpoints/calendar_endpoint.dart' as _i3;
-import '../endpoints/deadline_endpoint.dart' as _i4;
-import '../endpoints/dev_endpoint.dart' as _i5;
-import '../endpoints/document_endpoint.dart' as _i6;
-import '../endpoints/emergency_endpoint.dart' as _i7;
-import '../endpoints/expense_endpoint.dart' as _i8;
-import '../endpoints/family_endpoint.dart' as _i9;
-import '../endpoints/gamification_endpoint.dart' as _i10;
-import '../endpoints/gdpr_endpoint.dart' as _i11;
-import '../endpoints/health_endpoint.dart' as _i12;
-import '../endpoints/location_endpoint.dart' as _i13;
-import '../endpoints/meal_endpoint.dart' as _i14;
-import '../endpoints/report_endpoint.dart' as _i15;
-import '../endpoints/shopping_endpoint.dart' as _i16;
-import '../endpoints/todo_endpoint.dart' as _i17;
-import '../endpoints/ai_endpoint.dart' as _i45;
-import 'package:famylia_server/src/generated/board_post_type.dart' as _i18;
+import '../endpoints/ai_endpoint.dart' as _i2;
+import '../endpoints/board_endpoint.dart' as _i3;
+import '../endpoints/calendar_endpoint.dart' as _i4;
+import '../endpoints/deadline_endpoint.dart' as _i5;
+import '../endpoints/dev_endpoint.dart' as _i6;
+import '../endpoints/document_endpoint.dart' as _i7;
+import '../endpoints/emergency_endpoint.dart' as _i8;
+import '../endpoints/expense_endpoint.dart' as _i9;
+import '../endpoints/family_endpoint.dart' as _i10;
+import '../endpoints/gamification_endpoint.dart' as _i11;
+import '../endpoints/gdpr_endpoint.dart' as _i12;
+import '../endpoints/health_endpoint.dart' as _i13;
+import '../endpoints/location_endpoint.dart' as _i14;
+import '../endpoints/meal_endpoint.dart' as _i15;
+import '../endpoints/report_endpoint.dart' as _i16;
+import '../endpoints/shopping_endpoint.dart' as _i17;
+import '../endpoints/todo_endpoint.dart' as _i18;
+import 'package:famylia_server/src/generated/board_post_type.dart' as _i19;
 import 'package:famylia_server/src/generated/calendar_event_category.dart'
-    as _i19;
-import 'package:famylia_server/src/generated/calendar_event.dart' as _i20;
-import 'package:famylia_server/src/generated/deadline_category.dart' as _i21;
-import 'package:famylia_server/src/generated/deadline_priority.dart' as _i22;
-import 'package:famylia_server/src/generated/deadline_status.dart' as _i23;
-import 'package:famylia_server/src/generated/deadline.dart' as _i24;
-import 'package:famylia_server/src/generated/document_category.dart' as _i25;
-import 'dart:typed_data' as _i26;
-import 'package:famylia_server/src/generated/emergency_settings.dart' as _i27;
-import 'package:famylia_server/src/generated/emergency_alert_type.dart' as _i28;
-import 'package:famylia_server/src/generated/expense_category.dart' as _i29;
-import 'package:famylia_server/src/generated/expense_split_type.dart' as _i30;
-import 'package:famylia_server/src/generated/health_entry_type.dart' as _i31;
-import 'package:famylia_server/src/generated/health_entry_status.dart' as _i32;
-import 'package:famylia_server/src/generated/sport_intensity.dart' as _i33;
-import 'package:famylia_server/src/generated/health_entry.dart' as _i34;
+    as _i20;
+import 'package:famylia_server/src/generated/calendar_event.dart' as _i21;
+import 'package:famylia_server/src/generated/deadline_category.dart' as _i22;
+import 'package:famylia_server/src/generated/deadline_priority.dart' as _i23;
+import 'package:famylia_server/src/generated/deadline_status.dart' as _i24;
+import 'package:famylia_server/src/generated/deadline.dart' as _i25;
+import 'package:famylia_server/src/generated/document_category.dart' as _i26;
+import 'dart:typed_data' as _i27;
+import 'package:famylia_server/src/generated/emergency_settings.dart' as _i28;
+import 'package:famylia_server/src/generated/emergency_alert_type.dart' as _i29;
+import 'package:famylia_server/src/generated/expense_category.dart' as _i30;
+import 'package:famylia_server/src/generated/expense_split_type.dart' as _i31;
+import 'package:famylia_server/src/generated/health_entry_type.dart' as _i32;
+import 'package:famylia_server/src/generated/health_entry_status.dart' as _i33;
+import 'package:famylia_server/src/generated/sport_intensity.dart' as _i34;
+import 'package:famylia_server/src/generated/health_entry.dart' as _i35;
 import 'package:famylia_server/src/generated/location_accuracy_level.dart'
-    as _i35;
-import 'package:famylia_server/src/generated/shopping_list_status.dart' as _i36;
-import 'package:famylia_server/src/generated/shopping_unit.dart' as _i37;
-import 'package:famylia_server/src/generated/shopping_category.dart' as _i38;
-import 'package:famylia_server/src/generated/shopping_item.dart' as _i39;
-import 'package:famylia_server/src/generated/todo_category.dart' as _i40;
-import 'package:famylia_server/src/generated/todo_priority.dart' as _i41;
-import 'package:famylia_server/src/generated/todo_status.dart' as _i42;
-import 'package:famylia_server/src/generated/todo_item.dart' as _i43;
-import 'package:serverpod_auth_server/serverpod_auth_server.dart' as _i44;
+    as _i36;
+import 'package:famylia_server/src/generated/shopping_list_status.dart' as _i37;
+import 'package:famylia_server/src/generated/shopping_unit.dart' as _i38;
+import 'package:famylia_server/src/generated/shopping_category.dart' as _i39;
+import 'package:famylia_server/src/generated/shopping_item.dart' as _i40;
+import 'package:famylia_server/src/generated/todo_category.dart' as _i41;
+import 'package:famylia_server/src/generated/todo_priority.dart' as _i42;
+import 'package:famylia_server/src/generated/todo_status.dart' as _i43;
+import 'package:famylia_server/src/generated/todo_item.dart' as _i44;
+import 'package:serverpod_auth_server/serverpod_auth_server.dart' as _i45;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
   void initializeEndpoints(_i1.Server server) {
     var endpoints = <String, _i1.Endpoint>{
-      'board': _i2.BoardEndpoint()
-        ..initialize(
-          server,
-          'board',
-          null,
-        ),
-      'calendar': _i3.CalendarEndpoint()
-        ..initialize(
-          server,
-          'calendar',
-          null,
-        ),
-      'deadline': _i4.DeadlineEndpoint()
-        ..initialize(
-          server,
-          'deadline',
-          null,
-        ),
-      'dev': _i5.DevEndpoint()
-        ..initialize(
-          server,
-          'dev',
-          null,
-        ),
-      'document': _i6.DocumentEndpoint()
-        ..initialize(
-          server,
-          'document',
-          null,
-        ),
-      'emergency': _i7.EmergencyEndpoint()
-        ..initialize(
-          server,
-          'emergency',
-          null,
-        ),
-      'expense': _i8.ExpenseEndpoint()
-        ..initialize(
-          server,
-          'expense',
-          null,
-        ),
-      'family': _i9.FamilyEndpoint()
-        ..initialize(
-          server,
-          'family',
-          null,
-        ),
-      'gamification': _i10.GamificationEndpoint()
-        ..initialize(
-          server,
-          'gamification',
-          null,
-        ),
-      'gdpr': _i11.GdprEndpoint()
-        ..initialize(
-          server,
-          'gdpr',
-          null,
-        ),
-      'health': _i12.HealthEndpoint()
-        ..initialize(
-          server,
-          'health',
-          null,
-        ),
-      'location': _i13.LocationEndpoint()
-        ..initialize(
-          server,
-          'location',
-          null,
-        ),
-      'meal': _i14.MealEndpoint()
-        ..initialize(
-          server,
-          'meal',
-          null,
-        ),
-      'report': _i15.ReportEndpoint()
-        ..initialize(
-          server,
-          'report',
-          null,
-        ),
-      'shopping': _i16.ShoppingEndpoint()
-        ..initialize(
-          server,
-          'shopping',
-          null,
-        ),
-      'todo': _i17.TodoEndpoint()
-        ..initialize(
-          server,
-          'todo',
-          null,
-        ),
-      'ai': _i45.AiEndpoint()
+      'ai': _i2.AiEndpoint()
         ..initialize(
           server,
           'ai',
           null,
         ),
+      'board': _i3.BoardEndpoint()
+        ..initialize(
+          server,
+          'board',
+          null,
+        ),
+      'calendar': _i4.CalendarEndpoint()
+        ..initialize(
+          server,
+          'calendar',
+          null,
+        ),
+      'deadline': _i5.DeadlineEndpoint()
+        ..initialize(
+          server,
+          'deadline',
+          null,
+        ),
+      'dev': _i6.DevEndpoint()
+        ..initialize(
+          server,
+          'dev',
+          null,
+        ),
+      'document': _i7.DocumentEndpoint()
+        ..initialize(
+          server,
+          'document',
+          null,
+        ),
+      'emergency': _i8.EmergencyEndpoint()
+        ..initialize(
+          server,
+          'emergency',
+          null,
+        ),
+      'expense': _i9.ExpenseEndpoint()
+        ..initialize(
+          server,
+          'expense',
+          null,
+        ),
+      'family': _i10.FamilyEndpoint()
+        ..initialize(
+          server,
+          'family',
+          null,
+        ),
+      'gamification': _i11.GamificationEndpoint()
+        ..initialize(
+          server,
+          'gamification',
+          null,
+        ),
+      'gdpr': _i12.GdprEndpoint()
+        ..initialize(
+          server,
+          'gdpr',
+          null,
+        ),
+      'health': _i13.HealthEndpoint()
+        ..initialize(
+          server,
+          'health',
+          null,
+        ),
+      'location': _i14.LocationEndpoint()
+        ..initialize(
+          server,
+          'location',
+          null,
+        ),
+      'meal': _i15.MealEndpoint()
+        ..initialize(
+          server,
+          'meal',
+          null,
+        ),
+      'report': _i16.ReportEndpoint()
+        ..initialize(
+          server,
+          'report',
+          null,
+        ),
+      'shopping': _i17.ShoppingEndpoint()
+        ..initialize(
+          server,
+          'shopping',
+          null,
+        ),
+      'todo': _i18.TodoEndpoint()
+        ..initialize(
+          server,
+          'todo',
+          null,
+        ),
     };
+    connectors['ai'] = _i1.EndpointConnector(
+      name: 'ai',
+      endpoint: endpoints['ai']!,
+      methodConnectors: {
+        'isConfigured': _i1.MethodConnector(
+          name: 'isConfigured',
+          params: {},
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['ai'] as _i2.AiEndpoint).isConfigured(session),
+        ),
+        'getAiConfig': _i1.MethodConnector(
+          name: 'getAiConfig',
+          params: {},
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['ai'] as _i2.AiEndpoint).getAiConfig(session),
+        ),
+        'saveAiConfig': _i1.MethodConnector(
+          name: 'saveAiConfig',
+          params: {
+            'openRouterApiKey': _i1.ParameterDescription(
+              name: 'openRouterApiKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'defaultModel': _i1.ParameterDescription(
+              name: 'defaultModel',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['ai'] as _i2.AiEndpoint).saveAiConfig(
+            session,
+            params['openRouterApiKey'],
+            params['defaultModel'],
+          ),
+        ),
+        'listVisionModels': _i1.MethodConnector(
+          name: 'listVisionModels',
+          params: {
+            'openRouterApiKey': _i1.ParameterDescription(
+              name: 'openRouterApiKey',
+              type: _i1.getType<String>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['ai'] as _i2.AiEndpoint).listVisionModels(
+            session,
+            params['openRouterApiKey'],
+          ),
+        ),
+        'extractActivity': _i1.MethodConnector(
+          name: 'extractActivity',
+          params: {
+            'familyId': _i1.ParameterDescription(
+              name: 'familyId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'payload': _i1.ParameterDescription(
+              name: 'payload',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['ai'] as _i2.AiEndpoint).extractActivity(
+            session,
+            params['familyId'],
+            params['payload'],
+          ),
+        ),
+      },
+    );
     connectors['board'] = _i1.EndpointConnector(
       name: 'board',
       endpoint: endpoints['board']!,
@@ -181,7 +271,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['board'] as _i2.BoardEndpoint).listPosts(
+              (endpoints['board'] as _i3.BoardEndpoint).listPosts(
             session,
             params['familyId'],
           ),
@@ -206,7 +296,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'type': _i1.ParameterDescription(
               name: 'type',
-              type: _i1.getType<_i18.BoardPostType?>(),
+              type: _i1.getType<_i19.BoardPostType?>(),
               nullable: true,
             ),
             'pollOptions': _i1.ParameterDescription(
@@ -224,7 +314,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['board'] as _i2.BoardEndpoint).createPost(
+              (endpoints['board'] as _i3.BoardEndpoint).createPost(
             session,
             params['familyId'],
             params['content'],
@@ -247,7 +337,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['board'] as _i2.BoardEndpoint).votePoll(
+              (endpoints['board'] as _i3.BoardEndpoint).votePoll(
             session,
             params['optionId'],
           ),
@@ -265,7 +355,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['board'] as _i2.BoardEndpoint).deletePost(
+              (endpoints['board'] as _i3.BoardEndpoint).deletePost(
             session,
             params['postId'],
           ),
@@ -286,7 +376,7 @@ class Endpoints extends _i1.EndpointDispatch {
             Map<String, dynamic> params,
             Map<String, Stream> streamParams,
           ) =>
-              (endpoints['board'] as _i2.BoardEndpoint).watchBoard(
+              (endpoints['board'] as _i3.BoardEndpoint).watchBoard(
             session,
             params['familyId'],
           ),
@@ -322,7 +412,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'category': _i1.ParameterDescription(
               name: 'category',
-              type: _i1.getType<_i19.CalendarEventCategory?>(),
+              type: _i1.getType<_i20.CalendarEventCategory?>(),
               nullable: true,
             ),
             'endAt': _i1.ParameterDescription(
@@ -360,7 +450,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['calendar'] as _i3.CalendarEndpoint).createEvent(
+              (endpoints['calendar'] as _i4.CalendarEndpoint).createEvent(
             session,
             params['familyId'],
             params['title'],
@@ -398,7 +488,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['calendar'] as _i3.CalendarEndpoint).listEvents(
+              (endpoints['calendar'] as _i4.CalendarEndpoint).listEvents(
             session,
             params['familyId'],
             params['from'],
@@ -410,7 +500,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'event': _i1.ParameterDescription(
               name: 'event',
-              type: _i1.getType<_i20.CalendarEvent>(),
+              type: _i1.getType<_i21.CalendarEvent>(),
               nullable: false,
             )
           },
@@ -418,7 +508,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['calendar'] as _i3.CalendarEndpoint).updateEvent(
+              (endpoints['calendar'] as _i4.CalendarEndpoint).updateEvent(
             session,
             params['event'],
           ),
@@ -436,7 +526,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['calendar'] as _i3.CalendarEndpoint).deleteEvent(
+              (endpoints['calendar'] as _i4.CalendarEndpoint).deleteEvent(
             session,
             params['eventId'],
           ),
@@ -472,7 +562,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'category': _i1.ParameterDescription(
               name: 'category',
-              type: _i1.getType<_i21.DeadlineCategory?>(),
+              type: _i1.getType<_i22.DeadlineCategory?>(),
               nullable: true,
             ),
             'amount': _i1.ParameterDescription(
@@ -482,7 +572,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'priority': _i1.ParameterDescription(
               name: 'priority',
-              type: _i1.getType<_i22.DeadlinePriority?>(),
+              type: _i1.getType<_i23.DeadlinePriority?>(),
               nullable: true,
             ),
             'assignedTo': _i1.ParameterDescription(
@@ -510,7 +600,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['deadline'] as _i4.DeadlineEndpoint).createDeadline(
+              (endpoints['deadline'] as _i5.DeadlineEndpoint).createDeadline(
             session,
             params['familyId'],
             params['title'],
@@ -535,12 +625,12 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'status': _i1.ParameterDescription(
               name: 'status',
-              type: _i1.getType<_i23.DeadlineStatus?>(),
+              type: _i1.getType<_i24.DeadlineStatus?>(),
               nullable: true,
             ),
             'category': _i1.ParameterDescription(
               name: 'category',
-              type: _i1.getType<_i21.DeadlineCategory?>(),
+              type: _i1.getType<_i22.DeadlineCategory?>(),
               nullable: true,
             ),
           },
@@ -548,7 +638,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['deadline'] as _i4.DeadlineEndpoint).listDeadlines(
+              (endpoints['deadline'] as _i5.DeadlineEndpoint).listDeadlines(
             session,
             params['familyId'],
             status: params['status'],
@@ -573,7 +663,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['deadline'] as _i4.DeadlineEndpoint).upcoming(
+              (endpoints['deadline'] as _i5.DeadlineEndpoint).upcoming(
             session,
             params['familyId'],
             days: params['days'],
@@ -592,7 +682,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['deadline'] as _i4.DeadlineEndpoint).completeDeadline(
+              (endpoints['deadline'] as _i5.DeadlineEndpoint).completeDeadline(
             session,
             params['deadlineId'],
           ),
@@ -602,7 +692,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'deadline': _i1.ParameterDescription(
               name: 'deadline',
-              type: _i1.getType<_i24.Deadline>(),
+              type: _i1.getType<_i25.Deadline>(),
               nullable: false,
             )
           },
@@ -610,7 +700,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['deadline'] as _i4.DeadlineEndpoint).updateDeadline(
+              (endpoints['deadline'] as _i5.DeadlineEndpoint).updateDeadline(
             session,
             params['deadline'],
           ),
@@ -628,7 +718,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['deadline'] as _i4.DeadlineEndpoint).deleteDeadline(
+              (endpoints['deadline'] as _i5.DeadlineEndpoint).deleteDeadline(
             session,
             params['deadlineId'],
           ),
@@ -652,7 +742,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['dev'] as _i5.DevEndpoint).getVerificationCode(
+              (endpoints['dev'] as _i6.DevEndpoint).getVerificationCode(
             session,
             params['email'],
           ),
@@ -673,7 +763,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'category': _i1.ParameterDescription(
               name: 'category',
-              type: _i1.getType<_i25.DocumentCategory?>(),
+              type: _i1.getType<_i26.DocumentCategory?>(),
               nullable: true,
             ),
           },
@@ -681,7 +771,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['document'] as _i6.DocumentEndpoint).listDocuments(
+              (endpoints['document'] as _i7.DocumentEndpoint).listDocuments(
             session,
             params['familyId'],
             category: params['category'],
@@ -707,7 +797,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'fileBytes': _i1.ParameterDescription(
               name: 'fileBytes',
-              type: _i1.getType<_i26.ByteData>(),
+              type: _i1.getType<_i27.ByteData>(),
               nullable: false,
             ),
             'description': _i1.ParameterDescription(
@@ -717,7 +807,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'category': _i1.ParameterDescription(
               name: 'category',
-              type: _i1.getType<_i25.DocumentCategory?>(),
+              type: _i1.getType<_i26.DocumentCategory?>(),
               nullable: true,
             ),
             'relatedDeadlineId': _i1.ParameterDescription(
@@ -735,7 +825,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['document'] as _i6.DocumentEndpoint).uploadDocument(
+              (endpoints['document'] as _i7.DocumentEndpoint).uploadDocument(
             session,
             params['familyId'],
             params['title'],
@@ -760,7 +850,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['document'] as _i6.DocumentEndpoint).runOcr(
+              (endpoints['document'] as _i7.DocumentEndpoint).runOcr(
             session,
             params['documentId'],
           ),
@@ -778,7 +868,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['document'] as _i6.DocumentEndpoint).deleteDocument(
+              (endpoints['document'] as _i7.DocumentEndpoint).deleteDocument(
             session,
             params['documentId'],
           ),
@@ -802,7 +892,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['emergency'] as _i7.EmergencyEndpoint).getSettings(
+              (endpoints['emergency'] as _i8.EmergencyEndpoint).getSettings(
             session,
             params['familyId'],
           ),
@@ -812,7 +902,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'settings': _i1.ParameterDescription(
               name: 'settings',
-              type: _i1.getType<_i27.EmergencySettings>(),
+              type: _i1.getType<_i28.EmergencySettings>(),
               nullable: false,
             )
           },
@@ -820,7 +910,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['emergency'] as _i7.EmergencyEndpoint).updateSettings(
+              (endpoints['emergency'] as _i8.EmergencyEndpoint).updateSettings(
             session,
             params['settings'],
           ),
@@ -835,7 +925,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'alertType': _i1.ParameterDescription(
               name: 'alertType',
-              type: _i1.getType<_i28.EmergencyAlertType>(),
+              type: _i1.getType<_i29.EmergencyAlertType>(),
               nullable: false,
             ),
             'customMessage': _i1.ParameterDescription(
@@ -873,7 +963,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['emergency'] as _i7.EmergencyEndpoint).triggerAlert(
+              (endpoints['emergency'] as _i8.EmergencyEndpoint).triggerAlert(
             session,
             params['familyId'],
             params['alertType'],
@@ -898,7 +988,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['emergency'] as _i7.EmergencyEndpoint).listActive(
+              (endpoints['emergency'] as _i8.EmergencyEndpoint).listActive(
             session,
             params['familyId'],
           ),
@@ -916,7 +1006,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['emergency'] as _i7.EmergencyEndpoint).listHistory(
+              (endpoints['emergency'] as _i8.EmergencyEndpoint).listHistory(
             session,
             params['familyId'],
           ),
@@ -934,7 +1024,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['emergency'] as _i7.EmergencyEndpoint).acknowledge(
+              (endpoints['emergency'] as _i8.EmergencyEndpoint).acknowledge(
             session,
             params['alertId'],
           ),
@@ -952,7 +1042,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['emergency'] as _i7.EmergencyEndpoint).resolve(
+              (endpoints['emergency'] as _i8.EmergencyEndpoint).resolve(
             session,
             params['alertId'],
           ),
@@ -970,7 +1060,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['emergency'] as _i7.EmergencyEndpoint).markFalseAlarm(
+              (endpoints['emergency'] as _i8.EmergencyEndpoint).markFalseAlarm(
             session,
             params['alertId'],
           ),
@@ -988,7 +1078,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['emergency'] as _i7.EmergencyEndpoint).listContacts(
+              (endpoints['emergency'] as _i8.EmergencyEndpoint).listContacts(
             session,
             params['familyId'],
           ),
@@ -1026,7 +1116,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['emergency'] as _i7.EmergencyEndpoint).addContact(
+              (endpoints['emergency'] as _i8.EmergencyEndpoint).addContact(
             session,
             params['familyId'],
             params['name'],
@@ -1048,7 +1138,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['emergency'] as _i7.EmergencyEndpoint).deleteContact(
+              (endpoints['emergency'] as _i8.EmergencyEndpoint).deleteContact(
             session,
             params['contactId'],
           ),
@@ -1069,7 +1159,7 @@ class Endpoints extends _i1.EndpointDispatch {
             Map<String, dynamic> params,
             Map<String, Stream> streamParams,
           ) =>
-              (endpoints['emergency'] as _i7.EmergencyEndpoint).watchAlerts(
+              (endpoints['emergency'] as _i8.EmergencyEndpoint).watchAlerts(
             session,
             params['familyId'],
           ),
@@ -1110,12 +1200,12 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'category': _i1.ParameterDescription(
               name: 'category',
-              type: _i1.getType<_i29.ExpenseCategory?>(),
+              type: _i1.getType<_i30.ExpenseCategory?>(),
               nullable: true,
             ),
             'splitType': _i1.ParameterDescription(
               name: 'splitType',
-              type: _i1.getType<_i30.ExpenseSplitType?>(),
+              type: _i1.getType<_i31.ExpenseSplitType?>(),
               nullable: true,
             ),
             'splitDetailsJson': _i1.ParameterDescription(
@@ -1133,7 +1223,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['expense'] as _i8.ExpenseEndpoint).createExpense(
+              (endpoints['expense'] as _i9.ExpenseEndpoint).createExpense(
             session,
             params['familyId'],
             params['title'],
@@ -1169,7 +1259,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['expense'] as _i8.ExpenseEndpoint).listExpenses(
+              (endpoints['expense'] as _i9.ExpenseEndpoint).listExpenses(
             session,
             params['familyId'],
             from: params['from'],
@@ -1189,7 +1279,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['expense'] as _i8.ExpenseEndpoint).getBalance(
+              (endpoints['expense'] as _i9.ExpenseEndpoint).getBalance(
             session,
             params['familyId'],
           ),
@@ -1222,7 +1312,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['expense'] as _i8.ExpenseEndpoint).recordSettlement(
+              (endpoints['expense'] as _i9.ExpenseEndpoint).recordSettlement(
             session,
             params['familyId'],
             params['fromUserId'],
@@ -1243,7 +1333,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['expense'] as _i8.ExpenseEndpoint).listSettlements(
+              (endpoints['expense'] as _i9.ExpenseEndpoint).listSettlements(
             session,
             params['familyId'],
           ),
@@ -1261,7 +1351,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['expense'] as _i8.ExpenseEndpoint).deleteExpense(
+              (endpoints['expense'] as _i9.ExpenseEndpoint).deleteExpense(
             session,
             params['expenseId'],
           ),
@@ -1285,7 +1375,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['family'] as _i9.FamilyEndpoint).createFamily(
+              (endpoints['family'] as _i10.FamilyEndpoint).createFamily(
             session,
             params['name'],
           ),
@@ -1303,7 +1393,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['family'] as _i9.FamilyEndpoint).joinFamily(
+              (endpoints['family'] as _i10.FamilyEndpoint).joinFamily(
             session,
             params['inviteCode'],
           ),
@@ -1315,7 +1405,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['family'] as _i9.FamilyEndpoint)
+              (endpoints['family'] as _i10.FamilyEndpoint)
                   .listMyFamilies(session),
         ),
         'getFamily': _i1.MethodConnector(
@@ -1331,7 +1421,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['family'] as _i9.FamilyEndpoint).getFamily(
+              (endpoints['family'] as _i10.FamilyEndpoint).getFamily(
             session,
             params['familyId'],
           ),
@@ -1349,7 +1439,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['family'] as _i9.FamilyEndpoint).listMembers(
+              (endpoints['family'] as _i10.FamilyEndpoint).listMembers(
             session,
             params['familyId'],
           ),
@@ -1372,7 +1462,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['family'] as _i9.FamilyEndpoint).updateAccentColor(
+              (endpoints['family'] as _i10.FamilyEndpoint).updateAccentColor(
             session,
             params['familyId'],
             params['accentColor'],
@@ -1391,7 +1481,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['family'] as _i9.FamilyEndpoint).leaveFamily(
+              (endpoints['family'] as _i10.FamilyEndpoint).leaveFamily(
             session,
             params['familyId'],
           ),
@@ -1415,7 +1505,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['gamification'] as _i10.GamificationEndpoint)
+              (endpoints['gamification'] as _i11.GamificationEndpoint)
                   .getMyPoints(
             session,
             params['familyId'],
@@ -1434,7 +1524,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['gamification'] as _i10.GamificationEndpoint)
+              (endpoints['gamification'] as _i11.GamificationEndpoint)
                   .getLeaderboard(
             session,
             params['familyId'],
@@ -1453,7 +1543,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['gdpr'] as _i11.GdprEndpoint).exportMyData(session),
+              (endpoints['gdpr'] as _i12.GdprEndpoint).exportMyData(session),
         ),
         'deleteMyAccount': _i1.MethodConnector(
           name: 'deleteMyAccount',
@@ -1462,7 +1552,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['gdpr'] as _i11.GdprEndpoint).deleteMyAccount(session),
+              (endpoints['gdpr'] as _i12.GdprEndpoint).deleteMyAccount(session),
         ),
         'getPrivacyDashboard': _i1.MethodConnector(
           name: 'getPrivacyDashboard',
@@ -1477,7 +1567,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['gdpr'] as _i11.GdprEndpoint).getPrivacyDashboard(
+              (endpoints['gdpr'] as _i12.GdprEndpoint).getPrivacyDashboard(
             session,
             params['familyId'],
           ),
@@ -1498,7 +1588,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'type': _i1.ParameterDescription(
               name: 'type',
-              type: _i1.getType<_i31.HealthEntryType>(),
+              type: _i1.getType<_i32.HealthEntryType>(),
               nullable: false,
             ),
             'title': _i1.ParameterDescription(
@@ -1513,7 +1603,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'status': _i1.ParameterDescription(
               name: 'status',
-              type: _i1.getType<_i32.HealthEntryStatus?>(),
+              type: _i1.getType<_i33.HealthEntryStatus?>(),
               nullable: true,
             ),
             'assignedTo': _i1.ParameterDescription(
@@ -1563,7 +1653,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'intensity': _i1.ParameterDescription(
               name: 'intensity',
-              type: _i1.getType<_i33.SportIntensity?>(),
+              type: _i1.getType<_i34.SportIntensity?>(),
               nullable: true,
             ),
             'isPrivate': _i1.ParameterDescription(
@@ -1576,7 +1666,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['health'] as _i12.HealthEndpoint).createEntry(
+              (endpoints['health'] as _i13.HealthEndpoint).createEntry(
             session,
             params['familyId'],
             params['type'],
@@ -1606,12 +1696,12 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'type': _i1.ParameterDescription(
               name: 'type',
-              type: _i1.getType<_i31.HealthEntryType?>(),
+              type: _i1.getType<_i32.HealthEntryType?>(),
               nullable: true,
             ),
             'status': _i1.ParameterDescription(
               name: 'status',
-              type: _i1.getType<_i32.HealthEntryStatus?>(),
+              type: _i1.getType<_i33.HealthEntryStatus?>(),
               nullable: true,
             ),
           },
@@ -1619,7 +1709,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['health'] as _i12.HealthEndpoint).listEntries(
+              (endpoints['health'] as _i13.HealthEndpoint).listEntries(
             session,
             params['familyId'],
             type: params['type'],
@@ -1641,7 +1731,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'type': _i1.ParameterDescription(
               name: 'type',
-              type: _i1.getType<_i31.HealthEntryType?>(),
+              type: _i1.getType<_i32.HealthEntryType?>(),
               nullable: true,
             ),
           },
@@ -1649,7 +1739,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['health'] as _i12.HealthEndpoint).upcoming(
+              (endpoints['health'] as _i13.HealthEndpoint).upcoming(
             session,
             params['familyId'],
             days: params['days'],
@@ -1661,7 +1751,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'entry': _i1.ParameterDescription(
               name: 'entry',
-              type: _i1.getType<_i34.HealthEntry>(),
+              type: _i1.getType<_i35.HealthEntry>(),
               nullable: false,
             )
           },
@@ -1669,7 +1759,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['health'] as _i12.HealthEndpoint).updateEntry(
+              (endpoints['health'] as _i13.HealthEndpoint).updateEntry(
             session,
             params['entry'],
           ),
@@ -1687,7 +1777,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['health'] as _i12.HealthEndpoint).completeEntry(
+              (endpoints['health'] as _i13.HealthEndpoint).completeEntry(
             session,
             params['entryId'],
           ),
@@ -1705,7 +1795,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['health'] as _i12.HealthEndpoint).deleteEntry(
+              (endpoints['health'] as _i13.HealthEndpoint).deleteEntry(
             session,
             params['entryId'],
           ),
@@ -1729,7 +1819,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['location'] as _i13.LocationEndpoint).getStatus(
+              (endpoints['location'] as _i14.LocationEndpoint).getStatus(
             session,
             params['familyId'],
           ),
@@ -1749,7 +1839,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'accuracyLevel': _i1.ParameterDescription(
               name: 'accuracyLevel',
-              type: _i1.getType<_i35.LocationAccuracyLevel?>(),
+              type: _i1.getType<_i36.LocationAccuracyLevel?>(),
               nullable: true,
             ),
             'autoDisableAfterHours': _i1.ParameterDescription(
@@ -1762,7 +1852,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['location'] as _i13.LocationEndpoint).updateStatus(
+              (endpoints['location'] as _i14.LocationEndpoint).updateStatus(
             session,
             params['familyId'],
             params['isEnabled'],
@@ -1808,7 +1898,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['location'] as _i13.LocationEndpoint).checkIn(
+              (endpoints['location'] as _i14.LocationEndpoint).checkIn(
             session,
             params['familyId'],
             params['latitude'],
@@ -1831,7 +1921,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['location'] as _i13.LocationEndpoint)
+              (endpoints['location'] as _i14.LocationEndpoint)
                   .getFamilyLocations(
             session,
             params['familyId'],
@@ -1850,7 +1940,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['location'] as _i13.LocationEndpoint).listSafeZones(
+              (endpoints['location'] as _i14.LocationEndpoint).listSafeZones(
             session,
             params['familyId'],
           ),
@@ -1888,7 +1978,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['location'] as _i13.LocationEndpoint).createSafeZone(
+              (endpoints['location'] as _i14.LocationEndpoint).createSafeZone(
             session,
             params['familyId'],
             params['name'],
@@ -1936,7 +2026,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['meal'] as _i14.MealEndpoint).createRecipe(
+              (endpoints['meal'] as _i15.MealEndpoint).createRecipe(
             session,
             params['familyId'],
             params['title'],
@@ -1958,7 +2048,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['meal'] as _i14.MealEndpoint).listRecipes(
+              (endpoints['meal'] as _i15.MealEndpoint).listRecipes(
             session,
             params['familyId'],
           ),
@@ -1986,7 +2076,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['meal'] as _i14.MealEndpoint).saveMealPlan(
+              (endpoints['meal'] as _i15.MealEndpoint).saveMealPlan(
             session,
             params['familyId'],
             params['weekStart'],
@@ -2011,7 +2101,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['meal'] as _i14.MealEndpoint).getMealPlan(
+              (endpoints['meal'] as _i15.MealEndpoint).getMealPlan(
             session,
             params['familyId'],
             params['weekStart'],
@@ -2035,7 +2125,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['meal'] as _i14.MealEndpoint).shoppingItemsFromPlan(
+              (endpoints['meal'] as _i15.MealEndpoint).shoppingItemsFromPlan(
             session,
             params['familyId'],
             params['weekStart'],
@@ -2064,7 +2154,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['meal'] as _i14.MealEndpoint).applyDietToMealPlan(
+              (endpoints['meal'] as _i15.MealEndpoint).applyDietToMealPlan(
             session,
             params['familyId'],
             params['weekStart'],
@@ -2090,7 +2180,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['report'] as _i15.ReportEndpoint).getReport(
+              (endpoints['report'] as _i16.ReportEndpoint).getReport(
             session,
             params['familyId'],
           ),
@@ -2134,7 +2224,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['shopping'] as _i16.ShoppingEndpoint).createList(
+              (endpoints['shopping'] as _i17.ShoppingEndpoint).createList(
             session,
             params['familyId'],
             params['name'],
@@ -2153,7 +2243,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'status': _i1.ParameterDescription(
               name: 'status',
-              type: _i1.getType<_i36.ShoppingListStatus?>(),
+              type: _i1.getType<_i37.ShoppingListStatus?>(),
               nullable: true,
             ),
           },
@@ -2161,7 +2251,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['shopping'] as _i16.ShoppingEndpoint).listLists(
+              (endpoints['shopping'] as _i17.ShoppingEndpoint).listLists(
             session,
             params['familyId'],
             status: params['status'],
@@ -2180,7 +2270,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['shopping'] as _i16.ShoppingEndpoint).getList(
+              (endpoints['shopping'] as _i17.ShoppingEndpoint).getList(
             session,
             params['listId'],
           ),
@@ -2205,12 +2295,12 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'unit': _i1.ParameterDescription(
               name: 'unit',
-              type: _i1.getType<_i37.ShoppingUnit?>(),
+              type: _i1.getType<_i38.ShoppingUnit?>(),
               nullable: true,
             ),
             'category': _i1.ParameterDescription(
               name: 'category',
-              type: _i1.getType<_i38.ShoppingCategory?>(),
+              type: _i1.getType<_i39.ShoppingCategory?>(),
               nullable: true,
             ),
             'notes': _i1.ParameterDescription(
@@ -2228,7 +2318,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['shopping'] as _i16.ShoppingEndpoint).addItem(
+              (endpoints['shopping'] as _i17.ShoppingEndpoint).addItem(
             session,
             params['listId'],
             params['name'],
@@ -2244,7 +2334,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'item': _i1.ParameterDescription(
               name: 'item',
-              type: _i1.getType<_i39.ShoppingItem>(),
+              type: _i1.getType<_i40.ShoppingItem>(),
               nullable: false,
             )
           },
@@ -2252,7 +2342,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['shopping'] as _i16.ShoppingEndpoint).updateItem(
+              (endpoints['shopping'] as _i17.ShoppingEndpoint).updateItem(
             session,
             params['item'],
           ),
@@ -2275,7 +2365,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['shopping'] as _i16.ShoppingEndpoint).checkItem(
+              (endpoints['shopping'] as _i17.ShoppingEndpoint).checkItem(
             session,
             params['itemId'],
             params['isChecked'],
@@ -2294,7 +2384,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['shopping'] as _i16.ShoppingEndpoint).deleteItem(
+              (endpoints['shopping'] as _i17.ShoppingEndpoint).deleteItem(
             session,
             params['itemId'],
           ),
@@ -2312,7 +2402,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['shopping'] as _i16.ShoppingEndpoint).completeList(
+              (endpoints['shopping'] as _i17.ShoppingEndpoint).completeList(
             session,
             params['listId'],
           ),
@@ -2333,7 +2423,7 @@ class Endpoints extends _i1.EndpointDispatch {
             Map<String, dynamic> params,
             Map<String, Stream> streamParams,
           ) =>
-              (endpoints['shopping'] as _i16.ShoppingEndpoint).watchList(
+              (endpoints['shopping'] as _i17.ShoppingEndpoint).watchList(
             session,
             params['listId'],
           ),
@@ -2364,12 +2454,12 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'category': _i1.ParameterDescription(
               name: 'category',
-              type: _i1.getType<_i40.TodoCategory?>(),
+              type: _i1.getType<_i41.TodoCategory?>(),
               nullable: true,
             ),
             'priority': _i1.ParameterDescription(
               name: 'priority',
-              type: _i1.getType<_i41.TodoPriority?>(),
+              type: _i1.getType<_i42.TodoPriority?>(),
               nullable: true,
             ),
             'assignedTo': _i1.ParameterDescription(
@@ -2387,7 +2477,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['todo'] as _i17.TodoEndpoint).createTodo(
+              (endpoints['todo'] as _i18.TodoEndpoint).createTodo(
             session,
             params['familyId'],
             params['title'],
@@ -2408,7 +2498,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'status': _i1.ParameterDescription(
               name: 'status',
-              type: _i1.getType<_i42.TodoStatus?>(),
+              type: _i1.getType<_i43.TodoStatus?>(),
               nullable: true,
             ),
           },
@@ -2416,7 +2506,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['todo'] as _i17.TodoEndpoint).listTodos(
+              (endpoints['todo'] as _i18.TodoEndpoint).listTodos(
             session,
             params['familyId'],
             status: params['status'],
@@ -2435,7 +2525,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['todo'] as _i17.TodoEndpoint).myDay(
+              (endpoints['todo'] as _i18.TodoEndpoint).myDay(
             session,
             params['familyId'],
           ),
@@ -2458,7 +2548,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['todo'] as _i17.TodoEndpoint).assignTodo(
+              (endpoints['todo'] as _i18.TodoEndpoint).assignTodo(
             session,
             params['todoId'],
             params['assignedTo'],
@@ -2469,7 +2559,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'item': _i1.ParameterDescription(
               name: 'item',
-              type: _i1.getType<_i43.TodoItem>(),
+              type: _i1.getType<_i44.TodoItem>(),
               nullable: false,
             )
           },
@@ -2477,7 +2567,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['todo'] as _i17.TodoEndpoint).updateTodo(
+              (endpoints['todo'] as _i18.TodoEndpoint).updateTodo(
             session,
             params['item'],
           ),
@@ -2495,7 +2585,7 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['todo'] as _i17.TodoEndpoint).completeTodo(
+              (endpoints['todo'] as _i18.TodoEndpoint).completeTodo(
             session,
             params['todoId'],
           ),
@@ -2513,85 +2603,13 @@ class Endpoints extends _i1.EndpointDispatch {
             _i1.Session session,
             Map<String, dynamic> params,
           ) async =>
-              (endpoints['todo'] as _i17.TodoEndpoint).deleteTodo(
+              (endpoints['todo'] as _i18.TodoEndpoint).deleteTodo(
             session,
             params['todoId'],
           ),
         ),
       },
     );
-    connectors['ai'] = _i1.EndpointConnector(
-      name: 'ai',
-      endpoint: endpoints['ai']!,
-      methodConnectors: {
-        'isConfigured': _i1.MethodConnector(
-          name: 'isConfigured',
-          params: {},
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['ai'] as _i45.AiEndpoint).isConfigured(session),
-        ),
-        'getAiConfig': _i1.MethodConnector(
-          name: 'getAiConfig',
-          params: {},
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['ai'] as _i45.AiEndpoint).getAiConfig(session),
-        ),
-        'saveAiConfig': _i1.MethodConnector(
-          name: 'saveAiConfig',
-          params: {
-            'openRouterApiKey': _i1.ParameterDescription(
-              name: 'openRouterApiKey',
-              type: _i1.getType<String>(),
-              nullable: false,
-            ),
-            'defaultModel': _i1.ParameterDescription(
-              name: 'defaultModel',
-              type: _i1.getType<String>(),
-              nullable: false,
-            ),
-          },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['ai'] as _i45.AiEndpoint).saveAiConfig(
-            session,
-            params['openRouterApiKey'],
-            params['defaultModel'],
-          ),
-        ),
-        'extractActivity': _i1.MethodConnector(
-          name: 'extractActivity',
-          params: {
-            'familyId': _i1.ParameterDescription(
-              name: 'familyId',
-              type: _i1.getType<int>(),
-              nullable: false,
-            ),
-            'payload': _i1.ParameterDescription(
-              name: 'payload',
-              type: _i1.getType<String>(),
-              nullable: false,
-            ),
-          },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['ai'] as _i45.AiEndpoint).extractActivity(
-            session,
-            params['familyId'],
-            params['payload'],
-          ),
-        ),
-      },
-    );
-    modules['serverpod_auth'] = _i44.Endpoints()..initializeEndpoints(server);
+    modules['serverpod_auth'] = _i45.Endpoints()..initializeEndpoints(server);
   }
 }

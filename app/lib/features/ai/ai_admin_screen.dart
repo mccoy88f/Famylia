@@ -20,8 +20,10 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
 
   // Config section
   final _keyCtrl = TextEditingController();
-  final _modelCtrl = TextEditingController(text: 'google/gemini-2.5-flash-preview');
+  String? _selectedModelId;
+  List<OpenRouterVisionModel> _visionModels = [];
   bool _loadingConfig = true;
+  bool _loadingModels = false;
   bool _savingConfig = false;
   bool _obscureKey = true;
   String? _keyPreview;
@@ -31,7 +33,7 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
 
   // Test section
   final _textCtrl = TextEditingController();
-  final _testModelCtrl = TextEditingController();
+  String? _testModelId;
   bool _testing = false;
   String? _testError;
   String? _rawResult;
@@ -47,47 +49,108 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
   @override
   void dispose() {
     _keyCtrl.dispose();
-    _modelCtrl.dispose();
     _textCtrl.dispose();
-    _testModelCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _loadConfig() async {
-    setState(() { _loadingConfig = true; _configError = null; });
+    setState(() {
+      _loadingConfig = true;
+      _configError = null;
+    });
     try {
       final cfg = await _repo.getAiConfig();
       if (mounted) {
+        final savedModel = cfg['defaultModel'] as String?;
         setState(() {
           _hasKey = cfg['hasKey'] as bool? ?? false;
           _keyPreview = cfg['keyPreview'] as String?;
-          _modelCtrl.text = cfg['defaultModel'] as String? ?? 'google/gemini-2.5-flash-preview';
-          _testModelCtrl.text = _modelCtrl.text;
+          _selectedModelId = savedModel;
           _loadingConfig = false;
         });
+        if (_hasKey) {
+          await _loadVisionModels();
+        }
       }
     } catch (e) {
-      if (mounted) setState(() { _loadingConfig = false; _configError = _repo.errorMessage(e); });
+      if (mounted) {
+        setState(() {
+          _loadingConfig = false;
+          _configError = _repo.errorMessage(e);
+        });
+      }
     }
   }
 
+  Future<void> _loadVisionModels() async {
+    setState(() {
+      _loadingModels = true;
+      _configError = null;
+    });
+    try {
+      final models = await _repo.listVisionModels(
+        openRouterApiKey: _keyCtrl.text.trim(),
+      );
+      if (!mounted) return;
+      setState(() {
+        _visionModels = models;
+        _loadingModels = false;
+        _selectedModelId = _resolveSelectedModel(_selectedModelId, models);
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loadingModels = false;
+          _visionModels = [];
+          _configError = _repo.errorMessage(e);
+        });
+      }
+    }
+  }
+
+  String? _resolveSelectedModel(
+    String? current,
+    List<OpenRouterVisionModel> models,
+  ) {
+    if (models.isEmpty) return null;
+    if (current != null && models.any((m) => m.id == current)) {
+      return current;
+    }
+    return models.first.id;
+  }
+
   Future<void> _saveConfig() async {
-    final key = _keyCtrl.text.trim();
-    final model = _modelCtrl.text.trim();
-    if (model.isEmpty) {
-      setState(() => _configError = 'Il modello non può essere vuoto.');
+    final model = _selectedModelId;
+    if (model == null || model.isEmpty) {
+      setState(() => _configError = 'Seleziona un modello vision.');
       return;
     }
-    setState(() { _savingConfig = true; _configError = null; _configSuccess = null; });
+    if (_visionModels.isEmpty) {
+      setState(() => _configError = 'Verifica la API key e carica i modelli.');
+      return;
+    }
+    setState(() {
+      _savingConfig = true;
+      _configError = null;
+      _configSuccess = null;
+    });
     try {
-      await _repo.saveAiConfig(key.isEmpty ? '' : key, model);
+      await _repo.saveAiConfig(_keyCtrl.text.trim(), model);
       if (mounted) {
         _keyCtrl.clear();
-        setState(() { _savingConfig = false; _configSuccess = 'Configurazione salvata.'; });
+        setState(() {
+          _savingConfig = false;
+          _configSuccess = 'Configurazione salvata.';
+        });
         await _loadConfig();
       }
     } catch (e) {
-      if (mounted) setState(() { _savingConfig = false; _configError = _repo.errorMessage(e); });
+      if (mounted) {
+        setState(() {
+          _savingConfig = false;
+          _configError = _repo.errorMessage(e);
+        });
+      }
     }
   }
 
@@ -107,7 +170,11 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
     setState(() {
       for (final f in result.files) {
         if (f.bytes == null) continue;
-        _attachments.add(_Attachment(name: f.name, base64: base64Encode(f.bytes!), mimeType: _mimeFromExt(f.extension ?? '')));
+        _attachments.add(_Attachment(
+          name: f.name,
+          base64: base64Encode(f.bytes!),
+          mimeType: _mimeFromExt(f.extension ?? ''),
+        ));
       }
     });
   }
@@ -128,14 +195,23 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
       setState(() => _testError = 'Inserisci testo o file.');
       return;
     }
-    setState(() { _testing = true; _testError = null; _result = null; _rawResult = null; });
+    setState(() {
+      _testing = true;
+      _testError = null;
+      _result = null;
+      _rawResult = null;
+    });
     try {
       final result = await _repo.extractActivity(
         familyId,
         text: text.isEmpty ? null : text,
-        base64Images: _attachments.isEmpty ? null : _attachments.map((a) => a.base64).toList(),
-        mimeTypes: _attachments.isEmpty ? null : _attachments.map((a) => a.mimeType).toList(),
-        model: _testModelCtrl.text.trim().isEmpty ? null : _testModelCtrl.text.trim(),
+        base64Images: _attachments.isEmpty
+            ? null
+            : _attachments.map((a) => a.base64).toList(),
+        mimeTypes: _attachments.isEmpty
+            ? null
+            : _attachments.map((a) => a.mimeType).toList(),
+        model: _testModelId,
       );
       if (mounted) {
         setState(() {
@@ -145,7 +221,12 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
         });
       }
     } catch (e) {
-      if (mounted) setState(() { _testError = _repo.errorMessage(e); _testing = false; });
+      if (mounted) {
+        setState(() {
+          _testError = _repo.errorMessage(e);
+          _testing = false;
+        });
+      }
     }
   }
 
@@ -165,71 +246,133 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Config section ──────────────────────────────────────────
-              _SectionHeader(icon: Icons.settings_outlined, label: 'Configurazione OpenRouter', shadTheme: shadTheme),
+              _SectionHeader(
+                icon: Icons.settings_outlined,
+                label: 'Configurazione OpenRouter',
+                shadTheme: shadTheme,
+              ),
               const SizedBox(height: 16),
               if (_loadingConfig)
-                const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()))
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
               else ...[
-                // Status
-                _StatusChip(hasKey: _hasKey, keyPreview: _keyPreview, shadTheme: shadTheme),
+                _StatusChip(
+                  hasKey: _hasKey,
+                  keyPreview: _keyPreview,
+                  shadTheme: shadTheme,
+                ),
                 const SizedBox(height: 16),
-                // API key input
-                Text('Nuova API key', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500)),
+                Text(
+                  'Nuova API key',
+                  style: shadTheme.textTheme.small
+                      .copyWith(fontWeight: FontWeight.w500),
+                ),
                 const SizedBox(height: 6),
                 Row(
                   children: [
                     Expanded(
                       child: ShadInput(
                         controller: _keyCtrl,
-                        placeholder: Text(_hasKey ? 'Lascia vuoto per mantenere la chiave attuale' : 'sk-or-v1-...'),
+                        placeholder: Text(
+                          _hasKey
+                              ? 'Lascia vuoto per mantenere la chiave attuale'
+                              : 'sk-or-v1-...',
+                        ),
                         obscureText: _obscureKey,
                       ),
                     ),
                     const SizedBox(width: 8),
                     ShadButton.ghost(
-                      size: ShadButtonSize.icon,
-                      onPressed: () => setState(() => _obscureKey = !_obscureKey),
-                      child: Icon(_obscureKey ? Icons.visibility_outlined : Icons.visibility_off_outlined, size: 18),
+                      onPressed: () =>
+                          setState(() => _obscureKey = !_obscureKey),
+                      child: Icon(
+                        _obscureKey
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                        size: 18,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text('Ottieni la chiave su openrouter.ai/keys', style: shadTheme.textTheme.muted.copyWith(fontSize: 11)),
-                const SizedBox(height: 16),
-                // Model
-                Text('Modello predefinito', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500)),
-                const SizedBox(height: 6),
-                ShadInput(
-                  controller: _modelCtrl,
-                  placeholder: const Text('google/gemini-2.5-flash-preview'),
-                  leading: Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Icon(Icons.memory_outlined, size: 16, color: shadTheme.colorScheme.mutedForeground),
-                  ),
-                ),
-                const SizedBox(height: 4),
                 Text(
-                  'Esempi:\n'
-                  '• google/gemini-2.5-flash-preview  (vision, veloce)\n'
-                  '• anthropic/claude-3.5-haiku  (testo, economico)\n'
-                  '• meta-llama/llama-3.2-11b-vision-instruct:free  (gratuito)',
+                  'Ottieni la chiave su openrouter.ai/keys',
                   style: shadTheme.textTheme.muted.copyWith(fontSize: 11),
                 ),
+                const SizedBox(height: 12),
+                ShadButton.outline(
+                  width: double.infinity,
+                  onPressed: _loadingModels ? null : _loadVisionModels,
+                  child: _loadingModels
+                      ? const SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.verified_outlined, size: 16),
+                            SizedBox(width: 8),
+                            Text('Verifica chiave e carica modelli vision'),
+                          ],
+                        ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Modello predefinito (vision)',
+                  style: shadTheme.textTheme.small
+                      .copyWith(fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 6),
+                _VisionModelDropdown(
+                  shadTheme: shadTheme,
+                  models: _visionModels,
+                  value: _selectedModelId,
+                  enabled: !_loadingModels && _visionModels.isNotEmpty,
+                  hint: _loadingModels
+                      ? 'Caricamento modelli...'
+                      : _visionModels.isEmpty
+                          ? 'Verifica la API key per caricare i modelli'
+                          : 'Seleziona un modello',
+                  onChanged: (id) => setState(() => _selectedModelId = id),
+                ),
+                if (_visionModels.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    '${_visionModels.length} modelli con supporto immagini',
+                    style: shadTheme.textTheme.muted.copyWith(fontSize: 11),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 if (_configError != null) ...[
                   _InlineError(message: _configError!, shadTheme: shadTheme),
                   const SizedBox(height: 12),
                 ],
                 if (_configSuccess != null) ...[
-                  _InlineSuccess(message: _configSuccess!, shadTheme: shadTheme),
+                  _InlineSuccess(
+                    message: _configSuccess!,
+                    shadTheme: shadTheme,
+                  ),
                   const SizedBox(height: 12),
                 ],
                 ShadButton(
-                  onPressed: _savingConfig ? null : _saveConfig,
+                  onPressed: _savingConfig ||
+                          _loadingModels ||
+                          _visionModels.isEmpty
+                      ? null
+                      : _saveConfig,
                   width: double.infinity,
                   child: _savingConfig
-                      ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      ? const SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       : const Text('Salva configurazione'),
                 ),
               ],
@@ -238,25 +381,47 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
               Divider(color: shadTheme.colorScheme.border),
               const SizedBox(height: 24),
 
-              // ── Test section ────────────────────────────────────────────
-              _SectionHeader(icon: Icons.science_outlined, label: 'Test estrazione', shadTheme: shadTheme),
-              const SizedBox(height: 16),
-              // Model override for test
-              Text('Modello per questo test (opzionale)', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500)),
-              const SizedBox(height: 6),
-              ShadInput(
-                controller: _testModelCtrl,
-                placeholder: const Text('Lascia vuoto per usare il predefinito'),
+              _SectionHeader(
+                icon: Icons.science_outlined,
+                label: 'Test estrazione',
+                shadTheme: shadTheme,
               ),
               const SizedBox(height: 16),
-              // Text input
+              Text(
+                'Modello per questo test',
+                style: shadTheme.textTheme.small
+                    .copyWith(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 6),
+              _VisionModelDropdown(
+                shadTheme: shadTheme,
+                models: _visionModels,
+                value: _testModelId ?? _selectedModelId,
+                enabled: !_loadingModels && _visionModels.isNotEmpty,
+                hint: 'Usa il modello predefinito',
+                onChanged: (id) => setState(() => _testModelId = id),
+              ),
+              const SizedBox(height: 16),
               Row(
                 children: [
-                  Expanded(child: Text('Testo', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500))),
+                  Expanded(
+                    child: Text(
+                      'Testo',
+                      style: shadTheme.textTheme.small
+                          .copyWith(fontWeight: FontWeight.w500),
+                    ),
+                  ),
                   ShadButton.ghost(
                     size: ShadButtonSize.sm,
                     onPressed: _pasteClipboard,
-                    child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.content_paste_outlined, size: 14), SizedBox(width: 4), Text('Incolla')]),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.content_paste_outlined, size: 14),
+                        SizedBox(width: 4),
+                        Text('Incolla'),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -267,14 +432,26 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
                 maxLines: 5,
               ),
               const SizedBox(height: 16),
-              // File attachments
               Row(
                 children: [
-                  Expanded(child: Text('File (${_attachments.length})', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500))),
+                  Expanded(
+                    child: Text(
+                      'File (${_attachments.length})',
+                      style: shadTheme.textTheme.small
+                          .copyWith(fontWeight: FontWeight.w500),
+                    ),
+                  ),
                   ShadButton.ghost(
                     size: ShadButtonSize.sm,
                     onPressed: _pickFiles,
-                    child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.attach_file_outlined, size: 14), SizedBox(width: 4), Text('Aggiungi')]),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.attach_file_outlined, size: 14),
+                        SizedBox(width: 4),
+                        Text('Aggiungi'),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -282,13 +459,31 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: ShadCard(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     child: Row(
                       children: [
-                        Icon(_attachments[i].mimeType.startsWith('image') ? Icons.image_outlined : Icons.picture_as_pdf_outlined, size: 16, color: shadTheme.colorScheme.primary),
+                        Icon(
+                          _attachments[i].mimeType.startsWith('image')
+                              ? Icons.image_outlined
+                              : Icons.picture_as_pdf_outlined,
+                          size: 16,
+                          color: shadTheme.colorScheme.primary,
+                        ),
                         const SizedBox(width: 8),
-                        Expanded(child: Text(_attachments[i].name, style: shadTheme.textTheme.small)),
-                        ShadButton.ghost(size: ShadButtonSize.icon, onPressed: () => setState(() => _attachments.removeAt(i)), child: const Icon(Icons.close, size: 14)),
+                        Expanded(
+                          child: Text(
+                            _attachments[i].name,
+                            style: shadTheme.textTheme.small,
+                          ),
+                        ),
+                        ShadButton.ghost(
+                          onPressed: () =>
+                              setState(() => _attachments.removeAt(i)),
+                          child: const Icon(Icons.close, size: 14),
+                        ),
                       ],
                     ),
                   ),
@@ -302,29 +497,58 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
                 onPressed: (!_hasKey || _testing) ? null : _test,
                 width: double.infinity,
                 child: _testing
-                    ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.science_outlined, size: 16), SizedBox(width: 8), Text('Testa estrazione')]),
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.science_outlined, size: 16),
+                          SizedBox(width: 8),
+                          Text('Testa estrazione'),
+                        ],
+                      ),
               ),
               if (!_hasKey && !_loadingConfig)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text('Configura prima la chiave API.', style: shadTheme.textTheme.muted.copyWith(fontSize: 12), textAlign: TextAlign.center),
+                  child: Text(
+                    'Configura prima la chiave API.',
+                    style: shadTheme.textTheme.muted
+                        .copyWith(fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
 
               if (_result != null) ...[
                 const SizedBox(height: 20),
-                _SectionHeader(icon: Icons.check_circle_outline, label: 'Risultato', shadTheme: shadTheme),
+                _SectionHeader(
+                  icon: Icons.check_circle_outline,
+                  label: 'Risultato',
+                  shadTheme: shadTheme,
+                ),
                 const SizedBox(height: 12),
                 _ResultSummary(result: _result!, shadTheme: shadTheme),
                 const SizedBox(height: 16),
-                _SectionHeader(icon: Icons.code_outlined, label: 'JSON raw', shadTheme: shadTheme),
+                _SectionHeader(
+                  icon: Icons.code_outlined,
+                  label: 'JSON raw',
+                  shadTheme: shadTheme,
+                ),
                 const SizedBox(height: 8),
                 ShadCard(
                   padding: const EdgeInsets.all(12),
-                  backgroundColor: shadTheme.colorScheme.muted.withValues(alpha: 0.5),
+                  backgroundColor:
+                      shadTheme.colorScheme.muted.withValues(alpha: 0.5),
                   child: SelectableText(
                     _rawResult ?? '',
-                    style: TextStyle(fontFamily: 'monospace', fontSize: 12, color: shadTheme.colorScheme.foreground),
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 12,
+                      color: shadTheme.colorScheme.foreground,
+                    ),
                   ),
                 ),
               ],
@@ -337,10 +561,70 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
   }
 }
 
+class _VisionModelDropdown extends StatelessWidget {
+  const _VisionModelDropdown({
+    required this.shadTheme,
+    required this.models,
+    required this.value,
+    required this.enabled,
+    required this.hint,
+    required this.onChanged,
+  });
+
+  final ShadThemeData shadTheme;
+  final List<OpenRouterVisionModel> models;
+  final String? value;
+  final bool enabled;
+  final String hint;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      value: value != null && models.any((m) => m.id == value) ? value : null,
+      isExpanded: true,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: shadTheme.colorScheme.background,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: shadTheme.colorScheme.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: shadTheme.colorScheme.border),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      ),
+      hint: Text(
+        hint,
+        style: shadTheme.textTheme.muted.copyWith(fontSize: 13),
+        overflow: TextOverflow.ellipsis,
+      ),
+      items: [
+        for (final m in models)
+          DropdownMenuItem(
+            value: m.id,
+            child: Text(
+              m.name == m.id ? m.id : '${m.name} (${m.id})',
+              style: shadTheme.textTheme.small,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+      ],
+      onChanged: enabled ? onChanged : null,
+    );
+  }
+}
+
 // ── Sub-widgets ───────────────────────────────────────────────────────────
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.icon, required this.label, required this.shadTheme});
+  const _SectionHeader({
+    required this.icon,
+    required this.label,
+    required this.shadTheme,
+  });
   final IconData icon;
   final String label;
   final ShadThemeData shadTheme;
@@ -358,20 +642,29 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _StatusChip extends StatelessWidget {
-  const _StatusChip({required this.hasKey, required this.keyPreview, required this.shadTheme});
+  const _StatusChip({
+    required this.hasKey,
+    required this.keyPreview,
+    required this.shadTheme,
+  });
   final bool hasKey;
   final String? keyPreview;
   final ShadThemeData shadTheme;
 
   @override
   Widget build(BuildContext context) {
-    final color = hasKey ? const Color(0xFF10B981) : shadTheme.colorScheme.destructive;
+    final color =
+        hasKey ? const Color(0xFF10B981) : shadTheme.colorScheme.destructive;
     return ShadCard(
       padding: const EdgeInsets.all(14),
       backgroundColor: color.withValues(alpha: 0.08),
       child: Row(
         children: [
-          Icon(hasKey ? Icons.check_circle_outline : Icons.error_outline, size: 18, color: color),
+          Icon(
+            hasKey ? Icons.check_circle_outline : Icons.error_outline,
+            size: 18,
+            color: color,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -379,10 +672,14 @@ class _StatusChip extends StatelessWidget {
               children: [
                 Text(
                   hasKey ? 'API key configurata' : 'Nessuna API key',
-                  style: shadTheme.textTheme.small.copyWith(color: color, fontWeight: FontWeight.w600),
+                  style: shadTheme.textTheme.small
+                      .copyWith(color: color, fontWeight: FontWeight.w600),
                 ),
                 if (hasKey && keyPreview != null)
-                  Text(keyPreview!, style: shadTheme.textTheme.muted.copyWith(fontSize: 11)),
+                  Text(
+                    keyPreview!,
+                    style: shadTheme.textTheme.muted.copyWith(fontSize: 11),
+                  ),
               ],
             ),
           ),
@@ -401,12 +698,25 @@ class _InlineError extends StatelessWidget {
   Widget build(BuildContext context) {
     return ShadCard(
       padding: const EdgeInsets.all(12),
-      backgroundColor: shadTheme.colorScheme.destructive.withValues(alpha: 0.08),
+      backgroundColor:
+          shadTheme.colorScheme.destructive.withValues(alpha: 0.08),
       child: Row(
         children: [
-          Icon(Icons.error_outline, size: 16, color: shadTheme.colorScheme.destructive),
+          Icon(
+            Icons.error_outline,
+            size: 16,
+            color: shadTheme.colorScheme.destructive,
+          ),
           const SizedBox(width: 8),
-          Expanded(child: Text(message, style: TextStyle(color: shadTheme.colorScheme.destructive, fontSize: 13))),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: shadTheme.colorScheme.destructive,
+                fontSize: 13,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -428,7 +738,12 @@ class _InlineSuccess extends StatelessWidget {
         children: [
           const Icon(Icons.check_circle_outline, size: 16, color: green),
           const SizedBox(width: 8),
-          Expanded(child: Text(message, style: const TextStyle(color: green, fontSize: 13))),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(color: green, fontSize: 13),
+            ),
+          ),
         ],
       ),
     );
@@ -453,23 +768,55 @@ class _ResultSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Expanded(child: Text(result.titolo, style: shadTheme.textTheme.p.copyWith(fontWeight: FontWeight.w700))),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(color: c.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
-              child: Text('${(result.confidenza * 100).round()}%', style: TextStyle(fontSize: 11, color: c, fontWeight: FontWeight.w700)),
-            ),
-          ]),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  result.titolo,
+                  style: shadTheme.textTheme.p
+                      .copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: c.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '${(result.confidenza * 100).round()}%',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: c,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 6),
-          Text('tipo: ${result.tipo}${result.tipoAppuntamento != null ? ' / ${result.tipoAppuntamento}' : ''}',
-              style: shadTheme.textTheme.small.copyWith(color: shadTheme.colorScheme.mutedForeground)),
+          Text(
+            'tipo: ${result.tipo}${result.tipoAppuntamento != null ? ' / ${result.tipoAppuntamento}' : ''}',
+            style: shadTheme.textTheme.small
+                .copyWith(color: shadTheme.colorScheme.mutedForeground),
+          ),
           if (result.importo != null)
-            Text('importo: €${result.importo!.toStringAsFixed(2)}', style: shadTheme.textTheme.small),
+            Text(
+              'importo: €${result.importo!.toStringAsFixed(2)}',
+              style: shadTheme.textTheme.small,
+            ),
           if (result.quando != null)
-            Text('quando: ${result.quando!.toLocal()}', style: shadTheme.textTheme.small),
+            Text(
+              'quando: ${result.quando!.toLocal()}',
+              style: shadTheme.textTheme.small,
+            ),
           const SizedBox(height: 6),
-          Text(result.motivazione, style: shadTheme.textTheme.muted.copyWith(fontSize: 11, fontStyle: FontStyle.italic)),
+          Text(
+            result.motivazione,
+            style: shadTheme.textTheme.muted
+                .copyWith(fontSize: 11, fontStyle: FontStyle.italic),
+          ),
         ],
       ),
     );
@@ -477,7 +824,11 @@ class _ResultSummary extends StatelessWidget {
 }
 
 class _Attachment {
-  const _Attachment({required this.name, required this.base64, required this.mimeType});
+  const _Attachment({
+    required this.name,
+    required this.base64,
+    required this.mimeType,
+  });
   final String name;
   final String base64;
   final String mimeType;

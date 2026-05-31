@@ -99,15 +99,21 @@ Famylia/
 
 ### Avvio rapido sviluppo
 
-**Stack completo su Docker** (Postgres, Redis, MinIO, Serverpod):
+**Stack completo su Docker** (backend + interfaccia web):
 
 ```bash
 chmod +x scripts/*.sh
 ./scripts/docker-up.sh
 ```
 
-- API: `http://localhost:8080`
-- Log: `cd docker && docker compose logs -f server`
+| Cosa | URL |
+|------|-----|
+| **App (browser)** | **http://localhost:8083** |
+| API Serverpod | http://localhost:8080 |
+
+La prima build dell’app in Docker può richiedere alcuni minuti.
+
+Log: `cd docker && docker compose logs -f server` oppure `logs -f app`
 
 **Solo DB in Docker + server locale** (porte 8090/8091):
 

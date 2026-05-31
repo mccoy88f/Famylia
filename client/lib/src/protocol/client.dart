@@ -68,6 +68,73 @@ import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i53;
 import 'protocol.dart' as _i54;
 
 /// {@category Endpoint}
+class EndpointAi extends _i1.EndpointRef {
+  EndpointAi(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'ai';
+
+  /// Returns true if an OpenRouter API key is stored in the DB.
+  _i2.Future<bool> isConfigured() => caller.callServerEndpoint<bool>(
+        'ai',
+        'isConfigured',
+        {},
+      );
+
+  /// Returns current config (key masked, model visible). Admin use only.
+  _i2.Future<String> getAiConfig() => caller.callServerEndpoint<String>(
+        'ai',
+        'getAiConfig',
+        {},
+      );
+
+  /// Saves OpenRouter API key and default model. Admin use only.
+  _i2.Future<bool> saveAiConfig(
+    String openRouterApiKey,
+    String defaultModel,
+  ) =>
+      caller.callServerEndpoint<bool>(
+        'ai',
+        'saveAiConfig',
+        {
+          'openRouterApiKey': openRouterApiKey,
+          'defaultModel': defaultModel,
+        },
+      );
+
+  /// Elenco modelli OpenRouter con supporto vision (input immagine).
+  /// Valida la chiave API. Passa chiave vuota per usare quella salvata.
+  _i2.Future<String> listVisionModels(String openRouterApiKey) =>
+      caller.callServerEndpoint<String>(
+        'ai',
+        'listVisionModels',
+        {'openRouterApiKey': openRouterApiKey},
+      );
+
+  /// Extracts a family activity from text and/or images.
+  ///
+  /// [payload] is a JSON string with:
+  ///   - text: String? — raw text (email body, clipboard, etc.)
+  ///   - base64Images: List<String>? — base64-encoded images or PDFs
+  ///   - mimeTypes: List<String>? — MIME types for each image
+  ///   - model: String? — model override for this call
+  ///
+  /// Returns a JSON string with the extraction result.
+  _i2.Future<String> extractActivity(
+    int familyId,
+    String payload,
+  ) =>
+      caller.callServerEndpoint<String>(
+        'ai',
+        'extractActivity',
+        {
+          'familyId': familyId,
+          'payload': payload,
+        },
+      );
+}
+
+/// {@category Endpoint}
 class EndpointBoard extends _i1.EndpointRef {
   EndpointBoard(_i1.EndpointCaller caller) : super(caller);
 
@@ -1208,6 +1275,7 @@ class Client extends _i1.ServerpodClientShared {
           disconnectStreamsOnLostInternetConnection:
               disconnectStreamsOnLostInternetConnection,
         ) {
+    ai = EndpointAi(this);
     board = EndpointBoard(this);
     calendar = EndpointCalendar(this);
     deadline = EndpointDeadline(this);
@@ -1224,9 +1292,10 @@ class Client extends _i1.ServerpodClientShared {
     report = EndpointReport(this);
     shopping = EndpointShopping(this);
     todo = EndpointTodo(this);
-    ai = EndpointAi(this);
     modules = Modules(this);
   }
+
+  late final EndpointAi ai;
 
   late final EndpointBoard board;
 
@@ -1260,12 +1329,11 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointTodo todo;
 
-  late final EndpointAi ai;
-
   late final Modules modules;
 
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
+        'ai': ai,
         'board': board,
         'calendar': calendar,
         'deadline': deadline,
@@ -1282,37 +1350,9 @@ class Client extends _i1.ServerpodClientShared {
         'report': report,
         'shopping': shopping,
         'todo': todo,
-        'ai': ai,
       };
 
   @override
   Map<String, _i1.ModuleEndpointCaller> get moduleLookup =>
       {'auth': modules.auth};
-}
-
-class EndpointAi extends _i1.EndpointRef {
-  EndpointAi(_i1.EndpointCaller caller) : super(caller);
-
-  @override
-  String get name => 'ai';
-
-  _i2.Future<bool> isConfigured() =>
-      caller.callServerEndpoint<bool>('ai', 'isConfigured', {});
-
-  _i2.Future<String> getAiConfig() =>
-      caller.callServerEndpoint<String>('ai', 'getAiConfig', {});
-
-  _i2.Future<bool> saveAiConfig(String openRouterApiKey, String defaultModel) =>
-      caller.callServerEndpoint<bool>(
-        'ai',
-        'saveAiConfig',
-        {'openRouterApiKey': openRouterApiKey, 'defaultModel': defaultModel},
-      );
-
-  _i2.Future<String> extractActivity(int familyId, String payload) =>
-      caller.callServerEndpoint<String>(
-        'ai',
-        'extractActivity',
-        {'familyId': familyId, 'payload': payload},
-      );
 }

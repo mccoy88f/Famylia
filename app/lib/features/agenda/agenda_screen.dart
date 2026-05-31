@@ -613,7 +613,7 @@ class _DeadlineCard extends StatelessWidget {
             const SizedBox(width: 4),
             ShadButton.ghost(
               onPressed: onPay,
-              size: ShadButtonSize.icon,
+             
               child: Icon(Icons.check_circle_outline, color: shadTheme.colorScheme.primary, size: 20),
             ),
           ],

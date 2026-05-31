@@ -310,7 +310,7 @@ class _FileTab extends StatelessWidget {
                         const SizedBox(width: 10),
                         Expanded(child: Text(a.name, style: shadTheme.textTheme.small)),
                         ShadButton.ghost(
-                          size: ShadButtonSize.icon,
+                         
                           onPressed: () => onRemove(i),
                           child: Icon(Icons.close, size: 16, color: shadTheme.colorScheme.mutedForeground),
                         ),

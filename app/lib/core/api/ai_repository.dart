@@ -47,6 +47,20 @@ class AiExtractionResult {
   final Map<String, dynamic>? raw;
 }
 
+class OpenRouterVisionModel {
+  const OpenRouterVisionModel({required this.id, required this.name});
+
+  factory OpenRouterVisionModel.fromJson(Map<String, dynamic> json) {
+    return OpenRouterVisionModel(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? json['id'] as String? ?? '',
+    );
+  }
+
+  final String id;
+  final String name;
+}
+
 class AiRepository {
   AiRepository({FamyliaServices? services})
       : _client = (services ?? FamyliaServices.instance).client;
@@ -62,6 +76,19 @@ class AiRepository {
 
   Future<bool> saveAiConfig(String openRouterApiKey, String defaultModel) =>
       _client.ai.saveAiConfig(openRouterApiKey, defaultModel);
+
+  /// Valida la API key (se fornita) e restituisce i modelli con supporto vision.
+  Future<List<OpenRouterVisionModel>> listVisionModels({
+    String openRouterApiKey = '',
+  }) async {
+    final json = await _client.ai.listVisionModels(openRouterApiKey);
+    final decoded = jsonDecode(json) as Map<String, dynamic>;
+    final models = decoded['models'] as List? ?? [];
+    return models
+        .map((m) => OpenRouterVisionModel.fromJson(m as Map<String, dynamic>))
+        .where((m) => m.id.isNotEmpty)
+        .toList();
+  }
 
   Future<AiExtractionResult> extractActivity(
     int familyId, {

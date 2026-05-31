@@ -75,6 +75,17 @@ services:
       redis:
         condition: service_healthy
 
+  # Interfaccia Flutter Web (nginx)
+  app:
+    build:
+      context: ..
+      dockerfile: app/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8083:80"
+    depends_on:
+      - server
+
 volumes:
   postgres_data:
   redis_data:

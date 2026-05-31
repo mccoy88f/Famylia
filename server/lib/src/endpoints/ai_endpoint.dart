@@ -50,20 +50,47 @@ class AiEndpoint extends Endpoint {
     if (trimmedModel.isEmpty) {
       throw FamyliaException(message: 'Modello non valido.');
     }
+    final keyToSave = trimmedKey.isEmpty
+        ? ((await _readKey(session)) ?? '')
+        : trimmedKey;
+    if (keyToSave.isEmpty) {
+      throw FamyliaException(message: 'API key OpenRouter richiesta.');
+    }
     await session.db.unsafeExecute(
       '''
       INSERT INTO "ai_config" ("openRouterApiKey", "defaultModel", "updatedAt")
       VALUES (\$1, \$2, now())
       ON CONFLICT DO NOTHING
       ''',
-      parameters: QueryParameters.positional([trimmedKey, trimmedModel]),
+      parameters: QueryParameters.positional([keyToSave, trimmedModel]),
     );
     // If row already exists, update it
     await session.db.unsafeExecute(
       'UPDATE "ai_config" SET "openRouterApiKey" = \$1, "defaultModel" = \$2, "updatedAt" = now()',
-      parameters: QueryParameters.positional([trimmedKey, trimmedModel]),
+      parameters: QueryParameters.positional([keyToSave, trimmedModel]),
     );
     return true;
+  }
+
+  /// Elenco modelli OpenRouter con supporto vision (input immagine).
+  /// Valida la chiave API. Passa chiave vuota per usare quella salvata.
+  Future<String> listVisionModels(
+    Session session,
+    String openRouterApiKey,
+  ) async {
+    await requireUserId(session);
+    var apiKey = openRouterApiKey.trim();
+    if (apiKey.isEmpty) {
+      apiKey = (await _readKey(session)) ?? '';
+    }
+    if (apiKey.isEmpty) {
+      throw FamyliaException(
+        message: 'Inserisci una API key OpenRouter da verificare.',
+      );
+    }
+
+    final models = await _fetchVisionModels(apiKey);
+    return jsonEncode({'models': models});
   }
 
   // ── Extraction ────────────────────────────────────────────────────────────
@@ -123,6 +150,79 @@ class AiEndpoint extends Endpoint {
     );
     if (rows.isEmpty) return null;
     return rows.first[0] as String?;
+  }
+
+  Future<List<Map<String, String>>> _fetchVisionModels(String apiKey) async {
+    final client = HttpClient();
+    try {
+      final request = await client.getUrl(
+        Uri.parse('https://openrouter.ai/api/v1/models'),
+      );
+      request.headers.set('Authorization', 'Bearer $apiKey');
+      request.headers.set('HTTP-Referer', 'https://famylia.app');
+      request.headers.set('X-Title', 'Famylia');
+
+      final response = await request.close();
+      final body = await response.transform(utf8.decoder).join();
+
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        throw FamyliaException(message: 'API key OpenRouter non valida.');
+      }
+      if (response.statusCode != 200) {
+        throw FamyliaException(
+          message: 'OpenRouter error ${response.statusCode}: $body',
+        );
+      }
+
+      final json = jsonDecode(body) as Map<String, dynamic>;
+      final data = json['data'] as List? ?? [];
+      final models = <Map<String, String>>[];
+
+      for (final item in data) {
+        if (item is! Map) continue;
+        final id = item['id'] as String?;
+        if (id == null || id.isEmpty) continue;
+        if (!_modelSupportsVision(item)) continue;
+
+        final name = item['name'] as String? ?? id;
+        models.add({'id': id, 'name': name});
+      }
+
+      models.sort((a, b) => a['name']!.compareTo(b['name']!));
+      if (models.isEmpty) {
+        throw FamyliaException(
+          message: 'Nessun modello con supporto vision trovato su OpenRouter.',
+        );
+      }
+      return models;
+    } on FamyliaException {
+      rethrow;
+    } catch (e) {
+      throw FamyliaException(
+        message: 'Errore recupero modelli OpenRouter: $e',
+      );
+    } finally {
+      client.close();
+    }
+  }
+
+  bool _modelSupportsVision(Map<dynamic, dynamic> item) {
+    return _modelInputModalities(item).contains('image');
+  }
+
+  List<String> _modelInputModalities(Map<dynamic, dynamic> item) {
+    final arch = item['architecture'];
+    if (arch is Map) {
+      final modalities = arch['input_modalities'];
+      if (modalities is List) {
+        return modalities.map((e) => e.toString()).toList();
+      }
+    }
+    final top = item['input_modalities'];
+    if (top is List) {
+      return top.map((e) => e.toString()).toList();
+    }
+    return const [];
   }
 
   Future<String> _readModel(Session session) async {

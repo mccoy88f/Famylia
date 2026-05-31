@@ -198,7 +198,7 @@ class _FeedScreenState extends State<FeedScreen> {
                   ),
                 ShadButton.ghost(
                   onPressed: () => _showSettings(context, family),
-                  size: ShadButtonSize.icon,
+                 
                   child: const Icon(Icons.settings_outlined, size: 20),
                 ),
                 const SizedBox(width: 4),
@@ -549,7 +549,7 @@ class _UrgentDeadlineCard extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, color: red)),
             ShadButton.ghost(
               onPressed: onPay,
-              size: ShadButtonSize.icon,
+             
               child: Icon(Icons.check_circle_outline, color: red, size: 20),
             ),
           ],

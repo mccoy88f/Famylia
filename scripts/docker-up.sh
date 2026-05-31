@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Avvia stack Famylia su Docker (Postgres, Redis, MinIO, Serverpod)
+# Avvia stack Famylia su Docker (Postgres, Redis, MinIO, Serverpod + UI web)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -20,6 +20,7 @@ docker compose up -d --build
 
 echo ""
 echo "Servizi:"
+echo "  App Famylia:    http://localhost:8083  ← apri nel browser"
 echo "  API Serverpod:  http://localhost:8080"
 echo "  Insights:       http://localhost:8081"
 echo "  Web (relays):   http://localhost:8082"
