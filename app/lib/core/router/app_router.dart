@@ -25,6 +25,8 @@ import '../../features/settings/family_appearance_screen.dart';
 import '../../features/meals/meals_screen.dart';
 import '../../features/privacy/privacy_screen.dart';
 import '../../features/reports/reports_screen.dart';
+import '../../features/ai/ai_import_screen.dart';
+import '../../features/ai/ai_admin_screen.dart';
 import '../session/app_state.dart';
 import '../session/family_context.dart';
 
@@ -59,6 +61,8 @@ abstract final class AppRoutes {
   static const emergency = '/emergency';
   static const reports = '/reports';
   static const leaderboard = '/leaderboard';
+  static const aiImport = '/ai/import';
+  static const aiAdmin = '/ai/admin';
   static String shoppingList(int id) => '/shopping/$id';
 }
 
@@ -136,6 +140,8 @@ GoRouter createAppRouter({
       GoRoute(path: AppRoutes.emergency, builder: (_, __) => const EmergencyScreen()),
       GoRoute(path: AppRoutes.reports, builder: (_, __) => const ReportsScreen()),
       GoRoute(path: AppRoutes.leaderboard, builder: (_, __) => const LeaderboardScreen()),
+      GoRoute(path: AppRoutes.aiImport, builder: (_, __) => const AiImportScreen()),
+      GoRoute(path: AppRoutes.aiAdmin, builder: (_, __) => const AiAdminScreen()),
     ],
   );
 }

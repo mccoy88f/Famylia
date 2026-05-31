@@ -9,6 +9,7 @@ import '../../core/api/expense_repository.dart';
 import '../../core/api/family_repository.dart';
 import '../../core/api/shopping_repository.dart';
 import '../../core/api/todo_repository.dart';
+import '../../core/api/ai_repository.dart';
 import '../../core/extensions/context_extensions.dart';
 import '../../core/session/app_state.dart';
 import '../../core/utils/registra_spesa_dialog.dart';
@@ -65,7 +66,9 @@ class _FormData {
 // ── Entry point ───────────────────────────────────────────────────────────
 
 class NuovaAttivitaModal extends StatefulWidget {
-  const NuovaAttivitaModal({super.key});
+  const NuovaAttivitaModal({super.key, this.prefilled});
+
+  final _FormData? prefilled;
 
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet(
@@ -77,21 +80,50 @@ class NuovaAttivitaModal extends StatefulWidget {
     );
   }
 
+  static Future<void> showPrefilled(BuildContext context, AiExtractionResult result) {
+    final data = _FormData();
+    data.tipo = _Tipo.values.firstWhere(
+      (t) => t.name == result.tipo,
+      orElse: () => _Tipo.task,
+    );
+    data.titolo = result.titolo;
+    data.descrizione = result.descrizione ?? '';
+    data.importo = result.importo;
+    data.quando = result.quando;
+    if (result.tipoAppuntamento != null) {
+      data.tipoAppuntamento = _TipoAppuntamento.values.firstWhere(
+        (t) => t.name == result.tipoAppuntamento,
+        orElse: () => _TipoAppuntamento.generico,
+      );
+    }
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (_) => NuovaAttivitaModal(prefilled: data),
+    );
+  }
+
   @override
   State<NuovaAttivitaModal> createState() => _NuovaAttivitaModalState();
 }
 
 class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
-  final _pageCtrl = PageController();
-  final _data = _FormData();
+  late final PageController _pageCtrl;
+  late final _FormData _data;
   List<FamilyMemberInfo> _members = [];
   List<ShoppingList> _shoppingLists = [];
   bool _loading = false;
-  int _step = 0;
+  late int _step;
 
   @override
   void initState() {
     super.initState();
+    final pre = widget.prefilled;
+    _data = pre ?? _FormData();
+    _step = pre != null ? 1 : 0;
+    _pageCtrl = PageController(initialPage: _step);
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadMembers());
   }
 

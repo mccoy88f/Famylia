@@ -26,6 +26,7 @@ import '../endpoints/meal_endpoint.dart' as _i14;
 import '../endpoints/report_endpoint.dart' as _i15;
 import '../endpoints/shopping_endpoint.dart' as _i16;
 import '../endpoints/todo_endpoint.dart' as _i17;
+import '../endpoints/ai_endpoint.dart' as _i45;
 import 'package:famylia_server/src/generated/board_post_type.dart' as _i18;
 import 'package:famylia_server/src/generated/calendar_event_category.dart'
     as _i19;
@@ -154,6 +155,12 @@ class Endpoints extends _i1.EndpointDispatch {
         ..initialize(
           server,
           'todo',
+          null,
+        ),
+      'ai': _i45.AiEndpoint()
+        ..initialize(
+          server,
+          'ai',
           null,
         ),
     };
@@ -2509,6 +2516,45 @@ class Endpoints extends _i1.EndpointDispatch {
               (endpoints['todo'] as _i17.TodoEndpoint).deleteTodo(
             session,
             params['todoId'],
+          ),
+        ),
+      },
+    );
+    connectors['ai'] = _i1.EndpointConnector(
+      name: 'ai',
+      endpoint: endpoints['ai']!,
+      methodConnectors: {
+        'isConfigured': _i1.MethodConnector(
+          name: 'isConfigured',
+          params: {},
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['ai'] as _i45.AiEndpoint).isConfigured(session),
+        ),
+        'extractActivity': _i1.MethodConnector(
+          name: 'extractActivity',
+          params: {
+            'familyId': _i1.ParameterDescription(
+              name: 'familyId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'payload': _i1.ParameterDescription(
+              name: 'payload',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['ai'] as _i45.AiEndpoint).extractActivity(
+            session,
+            params['familyId'],
+            params['payload'],
           ),
         ),
       },

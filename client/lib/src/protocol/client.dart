@@ -1224,6 +1224,7 @@ class Client extends _i1.ServerpodClientShared {
     report = EndpointReport(this);
     shopping = EndpointShopping(this);
     todo = EndpointTodo(this);
+    ai = EndpointAi(this);
     modules = Modules(this);
   }
 
@@ -1259,6 +1260,8 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointTodo todo;
 
+  late final EndpointAi ai;
+
   late final Modules modules;
 
   @override
@@ -1279,9 +1282,27 @@ class Client extends _i1.ServerpodClientShared {
         'report': report,
         'shopping': shopping,
         'todo': todo,
+        'ai': ai,
       };
 
   @override
   Map<String, _i1.ModuleEndpointCaller> get moduleLookup =>
       {'auth': modules.auth};
+}
+
+class EndpointAi extends _i1.EndpointRef {
+  EndpointAi(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'ai';
+
+  _i2.Future<bool> isConfigured() =>
+      caller.callServerEndpoint<bool>('ai', 'isConfigured', {});
+
+  _i2.Future<String> extractActivity(int familyId, String payload) =>
+      caller.callServerEndpoint<String>(
+        'ai',
+        'extractActivity',
+        {'familyId': familyId, 'payload': payload},
+      );
 }

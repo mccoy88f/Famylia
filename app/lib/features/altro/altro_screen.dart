@@ -57,6 +57,8 @@ class _WideLayout extends StatelessWidget {
             children: [
               const _FamilyMembersSection(),
               const SizedBox(height: 20),
+              _ModulesSection(label: 'Intelligenza artificiale', items: _aiItems),
+              const SizedBox(height: 20),
               _ModulesSection(label: 'Altro', items: _infoItems),
               const SizedBox(height: 20),
               const _SettingsSection(),
@@ -81,6 +83,8 @@ class _NarrowLayout extends StatelessWidget {
         _ModulesSection(label: 'Sicurezza', items: _safetyItems),
         const SizedBox(height: 20),
         const _FamilyMembersSection(),
+        const SizedBox(height: 20),
+        _ModulesSection(label: 'Intelligenza artificiale', items: _aiItems),
         const SizedBox(height: 20),
         _ModulesSection(label: 'Altro', items: _infoItems),
         const SizedBox(height: 20),
@@ -108,6 +112,11 @@ final _safetyItems = [
 
 final _infoItems = [
   _Mod(Icons.shield_outlined, 'Privacy & GDPR', 'Dati e consenso', const Color(0xFF64748B), AppRoutes.privacy),
+];
+
+final _aiItems = [
+  _Mod(Icons.auto_awesome_outlined, 'Importa con AI', 'Estrai attività da testo, foto, PDF', const Color(0xFF8B5CF6), AppRoutes.aiImport),
+  _Mod(Icons.science_outlined, 'Admin AI', 'Test estrazione e configurazione', const Color(0xFF6366F1), AppRoutes.aiAdmin),
 ];
 
 // ── Sezione moduli ─────────────────────────────────────────────────────────
