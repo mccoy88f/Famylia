@@ -48,17 +48,26 @@ class AiExtractionResult {
 }
 
 class OpenRouterVisionModel {
-  const OpenRouterVisionModel({required this.id, required this.name});
+  const OpenRouterVisionModel({
+    required this.id,
+    required this.name,
+    required this.isFree,
+  });
 
   factory OpenRouterVisionModel.fromJson(Map<String, dynamic> json) {
     return OpenRouterVisionModel(
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? json['id'] as String? ?? '',
+      isFree: json['isFree'] as bool? ?? false,
     );
   }
 
   final String id;
   final String name;
+  final bool isFree;
+
+  String get displayLabel =>
+      name == id ? id : '$name · $id';
 }
 
 class AiRepository {

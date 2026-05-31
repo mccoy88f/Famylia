@@ -116,8 +116,13 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
     if (current != null && models.any((m) => m.id == current)) {
       return current;
     }
-    return models.first.id;
+    final free = models.where((m) => m.isFree);
+    return free.isNotEmpty ? free.first.id : models.first.id;
   }
+
+  int get _freeModelCount => _visionModels.where((m) => m.isFree).length;
+
+  int get _paidModelCount => _visionModels.length - _freeModelCount;
 
   Future<void> _saveConfig() async {
     final model = _selectedModelId;
@@ -329,12 +334,12 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
                       .copyWith(fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 6),
-                _VisionModelDropdown(
+                _VisionModelSelect(
                   shadTheme: shadTheme,
                   models: _visionModels,
                   value: _selectedModelId,
                   enabled: !_loadingModels && _visionModels.isNotEmpty,
-                  hint: _loadingModels
+                  placeholder: _loadingModels
                       ? 'Caricamento modelli...'
                       : _visionModels.isEmpty
                           ? 'Verifica la API key per caricare i modelli'
@@ -344,7 +349,8 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
                 if (_visionModels.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
-                    '${_visionModels.length} modelli con supporto immagini',
+                    '${_visionModels.length} modelli vision · '
+                    '$_freeModelCount gratuiti · $_paidModelCount a pagamento',
                     style: shadTheme.textTheme.muted.copyWith(fontSize: 11),
                   ),
                 ],
@@ -393,12 +399,13 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
                     .copyWith(fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 6),
-              _VisionModelDropdown(
+              _VisionModelSelect(
                 shadTheme: shadTheme,
                 models: _visionModels,
                 value: _testModelId ?? _selectedModelId,
                 enabled: !_loadingModels && _visionModels.isNotEmpty,
-                hint: 'Usa il modello predefinito',
+                placeholder: 'Modello per il test',
+                allowDeselection: true,
                 onChanged: (id) => setState(() => _testModelId = id),
               ),
               const SizedBox(height: 16),
@@ -561,58 +568,183 @@ class _AiAdminScreenState extends State<AiAdminScreen> {
   }
 }
 
-class _VisionModelDropdown extends StatelessWidget {
-  const _VisionModelDropdown({
+class _VisionModelSelect extends StatefulWidget {
+  const _VisionModelSelect({
     required this.shadTheme,
     required this.models,
     required this.value,
     required this.enabled,
-    required this.hint,
+    required this.placeholder,
     required this.onChanged,
+    this.allowDeselection = false,
   });
 
   final ShadThemeData shadTheme;
   final List<OpenRouterVisionModel> models;
   final String? value;
   final bool enabled;
-  final String hint;
+  final String placeholder;
   final ValueChanged<String?> onChanged;
+  final bool allowDeselection;
+
+  @override
+  State<_VisionModelSelect> createState() => _VisionModelSelectState();
+}
+
+class _VisionModelSelectState extends State<_VisionModelSelect> {
+  String _search = '';
+
+  OpenRouterVisionModel? _modelById(String? id) {
+    if (id == null) return null;
+    for (final m in widget.models) {
+      if (m.id == id) return m;
+    }
+    return null;
+  }
+
+  List<OpenRouterVisionModel> get _filtered {
+    final q = _search.trim().toLowerCase();
+    if (q.isEmpty) return widget.models;
+    return widget.models
+        .where(
+          (m) =>
+              m.id.toLowerCase().contains(q) ||
+              m.name.toLowerCase().contains(q),
+        )
+        .toList();
+  }
+
+  Widget _groupHeader(String title, int count) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+      child: Text(
+        '$title ($count)',
+        style: widget.shadTheme.textTheme.muted.copyWith(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _optionTile(OpenRouterVisionModel model) {
+    const freeColor = Color(0xFF10B981);
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            model.displayLabel,
+            style: widget.shadTheme.textTheme.small,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        if (model.isFree) ...[
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: freeColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Text(
+              'Gratis',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: freeColor,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  List<Widget> _buildOptions() {
+    final list = _filtered;
+    final free = list.where((m) => m.isFree).toList();
+    final paid = list.where((m) => !m.isFree).toList();
+    final options = <Widget>[];
+
+    if (list.isEmpty) {
+      options.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+          child: Text(
+            'Nessun modello trovato',
+            style: widget.shadTheme.textTheme.muted,
+          ),
+        ),
+      );
+      return options;
+    }
+
+    if (free.isNotEmpty) {
+      options.add(_groupHeader('Gratuiti', free.length));
+      for (final m in free) {
+        options.add(ShadOption(value: m.id, child: _optionTile(m)));
+      }
+    }
+    if (paid.isNotEmpty) {
+      options.add(_groupHeader('A pagamento', paid.length));
+      for (final m in paid) {
+        options.add(ShadOption(value: m.id, child: _optionTile(m)));
+      }
+    }
+    return options;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      value: value != null && models.any((m) => m.id == value) ? value : null,
-      isExpanded: true,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: shadTheme.colorScheme.background,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: shadTheme.colorScheme.border),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: shadTheme.colorScheme.border),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      ),
-      hint: Text(
-        hint,
-        style: shadTheme.textTheme.muted.copyWith(fontSize: 13),
-        overflow: TextOverflow.ellipsis,
-      ),
-      items: [
-        for (final m in models)
-          DropdownMenuItem(
-            value: m.id,
-            child: Text(
-              m.name == m.id ? m.id : '${m.name} (${m.id})',
-              style: shadTheme.textTheme.small,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-      ],
-      onChanged: enabled ? onChanged : null,
+    final hasValue =
+        widget.value != null && widget.models.any((m) => m.id == widget.value);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final fieldWidth = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : MediaQuery.sizeOf(context).width;
+
+        return ShadSelect<String>.withSearch(
+          key: ValueKey('vision-select-${widget.value}'),
+          enabled: widget.enabled,
+          initialValue: hasValue ? widget.value : null,
+          allowDeselection: widget.allowDeselection,
+          minWidth: fieldWidth,
+          maxWidth: fieldWidth,
+          maxHeight: 280,
+          closeOnTapOutside: true,
+          placeholder: Text(widget.placeholder),
+          searchPlaceholder: const Text('Cerca modello...'),
+          onSearchChanged: (query) => setState(() => _search = query),
+          onChanged: widget.onChanged,
+          selectedOptionBuilder: (context, id) {
+            final model = _modelById(id);
+            if (model == null) return Text(id);
+            return Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    model.name,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (model.isFree) ...[
+                  const SizedBox(width: 6),
+                  Text(
+                    'Gratis',
+                    style: widget.shadTheme.textTheme.small.copyWith(
+                      color: const Color(0xFF10B981),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ],
+            );
+          },
+          options: _buildOptions(),
+        );
+      },
     );
   }
 }

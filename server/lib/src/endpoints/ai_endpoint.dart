@@ -52,7 +52,7 @@ class AiEndpoint extends Endpoint {
     }
     final keyToSave = trimmedKey.isEmpty
         ? ((await _readKey(session)) ?? '')
-        : trimmedKey;
+        : _sanitizeApiKey(trimmedKey);
     if (keyToSave.isEmpty) {
       throw FamyliaException(message: 'API key OpenRouter richiesta.');
     }
@@ -89,7 +89,7 @@ class AiEndpoint extends Endpoint {
       );
     }
 
-    final models = await _fetchVisionModels(apiKey);
+    final models = await _fetchVisionModels(_sanitizeApiKey(apiKey));
     return jsonEncode({'models': models});
   }
 
@@ -139,28 +139,51 @@ class AiEndpoint extends Endpoint {
         ? modelOverride!
         : await _readModel(session);
 
-    return _callOpenRouter(apiKey, model, text, base64Images, mimeTypes);
+    return _callOpenRouter(
+      _sanitizeApiKey(apiKey),
+      model.trim(),
+      text,
+      base64Images,
+      mimeTypes,
+    );
   }
 
   // ── Private helpers ───────────────────────────────────────────────────────
+
+  /// Rimuove caratteri non ammessi negli header HTTP (es. newline nella API key).
+  String _sanitizeApiKey(String key) {
+    return key
+        .replaceAll(RegExp(r'[\x00-\x1F\x7F]'), '')
+        .trim();
+  }
+
+  void _setOpenRouterHeaders(HttpClientRequest request, String apiKey) {
+    request.headers.set(
+      HttpHeaders.authorizationHeader,
+      'Bearer ${_sanitizeApiKey(apiKey)}',
+    );
+    request.headers.set(HttpHeaders.contentTypeHeader, 'application/json');
+    request.headers.set(HttpHeaders.refererHeader, 'https://famylia.app');
+    request.headers.set('x-title', 'Famylia');
+  }
 
   Future<String?> _readKey(Session session) async {
     final rows = await session.db.unsafeQuery(
       'SELECT "openRouterApiKey" FROM "ai_config" LIMIT 1',
     );
     if (rows.isEmpty) return null;
-    return rows.first[0] as String?;
+    final raw = rows.first[0] as String?;
+    if (raw == null || raw.isEmpty) return null;
+    return _sanitizeApiKey(raw);
   }
 
-  Future<List<Map<String, String>>> _fetchVisionModels(String apiKey) async {
+  Future<List<Map<String, dynamic>>> _fetchVisionModels(String apiKey) async {
     final client = HttpClient();
     try {
       final request = await client.getUrl(
         Uri.parse('https://openrouter.ai/api/v1/models'),
       );
-      request.headers.set('Authorization', 'Bearer $apiKey');
-      request.headers.set('HTTP-Referer', 'https://famylia.app');
-      request.headers.set('X-Title', 'Famylia');
+      _setOpenRouterHeaders(request, apiKey);
 
       final response = await request.close();
       final body = await response.transform(utf8.decoder).join();
@@ -176,7 +199,7 @@ class AiEndpoint extends Endpoint {
 
       final json = jsonDecode(body) as Map<String, dynamic>;
       final data = json['data'] as List? ?? [];
-      final models = <Map<String, String>>[];
+      final models = <Map<String, dynamic>>[];
 
       for (final item in data) {
         if (item is! Map) continue;
@@ -185,10 +208,16 @@ class AiEndpoint extends Endpoint {
         if (!_modelSupportsVision(item)) continue;
 
         final name = item['name'] as String? ?? id;
-        models.add({'id': id, 'name': name});
+        final isFree = _isModelFree(item, id);
+        models.add({'id': id, 'name': name, 'isFree': isFree});
       }
 
-      models.sort((a, b) => a['name']!.compareTo(b['name']!));
+      models.sort((a, b) {
+        final aFree = a['isFree'] as bool? ?? false;
+        final bFree = b['isFree'] as bool? ?? false;
+        if (aFree != bFree) return aFree ? -1 : 1;
+        return (a['name'] as String).compareTo(b['name'] as String);
+      });
       if (models.isEmpty) {
         throw FamyliaException(
           message: 'Nessun modello con supporto vision trovato su OpenRouter.',
@@ -208,6 +237,21 @@ class AiEndpoint extends Endpoint {
 
   bool _modelSupportsVision(Map<dynamic, dynamic> item) {
     return _modelInputModalities(item).contains('image');
+  }
+
+  bool _isModelFree(Map<dynamic, dynamic> item, String id) {
+    if (id.endsWith(':free') || id == 'openrouter/free') return true;
+    final pricing = item['pricing'];
+    if (pricing is! Map) return false;
+    return _pricingAmount(pricing['prompt']) == 0 &&
+        _pricingAmount(pricing['completion']) == 0 &&
+        _pricingAmount(pricing['request']) == 0;
+  }
+
+  double _pricingAmount(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString()) ?? 0;
   }
 
   List<String> _modelInputModalities(Map<dynamic, dynamic> item) {
@@ -240,43 +284,65 @@ class AiEndpoint extends Endpoint {
     List<String>? images,
     List<String>? mimeTypes,
   ) async {
-    final content = <Map<String, dynamic>>[];
-
-    content.add({
-      'type': 'text',
-      'text': _buildPrompt(text),
-    });
+    final userParts = <Map<String, dynamic>>[];
+    var extraText = StringBuffer();
 
     if (images != null) {
       for (var i = 0; i < images.length; i++) {
         final mime =
             (mimeTypes != null && i < mimeTypes.length) ? mimeTypes[i] : 'image/jpeg';
-        content.add({
-          'type': 'image_url',
-          'image_url': {'url': 'data:$mime;base64,${images[i]}'},
-        });
+        if (_isVisionImageMime(mime)) {
+          userParts.add({
+            'type': 'image_url',
+            'image_url': {'url': 'data:$mime;base64,${images[i]}'},
+          });
+        } else {
+          extraText.writeln(
+            '[Allegato non inviato come immagine: tipo $mime — descrivi dal testo se possibile.]',
+          );
+        }
       }
+    }
+
+    final userText = [
+      if (text != null && text.trim().isNotEmpty) text.trim(),
+      if (extraText.isNotEmpty) extraText.toString().trim(),
+    ].join('\n\n');
+
+    if (userText.isNotEmpty) {
+      userParts.insert(0, {'type': 'text', 'text': userText});
+    }
+
+    if (userParts.isEmpty) {
+      throw FamyliaException(
+        message: 'Nessun contenuto valido da analizzare (solo immagini supportate).',
+      );
     }
 
     final requestBody = jsonEncode({
       'model': model,
       'messages': [
-        {'role': 'user', 'content': content}
+        {'role': 'system', 'content': _systemPromptJson()},
+        {
+          'role': 'user',
+          'content': userParts.length == 1 && userParts.first['type'] == 'text'
+              ? userParts.first['text']
+              : userParts,
+        },
       ],
       'response_format': {'type': 'json_object'},
-      'max_tokens': 600,
+      'max_tokens': 800,
       'temperature': 0.1,
     });
 
+    final bodyBytes = utf8.encode(requestBody);
     final client = HttpClient();
     try {
       final request = await client
           .postUrl(Uri.parse('https://openrouter.ai/api/v1/chat/completions'));
-      request.headers.set('Authorization', 'Bearer $apiKey');
-      request.headers.set('Content-Type', 'application/json');
-      request.headers.set('HTTP-Referer', 'https://famylia.app');
-      request.headers.set('X-Title', 'Famylia');
-      request.write(requestBody);
+      _setOpenRouterHeaders(request, apiKey);
+      request.contentLength = bodyBytes.length;
+      request.add(bodyBytes);
 
       final response = await request.close();
       final body = await response.transform(utf8.decoder).join();
@@ -293,11 +359,17 @@ class AiEndpoint extends Endpoint {
         throw FamyliaException(message: 'Nessuna risposta dal modello AI.');
       }
 
-      final messageContent = (choices[0] as Map)['message']['content'] as String;
-      jsonDecode(messageContent); // validate JSON
-      return messageContent;
+      final message = (choices[0] as Map)['message'] as Map?;
+      if (message == null) {
+        throw FamyliaException(message: 'Risposta OpenRouter senza messaggio.');
+      }
+
+      final parsed = _parseExtractionJson(message['content']);
+      return jsonEncode(parsed);
     } on FamyliaException {
       rethrow;
+    } on FormatException catch (e) {
+      throw FamyliaException(message: 'Risposta AI non valida: ${e.message}');
     } catch (e) {
       throw FamyliaException(message: 'Errore chiamata OpenRouter: $e');
     } finally {
@@ -305,36 +377,122 @@ class AiEndpoint extends Endpoint {
     }
   }
 
-  String _buildPrompt(String? userText) {
-    final now = DateTime.now().toIso8601String().substring(0, 10);
-    return '''Sei un assistente per l\'app Famylia che aiuta le famiglie a organizzare le attività.
+  bool _isVisionImageMime(String mime) {
+    return mime.startsWith('image/');
+  }
 
-Analizza il contenuto fornito (testo, email, fattura, screenshot, foto) e identifica UN\'UNICA attività familiare da registrare.
+  /// Prompt di sistema: schema JSON allineato a [AiExtractionResult] nell'app Flutter.
+  String _systemPromptJson() {
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    return '''
+Sei l'assistente di estrazione attività per Famylia (app familiare italiana).
+Analizza testo e/o immagini allegate e restituisci UNA sola attività da registrare.
 
-Rispondi SOLO con un oggetto JSON valido con questi campi:
+Rispondi ESCLUSIVAMENTE con un oggetto JSON valido (nessun markdown, nessun testo prima o dopo).
+Schema obbligatorio:
 {
   "tipo": "task" | "appuntamento" | "spesa" | "scadenza" | "acquisto",
-  "titolo": "stringa breve max 60 caratteri",
+  "titolo": "stringa max 60 caratteri, italiano",
   "descrizione": "stringa o null",
-  "importo": numero decimale oppure null,
-  "quando": "data ISO8601 oppure null",
-  "tipoAppuntamento": "generico" | "medico" | "dentista" | "altro",
-  "confidenza": numero da 0 a 1,
-  "motivazione": "breve spiegazione di cosa hai rilevato"
+  "importo": number o null,
+  "quando": "stringa ISO8601 o null",
+  "tipoAppuntamento": "generico" | "medico" | "dentista" | "altro" o null,
+  "confidenza": number tra 0 e 1,
+  "motivazione": "stringa breve"
 }
 
-Definizioni dei tipi:
-- task: azione da compiere (es. chiamare il medico, portare l\'auto dal meccanico)
-- appuntamento: evento con data/ora (visita, riunione, colloquio, evento scolastico)
-- spesa: pagamento già effettuato (scontrino, ricevuta, estratto conto)
-- scadenza: bolletta o pagamento futuro con importo e data (luce, gas, affitto, abbonamento)
-- acquisto: prodotto da aggiungere alla lista della spesa
+Significato di tipo:
+- task: azione da fare (chiamare, prenotare, portare qualcosa)
+- appuntamento: evento con data/ora (visita, riunione, scuola)
+- spesa: pagamento già avvenuto (scontrino, bonifico)
+- scadenza: pagamento o bolletta futura con scadenza
+- acquisto: articolo per lista della spesa
 
 Regole:
-- Data di oggi: $now. Converti date relative (domani, lunedì prossimo) in ISO8601.
-- Se non trovi un tipo chiaro, usa il più plausibile con confidenza bassa.
-- Titolo in italiano, conciso, senza articoli iniziali inutili.
-- tipoAppuntamento va compilato solo se tipo = appuntamento.
-${userText != null && userText.trim().isNotEmpty ? '\nContenuto testuale:\n$userText' : ''}''';
+- Oggi è $today; converti "domani", "lunedì" ecc. in ISO8601 (es. 2026-06-01T10:00:00.000Z).
+- tipoAppuntamento solo se tipo è appuntamento, altrimenti null.
+- importo solo per spesa/scadenza se presente nel documento.
+- Se incerto, abbassa confidenza ma compila comunque i campi obbligatori.
+''';
+  }
+
+  Map<String, dynamic> _parseExtractionJson(dynamic rawContent) {
+    final text = _contentToString(rawContent);
+    if (text == null || text.trim().isEmpty) {
+      throw const FormatException('contenuto vuoto');
+    }
+
+    var jsonText = text.trim();
+    if (jsonText.startsWith('```')) {
+      jsonText = jsonText
+          .replaceFirst(RegExp(r'^```(?:json)?\s*', multiLine: true), '')
+          .replaceFirst(RegExp(r'\s*```$'), '')
+          .trim();
+    }
+
+    final decoded = jsonDecode(jsonText);
+    if (decoded is! Map<String, dynamic>) {
+      throw const FormatException('atteso oggetto JSON');
+    }
+
+    return _normalizeExtraction(decoded);
+  }
+
+  String? _contentToString(dynamic content) {
+    if (content == null) return null;
+    if (content is String) return content;
+    if (content is List) {
+      final buffer = StringBuffer();
+      for (final part in content) {
+        if (part is Map) {
+          final type = part['type'] as String?;
+          if (type == 'text') {
+            final t = part['text'] as String?;
+            if (t != null && t.isNotEmpty) {
+              if (buffer.isNotEmpty) buffer.writeln();
+              buffer.write(t);
+            }
+          }
+        }
+      }
+      return buffer.isEmpty ? null : buffer.toString();
+    }
+    return content.toString();
+  }
+
+  Map<String, dynamic> _normalizeExtraction(Map<String, dynamic> json) {
+    const allowedTipi = {'task', 'appuntamento', 'spesa', 'scadenza', 'acquisto'};
+    const allowedAppuntamento = {'generico', 'medico', 'dentista', 'altro'};
+
+    var tipo = (json['tipo'] as String? ?? 'task').toLowerCase().trim();
+    if (!allowedTipi.contains(tipo)) tipo = 'task';
+
+    var titolo = (json['titolo'] as String? ?? '').trim();
+    if (titolo.length > 60) titolo = titolo.substring(0, 60);
+
+    final confidenzaRaw = json['confidenza'];
+    final confidenza = confidenzaRaw is num
+        ? confidenzaRaw.toDouble().clamp(0.0, 1.0)
+        : 0.5;
+
+    String? tipoAppuntamento;
+    if (tipo == 'appuntamento') {
+      final raw = (json['tipoAppuntamento'] as String? ?? 'generico')
+          .toLowerCase()
+          .trim();
+      tipoAppuntamento =
+          allowedAppuntamento.contains(raw) ? raw : 'generico';
+    }
+
+    return {
+      'tipo': tipo,
+      'titolo': titolo.isEmpty ? 'Attività da verificare' : titolo,
+      'descrizione': json['descrizione'],
+      'importo': json['importo'],
+      'quando': json['quando'],
+      'tipoAppuntamento': tipoAppuntamento,
+      'confidenza': confidenza,
+      'motivazione': (json['motivazione'] as String? ?? '').trim(),
+    };
   }
 }

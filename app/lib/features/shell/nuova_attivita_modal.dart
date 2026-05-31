@@ -61,14 +61,59 @@ class _FormData {
   List<int> beneficiariIds = []; // vuoto = tutta la famiglia
   // Costo preventivato (solo task/appuntamento)
   double? costoPreventivato;
+
+  /// Compila il form dai campi restituiti dall'estrazione AI.
+  static _FormData fromAiResult(AiExtractionResult result) {
+    final data = _FormData();
+    final tipoRaw = result.tipo.toLowerCase().trim();
+    data.tipo = _Tipo.values.firstWhere(
+      (t) => t.name == tipoRaw,
+      orElse: () => _Tipo.task,
+    );
+    data.titolo = result.titolo.trim();
+
+    final desc = result.descrizione?.trim() ?? '';
+    final motiv = result.motivazione.trim();
+    if (desc.isEmpty && motiv.isNotEmpty) {
+      data.descrizione = motiv;
+    } else if (desc.isNotEmpty && motiv.isNotEmpty && !desc.contains(motiv)) {
+      data.descrizione = '$desc\n\n$motiv';
+    } else {
+      data.descrizione = desc;
+    }
+
+    data.importo = result.importo;
+    data.quando = result.quando;
+
+    if (result.tipoAppuntamento != null) {
+      final sub = result.tipoAppuntamento!.toLowerCase().trim();
+      data.tipoAppuntamento = _TipoAppuntamento.values.firstWhere(
+        (t) => t.name == sub,
+        orElse: () => _TipoAppuntamento.generico,
+      );
+    }
+
+    if (data.tipo == _Tipo.acquisto) {
+      data.categoria = TodoCategory.shopping;
+    }
+
+    if ((data.tipo == _Tipo.task || data.tipo == _Tipo.appuntamento) &&
+        result.importo != null &&
+        result.importo! > 0) {
+      data.costoPreventivato = result.importo;
+    }
+
+    return data;
+  }
 }
 
 // ── Entry point ───────────────────────────────────────────────────────────
 
 class NuovaAttivitaModal extends StatefulWidget {
-  const NuovaAttivitaModal({super.key, this.prefilled});
+  const NuovaAttivitaModal({super.key, this.prefilled, this.fromAi = false});
 
   final _FormData? prefilled;
+  final bool fromAi;
 
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet(
@@ -81,27 +126,13 @@ class NuovaAttivitaModal extends StatefulWidget {
   }
 
   static Future<void> showPrefilled(BuildContext context, AiExtractionResult result) {
-    final data = _FormData();
-    data.tipo = _Tipo.values.firstWhere(
-      (t) => t.name == result.tipo,
-      orElse: () => _Tipo.task,
-    );
-    data.titolo = result.titolo;
-    data.descrizione = result.descrizione ?? '';
-    data.importo = result.importo;
-    data.quando = result.quando;
-    if (result.tipoAppuntamento != null) {
-      data.tipoAppuntamento = _TipoAppuntamento.values.firstWhere(
-        (t) => t.name == result.tipoAppuntamento,
-        orElse: () => _TipoAppuntamento.generico,
-      );
-    }
+    final data = _FormData.fromAiResult(result);
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       useSafeArea: true,
-      builder: (_) => NuovaAttivitaModal(prefilled: data),
+      builder: (_) => NuovaAttivitaModal(prefilled: data, fromAi: true),
     );
   }
 
@@ -122,7 +153,7 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
     super.initState();
     final pre = widget.prefilled;
     _data = pre ?? _FormData();
-    _step = pre != null ? 1 : 0;
+    _step = (pre != null && pre.tipo != null) ? 1 : 0;
     _pageCtrl = PageController(initialPage: _step);
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadMembers());
   }
@@ -351,7 +382,13 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   _StepTipo(selected: _data.tipo, onSelect: (t) { setState(() => _data.tipo = t); _next(); }),
-                  _StepCosa(data: _data, members: _members, onChanged: () => setState(() {})),
+                  _StepCosa(
+                    data: _data,
+                    members: _members,
+                    fromAi: widget.fromAi,
+                    onChangeTipo: () => _goTo(0),
+                    onChanged: () => setState(() {}),
+                  ),
                   _StepChi(data: _data, members: _members, onChanged: () => setState(() {})),
                   _StepQuando(data: _data, onChanged: () => setState(() {})),
                   if (_hasBudget)
@@ -462,13 +499,43 @@ class _TipoTile extends StatelessWidget {
 
 // ── Step 1 — Cosa ─────────────────────────────────────────────────────────
 
-class _StepCosa extends StatelessWidget {
-  const _StepCosa({required this.data, required this.members, required this.onChanged});
+class _StepCosa extends StatefulWidget {
+  const _StepCosa({
+    required this.data,
+    required this.members,
+    required this.onChanged,
+    this.fromAi = false,
+    this.onChangeTipo,
+  });
   final _FormData data;
   final List<FamilyMemberInfo> members;
   final VoidCallback onChanged;
+  final bool fromAi;
+  final VoidCallback? onChangeTipo;
 
-  String get _titoloHint => switch (data.tipo) {
+  @override
+  State<_StepCosa> createState() => _StepCosaState();
+}
+
+class _StepCosaState extends State<_StepCosa> {
+  late final TextEditingController _titoloCtrl;
+  late final TextEditingController _noteCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _titoloCtrl = TextEditingController(text: widget.data.titolo);
+    _noteCtrl = TextEditingController(text: widget.data.descrizione);
+  }
+
+  @override
+  void dispose() {
+    _titoloCtrl.dispose();
+    _noteCtrl.dispose();
+    super.dispose();
+  }
+
+  String get _titoloHint => switch (widget.data.tipo) {
         _Tipo.task => 'Es. Fare la spesa',
         _Tipo.appuntamento => 'Es. Visita dal dentista',
         _Tipo.spesa => 'Es. Cena al ristorante',
@@ -480,35 +547,68 @@ class _StepCosa extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shadTheme = ShadTheme.of(context);
+    final data = widget.data;
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (widget.fromAi && data.tipo != null) ...[
+            _AiTipoBanner(
+              tipo: data.tipo!,
+              shadTheme: shadTheme,
+              onChangeTipo: widget.onChangeTipo,
+            ),
+            const SizedBox(height: 14),
+          ],
+          Text('Titolo', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500)),
+          const SizedBox(height: 6),
           ShadInput(
+            controller: _titoloCtrl,
             placeholder: Text(_titoloHint),
-            autofocus: true,
-            onChanged: (v) { data.titolo = v; onChanged(); },
+            autofocus: !widget.fromAi,
+            onChanged: (v) {
+              data.titolo = v;
+              widget.onChanged();
+            },
             textCapitalization: TextCapitalization.sentences,
           ),
           const SizedBox(height: 12),
+          Text('Note', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500)),
+          const SizedBox(height: 6),
           ShadInput(
+            controller: _noteCtrl,
             placeholder: const Text('Note aggiuntive (opzionale)'),
-            maxLines: 2,
-            onChanged: (v) { data.descrizione = v; onChanged(); },
+            maxLines: 3,
+            onChanged: (v) {
+              data.descrizione = v;
+              widget.onChanged();
+            },
             textCapitalization: TextCapitalization.sentences,
           ),
           if (data.tipo == _Tipo.task) ...[
             const SizedBox(height: 16),
             Text('Priorità', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
-            _PrioritaRow(value: data.priorita, onChanged: (p) { data.priorita = p; onChanged(); }),
+            _PrioritaRow(
+              value: data.priorita,
+              onChanged: (p) {
+                data.priorita = p;
+                widget.onChanged();
+              },
+            ),
           ],
           if (data.tipo == _Tipo.appuntamento) ...[
             const SizedBox(height: 16),
             Text('Tipo appuntamento', style: shadTheme.textTheme.small.copyWith(fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
-            _TipoAppuntamentoRow(value: data.tipoAppuntamento, onChanged: (t) { data.tipoAppuntamento = t; onChanged(); }),
+            _TipoAppuntamentoRow(
+              value: data.tipoAppuntamento,
+              onChanged: (t) {
+                data.tipoAppuntamento = t;
+                widget.onChanged();
+              },
+            ),
           ],
           if (data.tipo == _Tipo.task || data.tipo == _Tipo.appuntamento) ...[
             const SizedBox(height: 20),
@@ -529,8 +629,59 @@ class _StepCosa extends StatelessWidget {
               style: shadTheme.textTheme.muted.copyWith(fontSize: 11),
             ),
             const SizedBox(height: 8),
-            _CampoPreventivato(data: data, onChanged: onChanged),
+            _CampoPreventivato(data: data, onChanged: widget.onChanged),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _AiTipoBanner extends StatelessWidget {
+  const _AiTipoBanner({
+    required this.tipo,
+    required this.shadTheme,
+    this.onChangeTipo,
+  });
+
+  final _Tipo tipo;
+  final ShadThemeData shadTheme;
+  final VoidCallback? onChangeTipo;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = tipo.color;
+    return ShadCard(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      backgroundColor: color.withValues(alpha: 0.08),
+      child: Row(
+        children: [
+          Icon(tipo.icon, size: 20, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Suggerito dall\'AI',
+                  style: shadTheme.textTheme.muted.copyWith(fontSize: 11),
+                ),
+                Text(
+                  tipo.label,
+                  style: shadTheme.textTheme.small.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (onChangeTipo != null)
+            ShadButton.ghost(
+              size: ShadButtonSize.sm,
+              onPressed: onChangeTipo,
+              child: const Text('Cambia'),
+            ),
         ],
       ),
     );
