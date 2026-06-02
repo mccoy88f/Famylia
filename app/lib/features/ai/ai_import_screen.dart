@@ -127,6 +127,7 @@ class _AiImportScreenState extends State<AiImportScreen>
       appBar: AppBar(
         backgroundColor: shadTheme.colorScheme.background,
         surfaceTintColor: Colors.transparent,
+        leading: BackButton(color: shadTheme.colorScheme.foreground),
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

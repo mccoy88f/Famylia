@@ -221,13 +221,14 @@ class _FeedScreenState extends State<FeedScreen> {
                   delegate: SliverChildListDelegate([
                     // ── Avatar filter ──
                     if (_members.isNotEmpty) ...[
+                      const SizedBox(height: 8),
                       _MemberFilterRow(
                         members: _members,
                         selectedId: _filterMemberId,
                         onSelect: (id) => setState(() => _filterMemberId = id),
                         shadTheme: shadTheme,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                     ],
 
                     // ── Urgente ──

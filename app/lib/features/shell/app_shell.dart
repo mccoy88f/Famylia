@@ -10,7 +10,7 @@ class AppShell extends StatelessWidget {
   final Widget child;
 
   static const _tabs = [
-    _Tab('/feed', Icons.home_outlined, Icons.home, 'Casa'),
+    _Tab('/feed', Icons.view_agenda_outlined, Icons.view_agenda, 'Panoramica'),
     _Tab('/lista', Icons.check_circle_outline, Icons.check_circle, 'Da fare'),
     _Tab('/agenda', Icons.calendar_month_outlined, Icons.calendar_month, 'Calendario'),
     _Tab('/altro', Icons.group_outlined, Icons.group, 'Famiglia'),
@@ -76,6 +76,8 @@ class _NarrowShell extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         color: navBg,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
         elevation: 0,
         padding: EdgeInsets.zero,
         child: SafeArea(
@@ -105,7 +107,13 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? shadTheme.colorScheme.primary : shadTheme.colorScheme.mutedForeground;
+    // In dark mode, primary may be white which blends with backgrounds — use a
+    // high-contrast accent by falling back to a visible tint.
+    final isDark = shadTheme.brightness == Brightness.dark;
+    final selectedColor = isDark
+        ? const Color(0xFF818CF8)  // indigo-400 visible on dark
+        : shadTheme.colorScheme.primary;
+    final color = selected ? selectedColor : shadTheme.colorScheme.mutedForeground;
 
     return InkWell(
       onTap: () => context.go(tab.path),

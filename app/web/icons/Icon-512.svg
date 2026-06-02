@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="110" fill="#E87A3B"/>
+  <!-- Person 1 (left, larger) -->
+  <circle cx="160" cy="170" r="55" fill="white" opacity="0.95"/>
+  <path d="M65 370c0-60 40-100 95-100s95 40 95 100" fill="white" opacity="0.95"/>
+  <!-- Person 2 (right, larger) -->
+  <circle cx="352" cy="170" r="55" fill="white" opacity="0.95"/>
+  <path d="M257 370c0-60 40-100 95-100s95 40 95 100" fill="white" opacity="0.95"/>
+  <!-- Heart connecting -->
+  <path d="M256 310 c-8-15-30-28-30-55 0-17 12-28 30-28s30 11 30 28c0 27-22 40-30 55z" fill="#FF8A8A"/>
+</svg>

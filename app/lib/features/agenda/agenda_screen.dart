@@ -86,7 +86,7 @@ class _AgendaScreenState extends State<AgendaScreen> with SingleTickerProviderSt
       appBar: AppBar(
         backgroundColor: shadTheme.colorScheme.background,
         surfaceTintColor: Colors.transparent,
-        title: null,
+        toolbarHeight: 0,
         bottom: TabBar(
           controller: _tab,
           tabs: const [
@@ -127,7 +127,10 @@ class _AppuntamentiTabState extends State<_AppuntamentiTab> with AutomaticKeepAl
   bool get wantKeepAlive => true;
 
   final _repo = CalendarRepository();
+  final _familyRepo = FamilyRepository();
   List<CalendarEvent> _events = [];
+  List<FamilyMemberInfo> _members = [];
+  int? _selectedMemberId;
   bool _loading = true;
   final _timeFmt = DateFormat('HH:mm');
   final _dayKeyFmt = DateFormat('yyyy-MM-dd');
@@ -146,7 +149,15 @@ class _AppuntamentiTabState extends State<_AppuntamentiTab> with AutomaticKeepAl
     final now = DateTime.now();
     final from = DateTime(now.year, now.month, now.day);
     try {
-      final events = await _repo.list(familyId, from, from.add(const Duration(days: 90)));
+      final futures = <Future>[
+        _repo.list(familyId, from, from.add(const Duration(days: 90))),
+        if (_members.isEmpty) _familyRepo.listMembers(familyId),
+      ];
+      final results = await Future.wait(futures);
+      final events = results[0] as List<CalendarEvent>;
+      if (_members.isEmpty && results.length > 1) {
+        if (mounted) setState(() => _members = results[1] as List<FamilyMemberInfo>);
+      }
       if (mounted) setState(() => _events = events);
     } catch (e) {
       if (mounted) {
@@ -260,6 +271,11 @@ class _AppuntamentiTabState extends State<_AppuntamentiTab> with AutomaticKeepAl
     final tomorrow = _dayKeyFmt.format(now.add(const Duration(days: 1)));
 
     if (_loading) return const Center(child: CircularProgressIndicator());
+
+    final filteredEvents = _selectedMemberId == null
+        ? _events
+        : _events.where((e) => e.assignedTo == _selectedMemberId).toList();
+
     if (_events.isEmpty) {
       return _EmptyState(
         icon: Icons.event_outlined,
@@ -268,26 +284,51 @@ class _AppuntamentiTabState extends State<_AppuntamentiTab> with AutomaticKeepAl
         onAction: _add,
       );
     }
-    return RefreshIndicator(
-      onRefresh: _load,
-      child: ListView(
-        padding: const EdgeInsets.only(bottom: 120),
-        children: [
-          for (final entry in groups.entries) ...[
-            _DayHeader(
-              label: switch (entry.key) {
-                String k when k == today => 'Oggi · ${_dayLabelFmt.format(DateTime.parse(k))}',
-                String k when k == tomorrow => 'Domani · ${_dayLabelFmt.format(DateTime.parse(k))}',
-                _ => _dayLabelFmt.format(DateTime.parse(entry.key)),
-              },
-              isToday: entry.key == today,
-              shadTheme: shadTheme,
+
+    final filteredGroups = <String, List<CalendarEvent>>{};
+    for (final e in filteredEvents) {
+      final key = _dayKeyFmt.format(e.startAt.toLocal());
+      (filteredGroups[key] ??= []).add(e);
+    }
+
+    return Column(
+      children: [
+        if (_members.isNotEmpty)
+          _MemberFilterBar(
+            members: _members,
+            selectedId: _selectedMemberId,
+            onSelect: (id) => setState(() => _selectedMemberId = id),
+            shadTheme: shadTheme,
+          ),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _load,
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: 120),
+              children: [
+                for (final entry in filteredGroups.entries) ...[
+                  _DayHeader(
+                    label: switch (entry.key) {
+                      String k when k == today => 'Oggi · ${_dayLabelFmt.format(DateTime.parse(k))}',
+                      String k when k == tomorrow => 'Domani · ${_dayLabelFmt.format(DateTime.parse(k))}',
+                      _ => _dayLabelFmt.format(DateTime.parse(entry.key)),
+                    },
+                    isToday: entry.key == today,
+                    shadTheme: shadTheme,
+                  ),
+                  for (final e in entry.value)
+                    _EventCard(event: e, timeFmt: _timeFmt, shadTheme: shadTheme, onTap: () => _registraCosto(e)),
+                ],
+                if (filteredGroups.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Center(child: Text('Nessun appuntamento per questo membro', style: shadTheme.textTheme.muted)),
+                  ),
+              ],
             ),
-            for (final e in entry.value)
-              _EventCard(event: e, timeFmt: _timeFmt, shadTheme: shadTheme, onTap: () => _registraCosto(e)),
-          ],
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -794,6 +835,84 @@ class _SpeseTabState extends State<_SpeseTab> with AutomaticKeepAliveClientMixin
                   ),
                 ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Member filter bar ────────────────────────────────────────────────────
+
+class _MemberFilterBar extends StatelessWidget {
+  const _MemberFilterBar({required this.members, required this.selectedId, required this.onSelect, required this.shadTheme});
+  final List<FamilyMemberInfo> members;
+  final int? selectedId;
+  final void Function(int?) onSelect;
+  final ShadThemeData shadTheme;
+
+  static const _colors = [
+    Color(0xFF6366F1), Color(0xFF10B981), Color(0xFFF59E0B),
+    Color(0xFFEF4444), Color(0xFF14B8A6), Color(0xFF8B5CF6),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: shadTheme.colorScheme.border)),
+      ),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        children: [
+          _MemberChipAg(label: 'Tutti', selected: selectedId == null, color: shadTheme.colorScheme.primary, onTap: () => onSelect(null), shadTheme: shadTheme),
+          ...members.indexed.map((r) {
+            final color = _colors[r.$1 % _colors.length];
+            return Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: _MemberChipAg(
+                label: r.$2.displayName.split(' ').first,
+                selected: selectedId == r.$2.userId,
+                color: color,
+                onTap: () => onSelect(selectedId == r.$2.userId ? null : r.$2.userId),
+                shadTheme: shadTheme,
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _MemberChipAg extends StatelessWidget {
+  const _MemberChipAg({required this.label, required this.selected, required this.color, required this.onTap, required this.shadTheme});
+  final String label;
+  final bool selected;
+  final Color color;
+  final VoidCallback onTap;
+  final ShadThemeData shadTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: selected ? color : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: selected ? color : shadTheme.colorScheme.border),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+            color: selected ? Colors.white : shadTheme.colorScheme.foreground,
+          ),
+        ),
       ),
     );
   }
