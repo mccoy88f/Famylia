@@ -208,8 +208,7 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
 
   bool get _hasBudget =>
       _data.tipo == _Tipo.spesa ||
-      _data.tipo == _Tipo.scadenza ||
-      _data.tipo == _Tipo.acquisto;
+      _data.tipo == _Tipo.scadenza;
 
   int get _totalSteps => _hasBudget ? 5 : 4;
 
