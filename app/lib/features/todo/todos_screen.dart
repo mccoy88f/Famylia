@@ -168,7 +168,7 @@ class _TodosScreenState extends State<TodosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Todo'),
+        title: null,
         actions: [
           FilterChip(
             label: const Text('Oggi'),
@@ -180,10 +180,6 @@ class _TodosScreenState extends State<TodosScreen> {
           ),
           const SizedBox(width: 8),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addTodo,
-        child: const Icon(Icons.add),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())

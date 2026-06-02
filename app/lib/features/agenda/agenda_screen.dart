@@ -59,7 +59,7 @@ class _AgendaScreenState extends State<AgendaScreen> with SingleTickerProviderSt
       appBar: AppBar(
         backgroundColor: shadTheme.colorScheme.background,
         surfaceTintColor: Colors.transparent,
-        title: Text('Agenda', style: shadTheme.textTheme.h4),
+        title: null,
         bottom: TabBar(
           controller: _tab,
           tabs: const [
@@ -73,14 +73,6 @@ class _AgendaScreenState extends State<AgendaScreen> with SingleTickerProviderSt
           labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           unselectedLabelStyle: const TextStyle(fontSize: 12),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'agenda_fab',
-        backgroundColor: shadTheme.colorScheme.primary,
-        foregroundColor: shadTheme.colorScheme.primaryForeground,
-        onPressed: _onFabTap,
-        tooltip: _tab.index == 2 ? 'Vai a Spese' : 'Aggiungi',
-        child: const Icon(Icons.add),
       ),
       body: TabBarView(
         controller: _tab,

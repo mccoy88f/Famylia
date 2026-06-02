@@ -1,5 +1,6 @@
 import 'package:famylia_client/famylia_client.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -11,6 +12,7 @@ import '../../core/api/shopping_repository.dart';
 import '../../core/api/todo_repository.dart';
 import '../../core/api/ai_repository.dart';
 import '../../core/extensions/context_extensions.dart';
+import '../../core/router/app_router.dart';
 import '../../core/session/app_state.dart';
 import '../../core/utils/registra_spesa_dialog.dart';
 
@@ -409,7 +411,24 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
                 ),
               )
             else
-              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                child: ShadButton.outline(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    context.go(AppRoutes.aiImport);
+                  },
+                  width: double.infinity,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.auto_awesome_outlined, size: 16),
+                      SizedBox(width: 8),
+                      Text('Importa con AI'),
+                    ],
+                  ),
+                ),
+              ),
             SizedBox(height: mq.padding.bottom),
           ],
         ),
@@ -438,14 +457,14 @@ class _StepTipo extends StatelessWidget {
   Widget build(BuildContext context) {
     final shadTheme = ShadTheme.of(context);
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
       child: GridView.count(
         crossAxisCount: 3,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 1.2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 1.15,
         children: _Tipo.values.map((t) {
           final sel = selected == t;
           return _TipoTile(tipo: t, selected: sel, onTap: () => onSelect(t), shadTheme: shadTheme);

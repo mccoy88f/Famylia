@@ -24,7 +24,7 @@ class AltroScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: shadTheme.colorScheme.background,
         surfaceTintColor: Colors.transparent,
-        title: Text('Altro', style: shadTheme.textTheme.h4),
+        toolbarHeight: 0,
       ),
       body: isWide ? const _WideLayout() : const _NarrowLayout(),
     );
