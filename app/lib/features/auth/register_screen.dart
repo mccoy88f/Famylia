@@ -88,8 +88,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
     } on AuthException catch (e) {
       setState(() => _error = e.message);
-    } catch (_) {
-      setState(() => _error = 'Errore di connessione al server.');
+    } catch (e) {
+      final msg = e.toString().toLowerCase();
+      final isNetwork = msg.contains('socket') ||
+          msg.contains('connection') ||
+          msg.contains('network') ||
+          msg.contains('timeout') ||
+          msg.contains('refused');
+      setState(() => _error = isNetwork
+          ? 'Impossibile raggiungere il server. Verifica la connessione o che il server sia avviato.'
+          : 'Errore di connessione al server.');
     } finally {
       if (mounted) setState(() => _loading = false);
     }

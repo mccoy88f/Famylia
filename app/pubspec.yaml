@@ -25,6 +25,7 @@ dependencies:
   serverpod_auth_client: 2.5.1
   serverpod_auth_shared_flutter: 2.5.1
   qr_flutter: ^4.1.0
+  mobile_scanner: ^6.0.0
   shadcn_ui: ^0.27.0  # update to latest version from pub.dev if needed
   google_fonts: ^6.2.1
   speech_to_text: ^7.0.0
