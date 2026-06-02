@@ -40,6 +40,7 @@ class _FeedScreenState extends State<FeedScreen> {
   List<FamilyMemberInfo> _members = [];
   Map<int, int> _memberLoad = {};
   List<FamilyWithRole> _myFamilies = [];
+  int? _filterMemberId;
 
   bool _loading = true;
   bool _offline = false;
@@ -147,7 +148,14 @@ class _FeedScreenState extends State<FeedScreen> {
     final appState = context.watch<AppState>();
     final family = context.watch<FamilyContext>();
     final shadTheme = ShadTheme.of(context);
-    final hasUrgencies = _myUrgentTodos.isNotEmpty || _urgentDeadlines.isNotEmpty;
+
+    final visibleTodos = _filterMemberId == null
+        ? _myTodayTodos
+        : _myTodayTodos.where((t) => t.assignedTo == _filterMemberId).toList();
+    final visibleUrgentTodos = _filterMemberId == null
+        ? _myUrgentTodos
+        : _myUrgentTodos.where((t) => t.assignedTo == _filterMemberId).toList();
+    final hasUrgencies = visibleUrgentTodos.isNotEmpty || _urgentDeadlines.isNotEmpty;
 
     return Scaffold(
       backgroundColor: shadTheme.colorScheme.background,
@@ -211,11 +219,22 @@ class _FeedScreenState extends State<FeedScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
+                    // ── Avatar filter ──
+                    if (_members.isNotEmpty) ...[
+                      _MemberFilterRow(
+                        members: _members,
+                        selectedId: _filterMemberId,
+                        onSelect: (id) => setState(() => _filterMemberId = id),
+                        shadTheme: shadTheme,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
                     // ── Urgente ──
                     if (hasUrgencies) ...[
                       _FeedSection(
                         icon: Icons.warning_amber_rounded,
-                        label: 'Urgente',
+                        label: '🔴 Da fare subito',
                         color: shadTheme.colorScheme.destructive,
                       ),
                       const SizedBox(height: 8),
@@ -225,7 +244,7 @@ class _FeedScreenState extends State<FeedScreen> {
                             onPay: () async { await _deadlines.complete(d.id!); _load(); },
                             shadTheme: shadTheme,
                           )),
-                      ..._myUrgentTodos.map((t) => _UrgentTodoCard(
+                      ...visibleUrgentTodos.map((t) => _UrgentTodoCard(
                             todo: t,
                             dateFmt: _dateFmt,
                             onDone: () async { await _todos.complete(t.id!); _load(); },
@@ -234,10 +253,10 @@ class _FeedScreenState extends State<FeedScreen> {
                       const SizedBox(height: 20),
                     ],
 
-                    // ── Le mie attività ──
+                    // ── Da fare oggi ──
                     _FeedSection(
                       icon: Icons.task_alt_outlined,
-                      label: 'Le mie attività',
+                      label: 'Da fare',
                       color: shadTheme.colorScheme.primary,
                       action: ShadButton.ghost(
                         onPressed: () => context.go(AppRoutes.lista),
@@ -245,15 +264,17 @@ class _FeedScreenState extends State<FeedScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    if (_myTodayTodos.isEmpty)
+                    if (visibleTodos.isEmpty)
                       _EmptyCard(
                         Icons.check_circle_outline,
-                        'Nessun task assegnato',
+                        _filterMemberId == null
+                            ? 'Tutto libero! Aggiungete qualcosa? 🎉'
+                            : 'Nessuna attività per questo membro',
                         shadTheme,
                       )
                     else
                       _MyTodosCard(
-                        todos: _myTodayTodos,
+                        todos: visibleTodos,
                         onToggle: (t) async { await _todos.complete(t.id!); _load(); },
                         onTapAll: () => context.go(AppRoutes.lista),
                         shadTheme: shadTheme,
@@ -261,10 +282,10 @@ class _FeedScreenState extends State<FeedScreen> {
                     const SizedBox(height: 20),
 
                     // ── Carico famiglia ──
-                    if (_members.isNotEmpty && _memberLoad.isNotEmpty) ...[
+                    if (_members.isNotEmpty && _memberLoad.isNotEmpty && _filterMemberId == null) ...[
                       _FeedSection(
                         icon: Icons.bar_chart_outlined,
-                        label: 'Carico famiglia',
+                        label: 'Chi fa cosa',
                         color: const Color(0xFF6366F1),
                       ),
                       const SizedBox(height: 8),
@@ -275,7 +296,7 @@ class _FeedScreenState extends State<FeedScreen> {
                     // ── Da comprare ──
                     _FeedSection(
                       icon: Icons.shopping_cart_outlined,
-                      label: 'Da comprare',
+                      label: 'Lista spesa',
                       color: const Color(0xFF10B981),
                       action: ShadButton.ghost(
                         onPressed: () => context.go(AppRoutes.lista, extra: 'shopping'),
@@ -295,7 +316,7 @@ class _FeedScreenState extends State<FeedScreen> {
                       const SizedBox(height: 20),
                       _FeedSection(
                         icon: Icons.alarm_outlined,
-                        label: 'In scadenza (7 giorni)',
+                        label: 'Bollette in arrivo',
                         color: const Color(0xFFF59E0B),
                         action: ShadButton.ghost(
                           onPressed: () => context.go(AppRoutes.agenda),
@@ -339,7 +360,7 @@ class _FeedScreenState extends State<FeedScreen> {
                       const SizedBox(height: 20),
                       _FeedSection(
                         icon: Icons.forum_outlined,
-                        label: 'Bacheca',
+                        label: 'Messaggi',
                         color: const Color(0xFF14B8A6),
                         action: ShadButton.ghost(
                           onPressed: () => context.push(AppRoutes.board),
@@ -459,6 +480,110 @@ class _FeedScreenState extends State<FeedScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Member avatar filter row ──────────────────────────────────────────────
+
+class _MemberFilterRow extends StatelessWidget {
+  const _MemberFilterRow({required this.members, required this.selectedId, required this.onSelect, required this.shadTheme});
+  final List<FamilyMemberInfo> members;
+  final int? selectedId;
+  final void Function(int?) onSelect;
+  final ShadThemeData shadTheme;
+
+  static const _memberColors = [
+    Color(0xFF6366F1), Color(0xFF10B981), Color(0xFFF59E0B),
+    Color(0xFFEF4444), Color(0xFF14B8A6), Color(0xFF8B5CF6),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 72,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          _AvatarChip(
+            label: 'Tutti',
+            initial: '★',
+            color: shadTheme.colorScheme.primary,
+            selected: selectedId == null,
+            onTap: () => onSelect(null),
+            shadTheme: shadTheme,
+          ),
+          ...members.indexed.map((r) {
+            final i = r.$1;
+            final m = r.$2;
+            final color = _memberColors[i % _memberColors.length];
+            return Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: _AvatarChip(
+                label: m.displayName.split(' ').first,
+                initial: m.displayName[0].toUpperCase(),
+                color: color,
+                selected: selectedId == m.userId,
+                onTap: () => onSelect(selectedId == m.userId ? null : m.userId),
+                shadTheme: shadTheme,
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _AvatarChip extends StatelessWidget {
+  const _AvatarChip({required this.label, required this.initial, required this.color, required this.selected, required this.onTap, required this.shadTheme});
+  final String label;
+  final String initial;
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+  final ShadThemeData shadTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withValues(alpha: selected ? 1.0 : 0.15),
+              border: selected ? Border.all(color: color, width: 2.5) : null,
+            ),
+            child: Center(
+              child: Text(
+                initial,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: selected ? Colors.white : color,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
+              color: selected ? color : shadTheme.colorScheme.mutedForeground,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
@@ -650,7 +775,7 @@ class _MyTodosCard extends StatelessWidget {
             ShadButton.ghost(
               onPressed: onTapAll,
               width: double.infinity,
-              child: Text('+${todos.length - 5} altri task', style: TextStyle(color: shadTheme.colorScheme.mutedForeground)),
+              child: Text('+${todos.length - 5} altre cose da fare', style: TextStyle(color: shadTheme.colorScheme.mutedForeground)),
             ),
         ],
       ),
@@ -711,7 +836,7 @@ class _FamilyLoadCard extends StatelessWidget {
                             ),
                           ),
                           const Spacer(),
-                          Text('$count task', style: shadTheme.textTheme.muted.copyWith(fontSize: 12)),
+                          Text('$count cose da fare', style: shadTheme.textTheme.muted.copyWith(fontSize: 12)),
                         ],
                       ),
                       const SizedBox(height: 4),
@@ -746,7 +871,7 @@ class _ShoppingPreviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (lists.isEmpty || totalUnchecked == 0) {
-      return _EmptyCard(Icons.shopping_cart_outlined, 'Lista spesa vuota', shadTheme);
+      return _EmptyCard(Icons.shopping_cart_outlined, 'Lista spesa vuota. Aggiungete articoli! 🛒', shadTheme);
     }
     return ShadCard(
       padding: EdgeInsets.zero,

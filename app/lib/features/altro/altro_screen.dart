@@ -44,9 +44,11 @@ class _WideLayout extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              _ModulesSection(label: 'Casa & Famiglia', items: _homeItems),
+              const _FamilyMembersSection(),
               const SizedBox(height: 20),
-              _ModulesSection(label: 'Sicurezza', items: _safetyItems),
+              _ModulesSection(label: 'Strumenti', items: _aiItems),
+              const SizedBox(height: 20),
+              _ModulesSection(label: 'Casa & Famiglia', items: _homeItems),
             ],
           ),
         ),
@@ -55,9 +57,7 @@ class _WideLayout extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              const _FamilyMembersSection(),
-              const SizedBox(height: 20),
-              _ModulesSection(label: 'Intelligenza artificiale', items: _aiItems),
+              _ModulesSection(label: 'Sicurezza', items: _safetyItems),
               const SizedBox(height: 20),
               _ModulesSection(label: 'Altro', items: _infoItems),
               const SizedBox(height: 20),
@@ -78,13 +78,13 @@ class _NarrowLayout extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
       children: [
+        const _FamilyMembersSection(),
+        const SizedBox(height: 20),
+        _ModulesSection(label: 'Strumenti', items: _aiItems),
+        const SizedBox(height: 20),
         _ModulesSection(label: 'Casa & Famiglia', items: _homeItems),
         const SizedBox(height: 20),
         _ModulesSection(label: 'Sicurezza', items: _safetyItems),
-        const SizedBox(height: 20),
-        const _FamilyMembersSection(),
-        const SizedBox(height: 20),
-        _ModulesSection(label: 'Intelligenza artificiale', items: _aiItems),
         const SizedBox(height: 20),
         _ModulesSection(label: 'Altro', items: _infoItems),
         const SizedBox(height: 20),
@@ -369,7 +369,7 @@ class _FamilyMembersSectionState extends State<_FamilyMembersSection> {
                 )
               else
                 for (int i = 0; i < _members.length; i++) ...[
-                  _MemberTile(member: _members[i], shadTheme: shadTheme),
+                  _MemberTile(member: _members[i], shadTheme: shadTheme, index: i),
                   if (i < _members.length - 1)
                     Divider(height: 1, indent: 16, color: shadTheme.colorScheme.border),
                 ],
@@ -382,14 +382,20 @@ class _FamilyMembersSectionState extends State<_FamilyMembersSection> {
 }
 
 class _MemberTile extends StatelessWidget {
-  const _MemberTile({required this.member, required this.shadTheme});
+  const _MemberTile({required this.member, required this.shadTheme, this.index = 0});
   final FamilyMemberInfo member;
   final ShadThemeData shadTheme;
+  final int index;
+
+  static const _colors = [
+    Color(0xFF6366F1), Color(0xFF10B981), Color(0xFFF59E0B),
+    Color(0xFFEF4444), Color(0xFF14B8A6), Color(0xFF8B5CF6),
+  ];
 
   Color _roleColor(FamilyRole role) => switch (role) {
         FamilyRole.admin => shadTheme.colorScheme.primary,
         FamilyRole.guest => shadTheme.colorScheme.mutedForeground,
-        _ => const Color(0xFF8B5CF6),
+        _ => _colors[index % _colors.length],
       };
 
   String _roleLabel(FamilyRole role) => switch (role) {
@@ -403,15 +409,15 @@ class _MemberTile extends StatelessWidget {
     final color = _roleColor(member.role);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
           CircleAvatar(
-            radius: 18,
-            backgroundColor: color.withValues(alpha: 0.12),
+            radius: 24,
+            backgroundColor: color.withValues(alpha: 0.15),
             child: Text(
               member.displayName[0].toUpperCase(),
-              style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 14),
+              style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 18),
             ),
           ),
           const SizedBox(width: 12),

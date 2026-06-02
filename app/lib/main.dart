@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -96,14 +97,19 @@ class _FamyliaAppState extends State<FamyliaApp> {
           theme: FamyliaShadTheme.lightBase,
           darkTheme: FamyliaShadTheme.darkBase,
           builder: (context, child) {
-            return ListenableBuilder(
-              listenable: widget.familyContext,
-              builder: (context, _) {
-                return FamyliaAccentTheme(
-                  accentHex: widget.familyContext.accentColorHex,
-                  child: child,
-                );
-              },
+            return Theme(
+              data: Theme.of(context).copyWith(
+                textTheme: GoogleFonts.nunitoTextTheme(Theme.of(context).textTheme),
+              ),
+              child: ListenableBuilder(
+                listenable: widget.familyContext,
+                builder: (context, _) {
+                  return FamyliaAccentTheme(
+                    accentHex: widget.familyContext.accentColorHex,
+                    child: child,
+                  );
+                },
+              ),
             );
           },
           routerConfig: widget.router,

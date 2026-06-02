@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 import '../../core/api/calendar_repository.dart';
 import '../../core/api/deadline_repository.dart';
@@ -150,6 +151,13 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
   bool _loading = false;
   late int _step;
 
+  // Voice & AI quick-input (step 0)
+  final _stt = SpeechToText();
+  bool _sttAvailable = false;
+  bool _sttListening = false;
+  final _quickInputCtrl = TextEditingController();
+  bool _aiAnalyzing = false;
+
   @override
   void initState() {
     super.initState();
@@ -157,13 +165,71 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
     _data = pre ?? _FormData();
     _step = (pre != null && pre.tipo != null) ? 1 : 0;
     _pageCtrl = PageController(initialPage: _step);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadMembers());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadMembers();
+      _stt.initialize().then((ok) { if (mounted) setState(() => _sttAvailable = ok); });
+    });
   }
 
   @override
   void dispose() {
     _pageCtrl.dispose();
+    _quickInputCtrl.dispose();
+    _stt.cancel();
     super.dispose();
+  }
+
+  Future<void> _toggleListening() async {
+    if (_sttListening) {
+      await _stt.stop();
+      setState(() => _sttListening = false);
+      return;
+    }
+    await _stt.listen(
+      onResult: (r) {
+        setState(() {
+          _quickInputCtrl.text = r.recognizedWords;
+          if (r.finalResult) _sttListening = false;
+        });
+      },
+      localeId: 'it_IT',
+      listenFor: const Duration(seconds: 30),
+      pauseFor: const Duration(seconds: 3),
+    );
+    setState(() => _sttListening = true);
+  }
+
+  Future<void> _analyzeWithAi() async {
+    final familyId = context.activeFamilyId;
+    if (familyId == null) return;
+    final text = _quickInputCtrl.text.trim();
+    if (text.isEmpty) return;
+    setState(() => _aiAnalyzing = true);
+    try {
+      final result = await AiRepository().extractActivity(
+        familyId,
+        text: text,
+      );
+      final pre = _FormData.fromAiResult(result);
+      setState(() {
+        _data.tipo = pre.tipo;
+        _data.titolo = pre.titolo;
+        _data.descrizione = pre.descrizione;
+        _data.importo = pre.importo;
+        _data.quando = pre.quando;
+        _data.tipoAppuntamento = pre.tipoAppuntamento;
+        _data.costoPreventivato = pre.costoPreventivato;
+      });
+      _goTo(1);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Errore AI: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _aiAnalyzing = false);
+    }
   }
 
   Future<void> _loadMembers() async {
@@ -382,7 +448,15 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
                 controller: _pageCtrl,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  _StepTipo(selected: _data.tipo, onSelect: (t) { setState(() => _data.tipo = t); _next(); }),
+                  _StepTipo(
+                    selected: _data.tipo,
+                    onSelect: (t) { setState(() => _data.tipo = t); _next(); },
+                    controller: _quickInputCtrl,
+                    isListening: _sttListening,
+                    sttAvailable: _sttAvailable,
+                    onToggleMic: _toggleListening,
+                    onChanged: () => setState(() {}),
+                  ),
                   _StepCosa(
                     data: _data,
                     members: _members,
@@ -412,20 +486,42 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
             else
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                child: ShadButton.outline(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    context.go(AppRoutes.aiImport);
+                child: ListenableBuilder(
+                  listenable: _quickInputCtrl,
+                  builder: (_, __) {
+                    final hasText = _quickInputCtrl.text.trim().isNotEmpty;
+                    if (hasText) {
+                      return ShadButton(
+                        onPressed: _aiAnalyzing ? null : _analyzeWithAi,
+                        width: double.infinity,
+                        child: _aiAnalyzing
+                            ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.auto_awesome, size: 16),
+                                  SizedBox(width: 8),
+                                  Text('Analizza con AI'),
+                                ],
+                              ),
+                      );
+                    }
+                    return ShadButton.outline(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        context.go(AppRoutes.aiImport);
+                      },
+                      width: double.infinity,
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.auto_awesome_outlined, size: 16),
+                          SizedBox(width: 8),
+                          Text('Importa con AI'),
+                        ],
+                      ),
+                    );
                   },
-                  width: double.infinity,
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.auto_awesome_outlined, size: 16),
-                      SizedBox(width: 8),
-                      Text('Importa con AI'),
-                    ],
-                  ),
                 ),
               ),
             SizedBox(height: mq.padding.bottom),
@@ -448,26 +544,75 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
 // ── Step 0 — Tipo ─────────────────────────────────────────────────────────
 
 class _StepTipo extends StatelessWidget {
-  const _StepTipo({required this.selected, required this.onSelect});
+  const _StepTipo({
+    required this.selected,
+    required this.onSelect,
+    required this.controller,
+    required this.isListening,
+    required this.sttAvailable,
+    required this.onToggleMic,
+    required this.onChanged,
+  });
   final _Tipo? selected;
   final void Function(_Tipo) onSelect;
+  final TextEditingController controller;
+  final bool isListening;
+  final bool sttAvailable;
+  final VoidCallback onToggleMic;
+  final VoidCallback onChanged;
 
   @override
   Widget build(BuildContext context) {
     final shadTheme = ShadTheme.of(context);
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-      child: GridView.count(
-        crossAxisCount: 3,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.15,
-        children: _Tipo.values.map((t) {
-          final sel = selected == t;
-          return _TipoTile(tipo: t, selected: sel, onTap: () => onSelect(t), shadTheme: shadTheme);
-        }).toList(),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Voice / text input
+          ShadInput(
+            controller: controller,
+            placeholder: Text(isListening ? 'Sto ascoltando...' : 'Descrivi cosa aggiungere...'),
+            autofocus: false,
+            onChanged: (_) => onChanged(),
+            textCapitalization: TextCapitalization.sentences,
+            trailing: sttAvailable
+                ? GestureDetector(
+                    onTap: onToggleMic,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(
+                        isListening ? Icons.mic : Icons.mic_none_outlined,
+                        key: ValueKey(isListening),
+                        size: 20,
+                        color: isListening
+                            ? shadTheme.colorScheme.destructive
+                            : shadTheme.colorScheme.mutedForeground,
+                      ),
+                    ),
+                  )
+                : null,
+          ),
+          const SizedBox(height: 16),
+          // Quick type selection label
+          Text(
+            'oppure scegli tipo',
+            style: shadTheme.textTheme.muted.copyWith(fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.5),
+          ),
+          const SizedBox(height: 8),
+          GridView.count(
+            crossAxisCount: 3,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.15,
+            children: _Tipo.values.map((t) {
+              final sel = selected == t;
+              return _TipoTile(tipo: t, selected: sel, onTap: () => onSelect(t), shadTheme: shadTheme);
+            }).toList(),
+          ),
+        ],
       ),
     );
   }

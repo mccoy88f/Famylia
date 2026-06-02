@@ -43,12 +43,12 @@ class _ListaScreenState extends State<ListaScreen> with SingleTickerProviderStat
       appBar: AppBar(
         backgroundColor: shadTheme.colorScheme.background,
         surfaceTintColor: Colors.transparent,
-        title: Text('Attività', style: shadTheme.textTheme.h4),
+        toolbarHeight: 0,
         bottom: TabBar(
           controller: _tab,
           tabs: const [
-            Tab(icon: Icon(Icons.task_alt_outlined), text: 'Todo'),
-            Tab(icon: Icon(Icons.shopping_cart_outlined), text: 'Spesa'),
+            Tab(icon: Icon(Icons.task_alt_outlined), text: 'Da fare'),
+            Tab(icon: Icon(Icons.shopping_cart_outlined), text: 'Lista spesa'),
           ],
           indicatorColor: shadTheme.colorScheme.primary,
           labelColor: shadTheme.colorScheme.primary,
@@ -85,6 +85,8 @@ class _TodoTabState extends State<_TodoTab> with AutomaticKeepAliveClientMixin {
   final _families = FamilyRepository();
   final _addCtrl = TextEditingController();
   List<TodoItem> _items = [];
+  List<FamilyMemberInfo> _members = [];
+  int? _selectedMemberId;
   bool _loading = true;
   int _view = 0; // 0=tutti, 1=miei
 
@@ -105,8 +107,19 @@ class _TodoTabState extends State<_TodoTab> with AutomaticKeepAliveClientMixin {
     if (familyId == null) return;
     setState(() => _loading = true);
     try {
-      final items = _view == 1 ? await _repo.myDay(familyId) : await _repo.list(familyId);
-      if (mounted) setState(() => _items = items);
+      final futures = <Future>[
+        _view == 1 ? _repo.myDay(familyId) : _repo.list(familyId),
+        if (_members.isEmpty) _families.listMembers(familyId),
+      ];
+      final results = await Future.wait(futures);
+      final allItems = results[0] as List<TodoItem>;
+      if (_members.isEmpty && results.length > 1) {
+        if (mounted) setState(() => _members = results[1] as List<FamilyMemberInfo>);
+      }
+      final filtered = _selectedMemberId == null
+          ? allItems
+          : allItems.where((t) => t.assignedTo == _selectedMemberId).toList();
+      if (mounted) setState(() => _items = filtered);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
@@ -206,6 +219,33 @@ class _TodoTabState extends State<_TodoTab> with AutomaticKeepAliveClientMixin {
 
     return Column(
       children: [
+        // Member filter chips
+        if (_members.isNotEmpty)
+          SizedBox(
+            height: 48,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              children: [
+                _MemberChip(
+                  label: 'Tutti',
+                  selected: _selectedMemberId == null,
+                  onTap: () { setState(() => _selectedMemberId = null); _load(); },
+                  shadTheme: shadTheme,
+                ),
+                for (final m in _members)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: _MemberChip(
+                      label: m.displayName,
+                      selected: _selectedMemberId == m.userId,
+                      onTap: () { setState(() => _selectedMemberId = m.userId); _load(); },
+                      shadTheme: shadTheme,
+                    ),
+                  ),
+              ],
+            ),
+          ),
         // Quick add bar + filter
         Container(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
@@ -733,6 +773,44 @@ class _ShoppingCard extends StatelessWidget {
               ),
               Icon(Icons.chevron_right, color: shadTheme.colorScheme.mutedForeground),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Member chip ───────────────────────────────────────────────────────────
+
+class _MemberChip extends StatelessWidget {
+  const _MemberChip({required this.label, required this.selected, required this.onTap, required this.shadTheme});
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final ShadThemeData shadTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected
+              ? shadTheme.colorScheme.primary
+              : shadTheme.colorScheme.muted.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? shadTheme.colorScheme.primary : shadTheme.colorScheme.border,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+            color: selected ? shadTheme.colorScheme.primaryForeground : shadTheme.colorScheme.foreground,
           ),
         ),
       ),

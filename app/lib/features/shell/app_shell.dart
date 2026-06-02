@@ -10,10 +10,10 @@ class AppShell extends StatelessWidget {
   final Widget child;
 
   static const _tabs = [
-    _Tab('/feed', Icons.wb_sunny_outlined, Icons.wb_sunny, 'Oggi'),
-    _Tab('/lista', Icons.task_alt_outlined, Icons.task_alt, 'Attività'),
-    _Tab('/agenda', Icons.calendar_month_outlined, Icons.calendar_month, 'Agenda'),
-    _Tab('/altro', Icons.apps_outlined, Icons.apps, 'Altro'),
+    _Tab('/feed', Icons.home_outlined, Icons.home, 'Casa'),
+    _Tab('/lista', Icons.check_circle_outline, Icons.check_circle, 'Da fare'),
+    _Tab('/agenda', Icons.calendar_month_outlined, Icons.calendar_month, 'Calendario'),
+    _Tab('/altro', Icons.group_outlined, Icons.group, 'Famiglia'),
   ];
 
   int _indexForLocation(String location) {

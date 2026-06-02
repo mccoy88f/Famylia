@@ -27,6 +27,7 @@ dependencies:
   qr_flutter: ^4.1.0
   shadcn_ui: ^0.27.0  # update to latest version from pub.dev if needed
   google_fonts: ^6.2.1
+  speech_to_text: ^7.0.0
   famylia_client:
     path: ../client
 
