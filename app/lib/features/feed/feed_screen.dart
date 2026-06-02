@@ -382,6 +382,61 @@ class _FeedScreenState extends State<FeedScreen> {
     );
   }
 
+  Uint8List? _parseCoverImage(List<FamilyWithRole> families) {
+    try {
+      final settings = families.firstOrNull?.family.settings;
+      if (settings == null || settings == '{}') return null;
+      final map = jsonDecode(settings) as Map<String, dynamic>;
+      final b64 = map['coverImageB64'] as String?;
+      if (b64 == null) return null;
+      return base64Decode(b64);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _pickCoverImage(FamilyContext family) async {
+    final familyId = context.activeFamilyId;
+    if (familyId == null) return;
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
+    );
+    if (result == null || result.files.isEmpty) return;
+    final bytes = result.files.first.bytes;
+    if (bytes == null) return;
+
+    if (bytes.lengthInBytes > 800 * 1024) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Immagine troppo grande (max 800 KB)'), backgroundColor: Colors.red),
+        );
+      }
+      return;
+    }
+
+    final b64 = base64Encode(bytes);
+    Map<String, dynamic> settings = {};
+    try {
+      final existing = _myFamilies.firstOrNull?.family.settings;
+      if (existing != null && existing != '{}') {
+        settings = jsonDecode(existing) as Map<String, dynamic>;
+      }
+    } catch (_) {}
+    settings['coverImageB64'] = b64;
+
+    try {
+      await _families.updateFamilySettings(familyId, jsonEncode(settings));
+      setState(() => _coverImageBytes = bytes);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Errore nel salvataggio: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   void _showFamilySwitcher(BuildContext context, FamilyContext family) {
     if (_myFamilies.length <= 1) return;
     final shadTheme = ShadTheme.of(context);
@@ -482,6 +537,207 @@ class _FeedScreenState extends State<FeedScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ── Family cover (Facebook-style) ─────────────────────────────────────────
+
+class _FamilyCoverCard extends StatelessWidget {
+  const _FamilyCoverCard({
+    required this.familyName,
+    required this.userName,
+    required this.accentColor,
+    required this.coverImageBytes,
+    required this.members,
+    required this.selectedMemberId,
+    required this.onSelectMember,
+    required this.isOffline,
+    required this.hasFamilySwitcher,
+    required this.onSwitchFamily,
+    required this.onSettings,
+    required this.onPickCover,
+    required this.shadTheme,
+  });
+
+  final String familyName;
+  final String userName;
+  final Color accentColor;
+  final Uint8List? coverImageBytes;
+  final List<FamilyMemberInfo> members;
+  final int? selectedMemberId;
+  final void Function(int?) onSelectMember;
+  final bool isOffline;
+  final bool hasFamilySwitcher;
+  final VoidCallback onSwitchFamily;
+  final VoidCallback onSettings;
+  final VoidCallback onPickCover;
+  final ShadThemeData shadTheme;
+
+  static const _memberColors = [
+    Color(0xFF6366F1), Color(0xFF10B981), Color(0xFFF59E0B),
+    Color(0xFFEF4444), Color(0xFF14B8A6), Color(0xFF8B5CF6),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Cover photo ────────────────────────────────────────────
+        GestureDetector(
+          onTap: onPickCover,
+          child: SizedBox(
+            height: 180,
+            width: double.infinity,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Background: image or gradient
+                if (coverImageBytes != null)
+                  Image.memory(coverImageBytes!, fit: BoxFit.cover)
+                else
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          accentColor,
+                          accentColor.withValues(alpha: 0.7),
+                          HSLColor.fromColor(accentColor).withHue(
+                            (HSLColor.fromColor(accentColor).hue + 30) % 360,
+                          ).toColor(),
+                        ],
+                      ),
+                    ),
+                  ),
+                // Bottom gradient for text readability
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.transparent, Colors.black.withValues(alpha: 0.55)],
+                        stops: const [0.4, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+                // Top actions row
+                Positioned(
+                  top: 0, left: 0, right: 0,
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: Row(
+                        children: [
+                          if (isOffline)
+                            const Padding(
+                              padding: EdgeInsets.only(left: 8),
+                              child: Icon(Icons.cloud_off, size: 16, color: Colors.white70),
+                            ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.settings_outlined, color: Colors.white),
+                            onPressed: onSettings,
+                            iconSize: 20,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                // Bottom info overlay
+                Positioned(
+                  bottom: 12, left: 16, right: 16,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: hasFamilySwitcher ? onSwitchFamily : null,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                familyName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700,
+                                  shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
+                                ),
+                              ),
+                              if (hasFamilySwitcher) ...[
+                                const SizedBox(width: 4),
+                                const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white70, size: 18),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Camera pill badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.camera_alt, color: Colors.white, size: 14),
+                            SizedBox(width: 4),
+                            Text('Modifica', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // ── Member avatar row (filter) ──────────────────────────────
+        if (members.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: SizedBox(
+              height: 72,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _AvatarChip(
+                    label: 'Tutti',
+                    initial: '★',
+                    color: shadTheme.colorScheme.primary,
+                    selected: selectedMemberId == null,
+                    onTap: () => onSelectMember(null),
+                    shadTheme: shadTheme,
+                  ),
+                  ...members.indexed.map((r) {
+                    final color = _memberColors[r.$1 % _memberColors.length];
+                    final m = r.$2;
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 12),
+                      child: _AvatarChip(
+                        label: m.displayName.split(' ').first,
+                        initial: m.displayName[0].toUpperCase(),
+                        color: color,
+                        selected: selectedMemberId == m.userId,
+                        onTap: () => onSelectMember(selectedMemberId == m.userId ? null : m.userId),
+                        shadTheme: shadTheme,
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
