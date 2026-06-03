@@ -79,16 +79,21 @@ jobs:
             "Set :NSMicrophoneUsageDescription 'Usata per il riconoscimento vocale nella creazione task.'" \
             Info.plist
 
-      # ── Patch Xcode project bundle ID ────────────────────────────────────────
+      # ── Patch Xcode project bundle ID + deployment target ───────────────────
       - name: Patch Xcode project
         working-directory: ${{ env.APP_DIR }}/ios
         run: |
           sed -i '' "s/com\.example\.famylia_app/${{ env.APP_ID }}/g" Runner.xcodeproj/project.pbxproj
+          sed -i '' "s/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*/IPHONEOS_DEPLOYMENT_TARGET = 16.0/g" Runner.xcodeproj/project.pbxproj
 
       # ── Dipendenze ──────────────────────────────────────────────────────────
       - name: Flutter pub get
         working-directory: ${{ env.APP_DIR }}
         run: flutter pub get
+
+      - name: Patch Podfile deployment target
+        working-directory: ${{ env.APP_DIR }}/ios
+        run: sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '16.0'/" Podfile
 
       - name: Pod install
         working-directory: ${{ env.APP_DIR }}/ios

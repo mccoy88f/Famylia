@@ -95,6 +95,7 @@ import 'package:famylia_server/src/generated/shopping_list.dart' as _i83;
 import 'package:famylia_server/src/generated/todo_item.dart' as _i84;
 import 'family_goal_status.dart' as _i85;
 import 'family_goal.dart' as _i86;
+import 'shared_content_analysis.dart' as _i87;
 export 'board_changed.dart';
 export 'board_post.dart';
 export 'board_post_type.dart';
@@ -129,6 +130,7 @@ export 'family_role.dart';
 export 'family_with_role.dart';
 export 'family_goal_status.dart';
 export 'family_goal.dart';
+export 'shared_content_analysis.dart';
 export 'famylia_exception.dart';
 export 'gdpr_export.dart';
 export 'health_entry.dart';
@@ -2954,6 +2956,9 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i86.FamilyGoal) {
       return _i86.FamilyGoal.fromJson(data) as T;
     }
+    if (t == _i87.SharedContentAnalysis) {
+      return _i87.SharedContentAnalysis.fromJson(data) as T;
+    }
     if (t == _i36.FamyliaException) {
       return _i36.FamyliaException.fromJson(data) as T;
     }
@@ -3159,6 +3164,10 @@ class Protocol extends _i1.SerializationManagerServer {
     }
     if (t == _i1.getType<_i86.FamilyGoal?>()) {
       return (data != null ? _i86.FamilyGoal.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i87.SharedContentAnalysis?>()) {
+      return (data != null ? _i87.SharedContentAnalysis.fromJson(data) : null)
+          as T;
     }
     if (t == _i1.getType<_i36.FamyliaException?>()) {
       return (data != null ? _i36.FamyliaException.fromJson(data) : null) as T;
@@ -3490,6 +3499,9 @@ class Protocol extends _i1.SerializationManagerServer {
     if (data is _i86.FamilyGoal) {
       return 'FamilyGoal';
     }
+    if (data is _i87.SharedContentAnalysis) {
+      return 'SharedContentAnalysis';
+    }
     if (data is _i36.FamyliaException) {
       return 'FamyliaException';
     }
@@ -3713,6 +3725,9 @@ class Protocol extends _i1.SerializationManagerServer {
     }
     if (dataClassName == 'FamilyGoal') {
       return deserialize<_i86.FamilyGoal>(data['data']);
+    }
+    if (dataClassName == 'SharedContentAnalysis') {
+      return deserialize<_i87.SharedContentAnalysis>(data['data']);
     }
     if (dataClassName == 'FamyliaException') {
       return deserialize<_i36.FamyliaException>(data['data']);

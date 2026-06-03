@@ -68,6 +68,8 @@ import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i53;
 import 'protocol.dart' as _i54;
 import 'package:famylia_client/src/protocol/family_goal_status.dart' as _i55;
 import 'package:famylia_client/src/protocol/family_goal.dart' as _i56;
+import 'package:famylia_client/src/protocol/shared_content_analysis.dart'
+    as _i57;
 
 /// {@category Endpoint}
 class EndpointAi extends _i1.EndpointRef {
@@ -1098,6 +1100,27 @@ class EndpointReport extends _i1.EndpointRef {
 }
 
 /// {@category Endpoint}
+class EndpointShare extends _i1.EndpointRef {
+  EndpointShare(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'share';
+
+  _i2.Future<_i57.SharedContentAnalysis> analyzeContent(
+    String content, {
+    String? fileName,
+  }) =>
+      caller.callServerEndpoint<_i57.SharedContentAnalysis>(
+        'share',
+        'analyzeContent',
+        {
+          'content': content,
+          'fileName': fileName,
+        },
+      );
+}
+
+/// {@category Endpoint}
 class EndpointShopping extends _i1.EndpointRef {
   EndpointShopping(_i1.EndpointCaller caller) : super(caller);
 
@@ -1345,6 +1368,7 @@ class Client extends _i1.ServerpodClientShared {
     location = EndpointLocation(this);
     meal = EndpointMeal(this);
     report = EndpointReport(this);
+    share = EndpointShare(this);
     shopping = EndpointShopping(this);
     todo = EndpointTodo(this);
     modules = Modules(this);
@@ -1382,6 +1406,8 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointReport report;
 
+  late final EndpointShare share;
+
   late final EndpointShopping shopping;
 
   late final EndpointTodo todo;
@@ -1406,6 +1432,7 @@ class Client extends _i1.ServerpodClientShared {
         'location': location,
         'meal': meal,
         'report': report,
+        'share': share,
         'shopping': shopping,
         'todo': todo,
       };

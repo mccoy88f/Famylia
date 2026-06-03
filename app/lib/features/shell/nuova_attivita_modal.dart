@@ -133,6 +133,26 @@ class NuovaAttivitaModal extends StatefulWidget {
     );
   }
 
+  /// Opens the modal pre-filled with a title and optional description from
+  /// the "Share to Famylia" flow. The activity type defaults to [_Tipo.task].
+  static Future<void> showWithSharePrefill(
+    BuildContext context, {
+    String? prefillTitle,
+    String? prefillDescription,
+  }) {
+    final data = _FormData()
+      ..tipo = _Tipo.task
+      ..titolo = prefillTitle ?? ''
+      ..descrizione = prefillDescription ?? '';
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (_) => NuovaAttivitaModal(prefilled: data),
+    );
+  }
+
   static Future<void> showPrefilled(BuildContext context, AiExtractionResult result) {
     final data = _FormData.fromAiResult(result);
     return showModalBottomSheet(

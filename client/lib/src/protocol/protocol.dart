@@ -94,6 +94,7 @@ import 'package:famylia_client/src/protocol/todo_item.dart' as _i82;
 import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i83;
 import 'family_goal_status.dart' as _i84;
 import 'family_goal.dart' as _i85;
+import 'shared_content_analysis.dart' as _i86;
 export 'board_changed.dart';
 export 'board_post.dart';
 export 'board_post_type.dart';
@@ -128,6 +129,7 @@ export 'family_role.dart';
 export 'family_with_role.dart';
 export 'family_goal_status.dart';
 export 'family_goal.dart';
+export 'shared_content_analysis.dart';
 export 'famylia_exception.dart';
 export 'gdpr_export.dart';
 export 'health_entry.dart';
@@ -377,6 +379,9 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i66.UserPoints) {
       return _i66.UserPoints.fromJson(data) as T;
     }
+    if (t == _i86.SharedContentAnalysis) {
+      return _i86.SharedContentAnalysis.fromJson(data) as T;
+    }
     if (t == _i1.getType<_i2.BoardChanged?>()) {
       return (data != null ? _i2.BoardChanged.fromJson(data) : null) as T;
     }
@@ -587,6 +592,10 @@ class Protocol extends _i1.SerializationManager {
     }
     if (t == _i1.getType<_i66.UserPoints?>()) {
       return (data != null ? _i66.UserPoints.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i86.SharedContentAnalysis?>()) {
+      return (data != null ? _i86.SharedContentAnalysis.fromJson(data) : null)
+          as T;
     }
     if (t == List<_i47.PollOption>) {
       return (data as List).map((e) => deserialize<_i47.PollOption>(e)).toList()
@@ -910,6 +919,9 @@ class Protocol extends _i1.SerializationManager {
     if (data is _i66.UserPoints) {
       return 'UserPoints';
     }
+    if (data is _i86.SharedContentAnalysis) {
+      return 'SharedContentAnalysis';
+    }
     className = _i83.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth.$className';
@@ -1129,6 +1141,9 @@ class Protocol extends _i1.SerializationManager {
     }
     if (dataClassName == 'UserPoints') {
       return deserialize<_i66.UserPoints>(data['data']);
+    }
+    if (dataClassName == 'SharedContentAnalysis') {
+      return deserialize<_i86.SharedContentAnalysis>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth.')) {
       data['className'] = dataClassName.substring(15);

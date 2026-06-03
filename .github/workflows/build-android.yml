@@ -65,6 +65,44 @@ jobs:
           # Permessi necessari
           sed -i 's|</manifest>|    <uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>\n</manifest>|' AndroidManifest.xml
 
+      - name: Patch AndroidManifest — share intent filters
+        working-directory: ${{ env.APP_DIR }}/android/app/src/main
+        run: |
+          python3 - <<'PYEOF'
+          import xml.etree.ElementTree as ET
+
+          ET.register_namespace('android', 'http://schemas.android.com/apk/res/android')
+          tree = ET.parse('AndroidManifest.xml')
+          root = tree.getroot()
+          ns = 'http://schemas.android.com/apk/res/android'
+
+          # Find MainActivity activity element
+          app_el = root.find('application')
+          activity = None
+          for act in app_el.findall('activity'):
+              name = act.get(f'{{{ns}}}name')
+              if name and 'MainActivity' in name:
+                  activity = act
+                  break
+          if activity is None:
+              activity = app_el.find('activity')
+
+          def make_intent_filter(mime_type):
+              f = ET.SubElement(activity, 'intent-filter')
+              action = ET.SubElement(f, 'action')
+              action.set(f'{{{ns}}}name', 'android.intent.action.SEND')
+              cat = ET.SubElement(f, 'category')
+              cat.set(f'{{{ns}}}name', 'android.intent.category.DEFAULT')
+              data = ET.SubElement(f, 'data')
+              data.set(f'{{{ns}}}mimeType', mime_type)
+              return f
+
+          for mime in ['text/*', 'image/*', 'application/*']:
+              make_intent_filter(mime)
+
+          tree.write('AndroidManifest.xml', xml_declaration=True, encoding='utf-8')
+          PYEOF
+
       - name: Patch build.gradle applicationId
         working-directory: ${{ env.APP_DIR }}/android/app
         run: |

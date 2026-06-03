@@ -28,6 +28,9 @@ import '../endpoints/meal_endpoint.dart' as _i15;
 import '../endpoints/report_endpoint.dart' as _i16;
 import '../endpoints/shopping_endpoint.dart' as _i17;
 import '../endpoints/todo_endpoint.dart' as _i18;
+import '../endpoints/share_endpoint.dart' as _i_share;
+import 'package:famylia_server/src/generated/shared_content_analysis.dart'
+    as _i_sca;
 import 'package:famylia_server/src/generated/board_post_type.dart' as _i19;
 import 'package:famylia_server/src/generated/calendar_event_category.dart'
     as _i20;
@@ -168,6 +171,12 @@ class Endpoints extends _i1.EndpointDispatch {
         ..initialize(
           server,
           'todo',
+          null,
+        ),
+      'share': _i_share.ShareEndpoint()
+        ..initialize(
+          server,
+          'share',
           null,
         ),
     };
@@ -2666,6 +2675,36 @@ class Endpoints extends _i1.EndpointDispatch {
               (endpoints['todo'] as _i18.TodoEndpoint).deleteTodo(
             session,
             params['todoId'],
+          ),
+        ),
+      },
+    );
+    connectors['share'] = _i1.EndpointConnector(
+      name: 'share',
+      endpoint: endpoints['share']!,
+      methodConnectors: {
+        'analyzeContent': _i1.MethodConnector(
+          name: 'analyzeContent',
+          params: {
+            'content': _i1.ParameterDescription(
+              name: 'content',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'fileName': _i1.ParameterDescription(
+              name: 'fileName',
+              type: _i1.getType<String?>(),
+              nullable: true,
+            ),
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['share'] as _i_share.ShareEndpoint).analyzeContent(
+            session,
+            params['content'],
+            fileName: params['fileName'],
           ),
         ),
       },
