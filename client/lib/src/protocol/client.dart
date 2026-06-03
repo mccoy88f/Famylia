@@ -72,6 +72,7 @@ import 'package:famylia_client/src/protocol/shared_content_analysis.dart'
     as _i57;
 import 'package:famylia_client/src/protocol/ai_config.dart' as _i58;
 import 'package:famylia_client/src/protocol/usage_stat.dart' as _i59;
+import 'package:famylia_client/src/protocol/family_quota.dart' as _i60;
 
 /// {@category Endpoint}
 class EndpointAdmin extends _i1.EndpointRef {
@@ -103,8 +104,9 @@ class EndpointAdmin extends _i1.EndpointRef {
   _i2.Future<_i58.AiConfig> setAiConfig(
     String adminToken,
     String provider,
-    String modelName,
-  ) =>
+    String modelName, {
+    String? systemPrompt,
+  }) =>
       caller.callServerEndpoint<_i58.AiConfig>(
         'admin',
         'setAiConfig',
@@ -112,6 +114,38 @@ class EndpointAdmin extends _i1.EndpointRef {
           'adminToken': adminToken,
           'provider': provider,
           'modelName': modelName,
+          if (systemPrompt != null) 'systemPrompt': systemPrompt,
+        },
+      );
+
+  _i2.Future<_i60.FamilyQuota?> getFamilyQuota(
+    String adminToken,
+    int familyId,
+  ) =>
+      caller.callServerEndpoint<_i60.FamilyQuota?>(
+        'admin',
+        'getFamilyQuota',
+        {
+          'adminToken': adminToken,
+          'familyId': familyId,
+        },
+      );
+
+  _i2.Future<_i60.FamilyQuota> setFamilyQuota(
+    String adminToken,
+    int familyId, {
+    int? monthlyTokenLimit,
+    double? monthlyCostLimitUsd,
+  }) =>
+      caller.callServerEndpoint<_i60.FamilyQuota>(
+        'admin',
+        'setFamilyQuota',
+        {
+          'adminToken': adminToken,
+          'familyId': familyId,
+          if (monthlyTokenLimit != null) 'monthlyTokenLimit': monthlyTokenLimit,
+          if (monthlyCostLimitUsd != null)
+            'monthlyCostLimitUsd': monthlyCostLimitUsd,
         },
       );
 

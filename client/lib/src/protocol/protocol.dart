@@ -98,6 +98,7 @@ import 'shared_content_analysis.dart' as _i86;
 import 'ai_provider.dart' as _i87;
 import 'ai_config.dart' as _i88;
 import 'usage_stat.dart' as _i89;
+import 'family_quota.dart' as _i90;
 export 'board_changed.dart';
 export 'board_post.dart';
 export 'board_post_type.dart';
@@ -136,6 +137,7 @@ export 'shared_content_analysis.dart';
 export 'ai_provider.dart';
 export 'ai_config.dart';
 export 'usage_stat.dart';
+export 'family_quota.dart';
 export 'famylia_exception.dart';
 export 'gdpr_export.dart';
 export 'health_entry.dart';
@@ -297,6 +299,12 @@ class Protocol extends _i1.SerializationManager {
     }
     if (t == _i89.UsageStat) {
       return _i89.UsageStat.fromJson(data) as T;
+    }
+    if (t == _i90.FamilyQuota) {
+      return _i90.FamilyQuota.fromJson(data) as T;
+    }
+    if (t == _i1.getType<_i90.FamilyQuota?>()) {
+      return (data != null ? _i90.FamilyQuota.fromJson(data) : null) as T;
     }
     if (t == List<_i89.UsageStat>) {
       return (data as List)
@@ -945,6 +953,9 @@ class Protocol extends _i1.SerializationManager {
     if (data is _i86.SharedContentAnalysis) {
       return 'SharedContentAnalysis';
     }
+    if (data is _i90.FamilyQuota) {
+      return 'FamilyQuota';
+    }
     className = _i83.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth.$className';
@@ -1167,6 +1178,9 @@ class Protocol extends _i1.SerializationManager {
     }
     if (dataClassName == 'SharedContentAnalysis') {
       return deserialize<_i86.SharedContentAnalysis>(data['data']);
+    }
+    if (dataClassName == 'FamilyQuota') {
+      return deserialize<_i90.FamilyQuota>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth.')) {
       data['className'] = dataClassName.substring(15);

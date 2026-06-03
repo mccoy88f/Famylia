@@ -19,14 +19,18 @@ abstract class AiConfig
     this.id,
     _i2.AiProvider? provider,
     String? modelName,
+    String? systemPrompt,
     required this.updatedAt,
   })  : provider = provider ?? _i2.AiProvider.openrouter,
-        modelName = modelName ?? 'google/gemini-flash-1.5';
+        modelName = modelName ?? 'google/gemini-flash-1.5',
+        systemPrompt = systemPrompt ??
+            'Sei MarIA, l\'assistente familiare di Famylia. Analizza il contenuto e rispondi SOLO con JSON valido.';
 
   factory AiConfig({
     int? id,
     _i2.AiProvider? provider,
     String? modelName,
+    String? systemPrompt,
     required DateTime updatedAt,
   }) = _AiConfigImpl;
 
@@ -36,6 +40,7 @@ abstract class AiConfig
       provider: _i2.AiProvider.fromJson(
           (jsonSerialization['provider'] as String)),
       modelName: jsonSerialization['modelName'] as String,
+      systemPrompt: jsonSerialization['systemPrompt'] as String?,
       updatedAt:
           _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
     );
@@ -52,6 +57,8 @@ abstract class AiConfig
 
   String modelName;
 
+  String systemPrompt;
+
   DateTime updatedAt;
 
   @override
@@ -62,6 +69,7 @@ abstract class AiConfig
     int? id,
     _i2.AiProvider? provider,
     String? modelName,
+    String? systemPrompt,
     DateTime? updatedAt,
   });
 
@@ -71,6 +79,7 @@ abstract class AiConfig
       if (id != null) 'id': id,
       'provider': provider.toJson(),
       'modelName': modelName,
+      'systemPrompt': systemPrompt,
       'updatedAt': updatedAt.toJson(),
     };
   }
@@ -81,6 +90,7 @@ abstract class AiConfig
       if (id != null) 'id': id,
       'provider': provider.toJson(),
       'modelName': modelName,
+      'systemPrompt': systemPrompt,
       'updatedAt': updatedAt.toJson(),
     };
   }
@@ -122,11 +132,13 @@ class _AiConfigImpl extends AiConfig {
     int? id,
     _i2.AiProvider? provider,
     String? modelName,
+    String? systemPrompt,
     required DateTime updatedAt,
   }) : super._(
           id: id,
           provider: provider,
           modelName: modelName,
+          systemPrompt: systemPrompt,
           updatedAt: updatedAt,
         );
 
@@ -136,12 +148,14 @@ class _AiConfigImpl extends AiConfig {
     Object? id = _Undefined,
     _i2.AiProvider? provider,
     String? modelName,
+    String? systemPrompt,
     DateTime? updatedAt,
   }) {
     return AiConfig(
       id: id is int? ? id : this.id,
       provider: provider ?? this.provider,
       modelName: modelName ?? this.modelName,
+      systemPrompt: systemPrompt ?? this.systemPrompt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
@@ -160,6 +174,11 @@ class AiConfigTable extends _i1.Table<int> {
       this,
       hasDefault: true,
     );
+    systemPrompt = _i1.ColumnString(
+      'systemPrompt',
+      this,
+      hasDefault: true,
+    );
     updatedAt = _i1.ColumnDateTime(
       'updatedAt',
       this,
@@ -170,6 +189,8 @@ class AiConfigTable extends _i1.Table<int> {
 
   late final _i1.ColumnString modelName;
 
+  late final _i1.ColumnString systemPrompt;
+
   late final _i1.ColumnDateTime updatedAt;
 
   @override
@@ -177,6 +198,7 @@ class AiConfigTable extends _i1.Table<int> {
         id,
         provider,
         modelName,
+        systemPrompt,
         updatedAt,
       ];
 }

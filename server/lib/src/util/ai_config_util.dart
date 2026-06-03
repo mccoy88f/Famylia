@@ -3,6 +3,15 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:serverpod/serverpod.dart';
 import '../generated/protocol.dart';
+import 'ai_model_catalog.dart';
+
+class QuotaExceededException implements Exception {
+  final DateTime resetDate;
+  final bool isTokenLimit;
+  QuotaExceededException({required this.resetDate, required this.isTokenLimit});
+  @override
+  String toString() => '{"type":"QuotaExceeded","resetDate":"${resetDate.toIso8601String()}","isTokenLimit":$isTokenLimit}';
+}
 
 class AiCallResult {
   final String text;
@@ -50,10 +59,44 @@ class AiConfigUtil {
 
   static Future<AiCallResult> callAi(
     Session session,
-    String systemPrompt,
-    String userPrompt,
-  ) async {
+    String userPrompt, {
+    int? familyId,
+    String? systemPromptOverride,
+  }) async {
     final config = await getConfig(session);
+    final systemPrompt = systemPromptOverride ?? config.systemPrompt;
+
+    if (familyId != null) {
+      final quota = await FamilyQuota.db.findFirstRow(session,
+          where: (t) => t.familyId.equals(familyId));
+      if (quota != null) {
+        final now = DateTime.now().toUtc();
+        final startOfMonth = DateTime(now.year, now.month, 1).toUtc();
+        final logs = await TokenUsageLog.db.find(session,
+            where: (t) =>
+                t.familyId.equals(familyId) &
+                t.createdAt.isAfter(startOfMonth));
+        final totalTokens =
+            logs.fold(0, (s, l) => s + l.inputTokens + l.outputTokens);
+        final totalCost = logs.fold(0.0, (s, l) => s + l.costUsd);
+        final resetDate = DateTime(
+                now.month == 12 ? now.year + 1 : now.year,
+                now.month == 12 ? 1 : now.month + 1,
+                1)
+            .toUtc();
+        if (quota.monthlyTokenLimit != null &&
+            totalTokens >= quota.monthlyTokenLimit!) {
+          throw QuotaExceededException(
+              resetDate: resetDate, isTokenLimit: true);
+        }
+        if (quota.monthlyCostLimitUsd != null &&
+            totalCost >= quota.monthlyCostLimitUsd!) {
+          throw QuotaExceededException(
+              resetDate: resetDate, isTokenLimit: false);
+        }
+      }
+    }
+
     if (config.provider == AiProvider.gemini) {
       return _callGemini(config.modelName, systemPrompt, userPrompt);
     } else {
@@ -155,36 +198,11 @@ class AiConfigUtil {
   }
 
   static double estimateCost(
-      String provider, String model, int inputTokens, int outputTokens) {
-    // Prices per million tokens
-    double inputPricePerM = 0.075;
-    double outputPricePerM = 0.30;
-    final m = model.toLowerCase();
-    if (provider == 'gemini') {
-      if (m.contains('flash')) {
-        inputPricePerM = 0.075;
-        outputPricePerM = 0.30;
-      } else if (m.contains('pro')) {
-        inputPricePerM = 1.25;
-        outputPricePerM = 5.00;
-      }
-    } else {
-      // OpenRouter — use model name heuristics
-      if (m.contains('flash')) {
-        inputPricePerM = 0.075;
-        outputPricePerM = 0.30;
-      } else if (m.contains('gpt-4o-mini')) {
-        inputPricePerM = 0.15;
-        outputPricePerM = 0.60;
-      } else if (m.contains('haiku')) {
-        inputPricePerM = 0.80;
-        outputPricePerM = 4.00;
-      } else if (m.contains('sonnet')) {
-        inputPricePerM = 3.00;
-        outputPricePerM = 15.00;
-      }
-    }
-    return (inputTokens / 1000000) * inputPricePerM +
-        (outputTokens / 1000000) * outputPricePerM;
+      String provider, String modelId, int inputTokens, int outputTokens) {
+    final info = AiModelCatalog.findById(modelId);
+    final inputPrice = info?.inputPricePerM ?? 0.075;
+    final outputPrice = info?.outputPricePerM ?? 0.30;
+    return (inputTokens / 1_000_000) * inputPrice +
+        (outputTokens / 1_000_000) * outputPrice;
   }
 }

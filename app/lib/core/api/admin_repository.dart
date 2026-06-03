@@ -22,10 +22,24 @@ class AdminRepository {
     return FamyliaServices.client.admin.getAiConfig(token);
   }
 
-  Future<AiConfig> setAiConfig(String provider, String modelName) async {
+  Future<AiConfig> setAiConfig(String provider, String modelName,
+      {String? systemPrompt}) async {
     final token = _requireToken();
     return FamyliaServices.client.admin
-        .setAiConfig(token, provider, modelName);
+        .setAiConfig(token, provider, modelName, systemPrompt: systemPrompt);
+  }
+
+  Future<FamilyQuota?> getFamilyQuota(int familyId) async {
+    final token = _requireToken();
+    return FamyliaServices.client.admin.getFamilyQuota(token, familyId);
+  }
+
+  Future<FamilyQuota> setFamilyQuota(int familyId,
+      {int? monthlyTokenLimit, double? monthlyCostLimitUsd}) async {
+    final token = _requireToken();
+    return FamyliaServices.client.admin.setFamilyQuota(token, familyId,
+        monthlyTokenLimit: monthlyTokenLimit,
+        monthlyCostLimitUsd: monthlyCostLimitUsd);
   }
 
   Future<List<UsageStat>> getUsageStats({int days = 30}) async {

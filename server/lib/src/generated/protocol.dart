@@ -100,6 +100,7 @@ import 'ai_provider.dart' as _i88;
 import 'ai_config.dart' as _i89;
 import 'token_usage_log.dart' as _i90;
 import 'usage_stat.dart' as _i91;
+import 'family_quota.dart' as _i92;
 export 'board_changed.dart';
 export 'board_post.dart';
 export 'board_post_type.dart';
@@ -139,6 +140,7 @@ export 'ai_provider.dart';
 export 'ai_config.dart';
 export 'token_usage_log.dart';
 export 'usage_stat.dart';
+export 'family_quota.dart';
 export 'famylia_exception.dart';
 export 'gdpr_export.dart';
 export 'health_entry.dart';
@@ -2880,6 +2882,13 @@ class Protocol extends _i1.SerializationManagerServer {
           columnDefault: '\'google/gemini-flash-1.5\'::text',
         ),
         _i2.ColumnDefinition(
+          name: 'systemPrompt',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+          columnDefault: '\'Sei MarIA, l\\\'assistente familiare di Famylia. Analizza il contenuto e rispondi SOLO con JSON valido.\'::text',
+        ),
+        _i2.ColumnDefinition(
           name: 'updatedAt',
           columnType: _i2.ColumnType.timestampWithoutTimeZone,
           isNullable: false,
@@ -3005,6 +3014,75 @@ class Protocol extends _i1.SerializationManagerServer {
           ],
           type: 'btree',
           isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _i2.TableDefinition(
+      name: 'family_quota',
+      dartName: 'FamilyQuota',
+      schema: 'public',
+      module: 'famylia',
+      columns: [
+        _i2.ColumnDefinition(
+          name: 'id',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'nextval(\'family_quota_id_seq\'::regclass)',
+        ),
+        _i2.ColumnDefinition(
+          name: 'familyId',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _i2.ColumnDefinition(
+          name: 'monthlyTokenLimit',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'monthlyCostLimitUsd',
+          columnType: _i2.ColumnType.doublePrecision,
+          isNullable: true,
+          dartType: 'double?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _i2.IndexDefinition(
+          indexName: 'family_quota_pkey',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'id',
+            )
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: true,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'family_quota_family_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'familyId',
+            )
+          ],
+          type: 'btree',
+          isUnique: true,
           isPrimary: false,
         ),
       ],
@@ -3136,6 +3214,12 @@ class Protocol extends _i1.SerializationManagerServer {
     }
     if (t == _i91.UsageStat) {
       return _i91.UsageStat.fromJson(data) as T;
+    }
+    if (t == _i92.FamilyQuota) {
+      return _i92.FamilyQuota.fromJson(data) as T;
+    }
+    if (t == _i1.getType<_i92.FamilyQuota?>()) {
+      return (data != null ? _i92.FamilyQuota.fromJson(data) : null) as T;
     }
     if (t == List<_i91.UsageStat>) {
       return (data as List)
@@ -3685,6 +3769,9 @@ class Protocol extends _i1.SerializationManagerServer {
     if (data is _i87.SharedContentAnalysis) {
       return 'SharedContentAnalysis';
     }
+    if (data is _i92.FamilyQuota) {
+      return 'FamilyQuota';
+    }
     if (data is _i36.FamyliaException) {
       return 'FamyliaException';
     }
@@ -3924,6 +4011,9 @@ class Protocol extends _i1.SerializationManagerServer {
     if (dataClassName == 'UsageStat') {
       return deserialize<_i91.UsageStat>(data['data']);
     }
+    if (dataClassName == 'FamilyQuota') {
+      return deserialize<_i92.FamilyQuota>(data['data']);
+    }
     if (dataClassName == 'List<UsageStat>') {
       return deserialize<List<_i91.UsageStat>>(data['data']);
     }
@@ -4106,6 +4196,8 @@ class Protocol extends _i1.SerializationManagerServer {
         return _i89.AiConfig.t;
       case _i90.TokenUsageLog:
         return _i90.TokenUsageLog.t;
+      case _i92.FamilyQuota:
+        return _i92.FamilyQuota.t;
     }
     return null;
   }

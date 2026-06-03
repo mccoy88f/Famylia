@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import '../../core/api/share_repository.dart';
 import '../shell/nuova_attivita_modal.dart';
+import 'quota_exceeded_dialog.dart';
 
 class ShareProcessingScreen extends StatefulWidget {
   const ShareProcessingScreen({
@@ -39,16 +42,25 @@ class _ShareProcessingScreenState extends State<ShareProcessingScreen> {
         prefillTitle: result.title,
         prefillDescription: result.description.isEmpty ? null : result.description,
       );
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
+      final msg = e.toString();
+      if (msg.contains('QuotaExceeded')) {
+        try {
+          final json = jsonDecode(msg.substring(msg.indexOf('{'))) as Map<String, dynamic>;
+          final resetDate = DateTime.parse(json['resetDate'] as String);
+          final isTokenLimit = json['isTokenLimit'] as bool? ?? true;
+          Navigator.of(context).pop();
+          await QuotaExceededDialog.show(context,
+              resetDate: resetDate, isTokenLimit: isTokenLimit);
+          return;
+        } catch (_) {}
+      }
       Navigator.of(context).pop();
-      final title = widget.content.length > 80
-          ? widget.content.substring(0, 80)
-          : widget.content;
-      NuovaAttivitaModal.showWithSharePrefill(
-        context,
-        prefillTitle: title,
-      );
+      NuovaAttivitaModal.showWithSharePrefill(context,
+          prefillTitle: widget.content.length > 80
+              ? widget.content.substring(0, 80)
+              : widget.content);
     }
   }
 

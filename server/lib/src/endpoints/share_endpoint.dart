@@ -18,8 +18,6 @@ class ShareEndpoint extends Endpoint {
     final truncated =
         content.length > 2000 ? content.substring(0, 2000) : content;
 
-    final systemPrompt =
-        'Sei MarIA, l\'assistente familiare di Famylia. Analizza il contenuto e rispondi SOLO con JSON valido.';
     final userPrompt =
         '''Analizza il seguente contenuto condiviso e estrai le informazioni per creare un task in un\'app familiare.
 Rispondi SOLO con un JSON valido con questi campi:
@@ -29,8 +27,7 @@ Contenuto da analizzare:
 $truncated''';
 
     try {
-      final aiResult =
-          await AiConfigUtil.callAi(session, systemPrompt, userPrompt);
+      final aiResult = await AiConfigUtil.callAi(session, userPrompt);
       final result = jsonDecode(aiResult.text) as Map<String, dynamic>;
 
       // Log usage (familyId 0 as fallback — share has no family context)

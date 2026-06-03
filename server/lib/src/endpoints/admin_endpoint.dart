@@ -30,8 +30,9 @@ class AdminEndpoint extends Endpoint {
     Session session,
     String adminToken,
     String provider,
-    String modelName,
-  ) async {
+    String modelName, {
+    String? systemPrompt,
+  }) async {
     _checkToken(adminToken);
     final config = await AiConfigUtil.getConfig(session);
     final providerEnum = AiProvider.values.firstWhere(
@@ -43,11 +44,49 @@ class AdminEndpoint extends Endpoint {
       config.copyWith(
         provider: providerEnum,
         modelName: modelName,
+        systemPrompt: systemPrompt,
         updatedAt: DateTime.now().toUtc(),
       ),
     );
     AiConfigUtil.invalidateCache();
     return updated;
+  }
+
+  Future<FamilyQuota?> getFamilyQuota(
+      Session session, String adminToken, int familyId) async {
+    _checkToken(adminToken);
+    return FamilyQuota.db
+        .findFirstRow(session, where: (t) => t.familyId.equals(familyId));
+  }
+
+  Future<FamilyQuota> setFamilyQuota(
+    Session session,
+    String adminToken,
+    int familyId, {
+    int? monthlyTokenLimit,
+    double? monthlyCostLimitUsd,
+  }) async {
+    _checkToken(adminToken);
+    final existing = await FamilyQuota.db
+        .findFirstRow(session, where: (t) => t.familyId.equals(familyId));
+    final now = DateTime.now().toUtc();
+    if (existing == null) {
+      return FamilyQuota.db.insertRow(
+          session,
+          FamilyQuota(
+            familyId: familyId,
+            monthlyTokenLimit: monthlyTokenLimit,
+            monthlyCostLimitUsd: monthlyCostLimitUsd,
+            updatedAt: now,
+          ));
+    }
+    return FamilyQuota.db.updateRow(
+        session,
+        existing.copyWith(
+          monthlyTokenLimit: monthlyTokenLimit,
+          monthlyCostLimitUsd: monthlyCostLimitUsd,
+          updatedAt: now,
+        ));
   }
 
   Future<List<UsageStat>> getUsageStats(

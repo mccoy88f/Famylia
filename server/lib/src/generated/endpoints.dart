@@ -2778,6 +2778,11 @@ class Endpoints extends _i1.EndpointDispatch {
               type: _i1.getType<String>(),
               nullable: false,
             ),
+            'systemPrompt': _i1.ParameterDescription(
+              name: 'systemPrompt',
+              type: _i1.getType<String?>(),
+              nullable: true,
+            ),
           },
           call: (
             _i1.Session session,
@@ -2788,6 +2793,67 @@ class Endpoints extends _i1.EndpointDispatch {
             params['adminToken'],
             params['provider'],
             params['modelName'],
+            systemPrompt: params['systemPrompt'],
+          ),
+        ),
+        'getFamilyQuota': _i1.MethodConnector(
+          name: 'getFamilyQuota',
+          params: {
+            'adminToken': _i1.ParameterDescription(
+              name: 'adminToken',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'familyId': _i1.ParameterDescription(
+              name: 'familyId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['admin'] as _i_admin.AdminEndpoint).getFamilyQuota(
+            session,
+            params['adminToken'],
+            params['familyId'],
+          ),
+        ),
+        'setFamilyQuota': _i1.MethodConnector(
+          name: 'setFamilyQuota',
+          params: {
+            'adminToken': _i1.ParameterDescription(
+              name: 'adminToken',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'familyId': _i1.ParameterDescription(
+              name: 'familyId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'monthlyTokenLimit': _i1.ParameterDescription(
+              name: 'monthlyTokenLimit',
+              type: _i1.getType<int?>(),
+              nullable: true,
+            ),
+            'monthlyCostLimitUsd': _i1.ParameterDescription(
+              name: 'monthlyCostLimitUsd',
+              type: _i1.getType<double?>(),
+              nullable: true,
+            ),
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['admin'] as _i_admin.AdminEndpoint).setFamilyQuota(
+            session,
+            params['adminToken'],
+            params['familyId'],
+            monthlyTokenLimit: params['monthlyTokenLimit'],
+            monthlyCostLimitUsd: params['monthlyCostLimitUsd'],
           ),
         ),
         'getUsageStats': _i1.MethodConnector(
