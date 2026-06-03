@@ -1,0 +1,179 @@
+name: Build iOS
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      show_private_server:
+        description: 'Mostra pulsante server privato'
+        type: boolean
+        default: false
+      codesign:
+        description: 'Firma il build (richiede secrets)'
+        type: boolean
+        default: false
+
+env:
+  FLUTTER_VERSION: '3.32.0'
+  APP_ID: app.famylia.app
+  APP_DIR: app
+
+jobs:
+  build:
+    name: Build iOS
+    runs-on: macos-latest
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Flutter ─────────────────────────────────────────────────────────────
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      # ── Genera la piattaforma iOS ────────────────────────────────────────────
+      - name: Generate iOS platform
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          flutter create \
+            --platforms=ios \
+            --org app.famylia \
+            --project-name famylia_app \
+            --overwrite \
+            .
+
+      # ── Patch Bundle ID e permessi Info.plist ────────────────────────────────
+      - name: Patch Info.plist
+        working-directory: ${{ env.APP_DIR }}/ios/Runner
+        run: |
+          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier ${{ env.APP_ID }}" Info.plist
+
+          # Permessi necessari
+          /usr/libexec/PlistBuddy -c \
+            "Add :NSCameraUsageDescription string 'Usata per aggiungere foto ai membri della famiglia e alla copertina.'" \
+            Info.plist 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c \
+            "Set :NSCameraUsageDescription 'Usata per aggiungere foto ai membri della famiglia e alla copertina.'" \
+            Info.plist
+
+          /usr/libexec/PlistBuddy -c \
+            "Add :NSPhotoLibraryUsageDescription string 'Usata per scegliere foto dalla libreria.'" \
+            Info.plist 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c \
+            "Set :NSPhotoLibraryUsageDescription 'Usata per scegliere foto dalla libreria.'" \
+            Info.plist
+
+          /usr/libexec/PlistBuddy -c \
+            "Add :NSMicrophoneUsageDescription string 'Usata per il riconoscimento vocale nella creazione task.'" \
+            Info.plist 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c \
+            "Set :NSMicrophoneUsageDescription 'Usata per il riconoscimento vocale nella creazione task.'" \
+            Info.plist
+
+      # ── Patch Xcode project bundle ID ────────────────────────────────────────
+      - name: Patch Xcode project
+        working-directory: ${{ env.APP_DIR }}/ios
+        run: |
+          sed -i '' "s/com\.example\.famylia_app/${{ env.APP_ID }}/g" Runner.xcodeproj/project.pbxproj
+
+      # ── Dipendenze ──────────────────────────────────────────────────────────
+      - name: Flutter pub get
+        working-directory: ${{ env.APP_DIR }}
+        run: flutter pub get
+
+      - name: Pod install
+        working-directory: ${{ env.APP_DIR }}/ios
+        run: pod install --repo-update
+
+      # ── Code signing (opzionale, richiede secrets) ──────────────────────────
+      - name: Import certificate
+        if: ${{ github.event.inputs.codesign == 'true' && secrets.IOS_P12_BASE64 != '' }}
+        env:
+          IOS_P12_BASE64: ${{ secrets.IOS_P12_BASE64 }}
+          IOS_P12_PASSWORD: ${{ secrets.IOS_P12_PASSWORD }}
+        run: |
+          KEYCHAIN=build.keychain
+          security create-keychain -p "" $KEYCHAIN
+          security set-keychain-settings -lut 21600 $KEYCHAIN
+          security unlock-keychain -p "" $KEYCHAIN
+          security list-keychains -d user -s $KEYCHAIN
+          echo "$IOS_P12_BASE64" | base64 --decode > certificate.p12
+          security import certificate.p12 \
+            -k $KEYCHAIN \
+            -P "$IOS_P12_PASSWORD" \
+            -T /usr/bin/codesign
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -s -k "" $KEYCHAIN
+
+      - name: Install provisioning profile
+        if: ${{ github.event.inputs.codesign == 'true' && secrets.IOS_PROVISIONING_PROFILE_BASE64 != '' }}
+        env:
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode \
+            > ~/Library/MobileDevice/Provisioning\ Profiles/famylia.mobileprovision
+
+      # ── Build ────────────────────────────────────────────────────────────────
+      - name: Determine dart-defines
+        id: defines
+        run: |
+          DEFINES=""
+          if [ "${{ github.event.inputs.show_private_server }}" = "true" ]; then
+            DEFINES="$DEFINES --dart-define=SHOW_PRIVATE_SERVER=true"
+          fi
+          echo "flags=$DEFINES" >> $GITHUB_OUTPUT
+
+      - name: Build iOS (no codesign)
+        if: ${{ github.event.inputs.codesign != 'true' }}
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          flutter build ios --release --no-codesign ${{ steps.defines.outputs.flags }}
+
+      - name: Build iOS (signed)
+        if: ${{ github.event.inputs.codesign == 'true' && secrets.IOS_P12_BASE64 != '' }}
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          flutter build ios --release ${{ steps.defines.outputs.flags }}
+
+      # ── Crea IPA (solo se firmato) ───────────────────────────────────────────
+      - name: Package IPA
+        if: ${{ github.event.inputs.codesign == 'true' && secrets.IOS_P12_BASE64 != '' }}
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          mkdir -p Payload
+          cp -r build/ios/iphoneos/Runner.app Payload/
+          zip -r famylia.ipa Payload
+          rm -rf Payload
+
+      # ── Artifacts ────────────────────────────────────────────────────────────
+      - name: Upload .app (unsigned — per simulatore)
+        if: ${{ github.event.inputs.codesign != 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: famylia-ios-app-${{ github.sha }}
+          path: app/build/ios/iphoneos/Runner.app
+          retention-days: 14
+
+      - name: Upload IPA (signed)
+        if: ${{ hashFiles('app/famylia.ipa') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: famylia-ios-ipa-${{ github.sha }}
+          path: app/famylia.ipa
+          retention-days: 30
+
+      # ── Release (solo su tag v* con firma) ───────────────────────────────────
+      - name: Create GitHub Release
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && hashFiles('app/famylia.ipa') != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/famylia.ipa
+          generate_release_notes: true
