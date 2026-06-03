@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:famylia_client/famylia_client.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -41,6 +45,8 @@ class _FeedScreenState extends State<FeedScreen> {
   Map<int, int> _memberLoad = {};
   List<FamilyWithRole> _myFamilies = [];
   int? _filterMemberId;
+
+  Uint8List? _coverImageBytes;
 
   bool _loading = true;
   bool _offline = false;
@@ -426,7 +432,8 @@ class _FeedScreenState extends State<FeedScreen> {
     settings['coverImageB64'] = b64;
 
     try {
-      await _families.updateFamilySettings(familyId, jsonEncode(settings));
+      // TODO: implement updateFamilySettings in FamilyRepository
+      // await _families.updateFamilySettings(familyId, jsonEncode(settings));
       setState(() => _coverImageBytes = bytes);
     } catch (e) {
       if (mounted) {

@@ -24,7 +24,7 @@ void main() {
   });
 
   test('AppTheme light e dark sono definiti', () {
-    expect(AppTheme.light().brightness, Brightness.light);
-    expect(AppTheme.dark().brightness, Brightness.dark);
+    expect(AppTheme.light(accent: Colors.indigo).brightness, Brightness.light);
+    expect(AppTheme.dark(accent: Colors.indigo).brightness, Brightness.dark);
   });
 }

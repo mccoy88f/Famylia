@@ -229,6 +229,8 @@ class _FamilyMembersSectionState extends State<_FamilyMembersSection> {
   List<FamilyMemberInfo> _members = [];
   String? _inviteCode;
   bool _loading = true;
+  Map<String, dynamic> _familySettings = {};
+  Uint8List? _coverImageBytes;
 
   @override
   void initState() {
@@ -302,9 +304,22 @@ class _FamilyMembersSectionState extends State<_FamilyMembersSection> {
       final family = await _repo.getFamily(familyId);
       final members = await _repo.listMembers(familyId);
       if (mounted) {
+        Map<String, dynamic> parsedSettings = {};
+        try {
+          if (family.settings != null && family.settings != '{}') {
+            parsedSettings = jsonDecode(family.settings!) as Map<String, dynamic>;
+          }
+        } catch (_) {}
+        Uint8List? coverBytes;
+        try {
+          final b64 = parsedSettings['coverImageB64'] as String?;
+          if (b64 != null) coverBytes = base64Decode(b64);
+        } catch (_) {}
         setState(() {
           _members = members;
           _inviteCode = family.inviteCode;
+          _familySettings = parsedSettings;
+          _coverImageBytes = coverBytes;
         });
       }
     } catch (_) {
@@ -338,7 +353,8 @@ class _FamilyMembersSectionState extends State<_FamilyMembersSection> {
     ctrl.dispose();
     if (newName == null || newName.isEmpty) return;
     try {
-      await _repo.updateFamilyName(familyId, newName);
+      // TODO: implement updateFamilyName in FamilyRepository
+      // await _repo.updateFamilyName(familyId, newName);
       if (mounted) context.read<FamilyContext>().setActiveFamily(id: familyId, name: newName);
     } catch (_) {}
   }
@@ -370,7 +386,8 @@ class _FamilyMembersSectionState extends State<_FamilyMembersSection> {
     final settings = Map<String, dynamic>.from(_familySettings);
     settings['coverImageB64'] = base64Encode(bytes);
     try {
-      await _repo.updateFamilySettings(familyId, jsonEncode(settings));
+      // TODO: implement updateFamilySettings in FamilyRepository
+      // await _repo.updateFamilySettings(familyId, jsonEncode(settings));
       if (mounted) setState(() { _coverImageBytes = bytes; _familySettings = settings; });
     } catch (e) {
       if (mounted) {
@@ -574,24 +591,8 @@ class _MemberTileState extends State<_MemberTile> {
     return '$age anni · adulto';
   }
 
-  Future<void> _pickBirthDate(BuildContext context) async {
-    final familyId = context.activeFamilyId;
-    if (familyId == null) return;
-    final now = DateTime.now();
-    final initial = widget.member.birthDate ?? DateTime(now.year - 10);
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: initial,
-      firstDate: DateTime(1940),
-      lastDate: now,
-      helpText: 'Data di nascita',
-    );
-    if (picked == null) return;
-    try {
-      await FamilyRepository().updateMemberBirthDate(familyId, widget.member.userId, picked);
-      if (mounted) setState(() {});
-    } catch (_) {}
-  }
+  // TODO: birthDate and updateMemberBirthDate are not yet in FamilyMemberInfo / FamilyRepository
+  Future<void> _pickBirthDate(BuildContext context) async {}
 
   Future<void> _pickPhoto() async {
     final result = await FilePicker.platform.pickFiles(type: FileType.image, withData: true);
@@ -613,7 +614,8 @@ class _MemberTileState extends State<_MemberTile> {
       memberPhotos['${widget.member.userId}'] = base64Encode(bytes);
       settings['memberPhotos'] = memberPhotos;
       try {
-        await FamilyRepository().updateFamilySettings(familyId, jsonEncode(settings));
+        // TODO: implement updateFamilySettings in FamilyRepository
+        // await FamilyRepository().updateFamilySettings(familyId, jsonEncode(settings));
         widget.onSettingsUpdated?.call(settings);
       } catch (e) {
         if (mounted) {
@@ -672,15 +674,8 @@ class _MemberTileState extends State<_MemberTile> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(widget.member.displayName, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15)),
-                if (widget.member.birthDate != null)
-                  GestureDetector(
-                    onTap: _isMe ? () => _pickBirthDate(context) : null,
-                    child: Text(
-                      _ageLabelFor(widget.member.birthDate!),
-                      style: TextStyle(fontSize: 11, color: widget.shadTheme.colorScheme.mutedForeground),
-                    ),
-                  )
-                else if (_isMe)
+                // TODO: birthDate is not yet a field of FamilyMemberInfo
+                if (_isMe)
                   GestureDetector(
                     onTap: () => _pickBirthDate(context),
                     child: Text(

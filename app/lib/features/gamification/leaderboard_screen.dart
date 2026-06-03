@@ -120,7 +120,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                       : shadTheme.colorScheme.muted,
                           child: Text(
                             i < 3 ? ['🥇', '🥈', '🥉'][i] : '${i + 1}',
-                            style: const TextStyle(fontSize: i < 3 ? 18 : 14),
+                            style: TextStyle(fontSize: i < 3 ? 18.0 : 14.0),
                           ),
                         ),
                         title: Text(_board!.entries[i].displayName, style: const TextStyle(fontWeight: FontWeight.w600)),
