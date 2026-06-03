@@ -1,7 +1,6 @@
 # Build Flutter Web — contesto build: root monorepo (vedi docker-compose)
+# SERVER_URL viene derivato automaticamente da Uri.base a runtime (stesso host, porta 8080)
 FROM ghcr.io/cirruslabs/flutter:stable AS build
-
-ARG SERVER_URL=http://localhost:8080/
 
 WORKDIR /src
 COPY client ./client
@@ -11,8 +10,7 @@ COPY app/pubspec.yaml app/pubspec.lock ./
 RUN flutter pub get
 
 COPY app ./
-RUN flutter build web --release \
-    --dart-define=SERVER_URL=${SERVER_URL}
+RUN flutter build web --release
 
 FROM nginx:alpine
 COPY docker/nginx/app.conf /etc/nginx/conf.d/default.conf

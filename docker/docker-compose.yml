@@ -1,5 +1,5 @@
 # Stack completo Famylia — deploy con Portainer
-# Imposta SERVER_HOST con l'IP della tua macchina (es. 192.168.1.10)
+# Nessuna variabile richiesta: l'app rileva l'IP del server automaticamente a runtime.
 # Usa: docker compose up -d  oppure incolla in Portainer > Stacks
 
 services:
@@ -57,8 +57,6 @@ services:
     build:
       context: ..
       dockerfile: app/Dockerfile
-      args:
-        SERVER_URL: http://${SERVER_HOST:-localhost}:8080/
     restart: unless-stopped
     ports:
       - "8083:80"
