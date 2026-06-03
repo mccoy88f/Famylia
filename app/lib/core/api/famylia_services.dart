@@ -46,6 +46,17 @@ class FamyliaServices {
     return services;
   }
 
+  /// Distrugge l'istanza corrente e ne crea una nuova con l'URL aggiornato.
+  /// Chiamare dopo aver modificato AppConfig.customUrl.
+  static Future<FamyliaServices> reinit() async {
+    final old = _instance;
+    _instance = null;
+    try {
+      old?.client.close();
+    } catch (_) {}
+    return init();
+  }
+
   Future<void> ensureStreaming() async {
     if (!sessionManager.isSignedIn) return;
     if (client.streamingConnectionStatus !=
