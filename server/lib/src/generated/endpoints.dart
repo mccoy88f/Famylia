@@ -29,8 +29,7 @@ import '../endpoints/report_endpoint.dart' as _i16;
 import '../endpoints/shopping_endpoint.dart' as _i17;
 import '../endpoints/todo_endpoint.dart' as _i18;
 import '../endpoints/share_endpoint.dart' as _i_share;
-import 'package:famylia_server/src/generated/shared_content_analysis.dart'
-    as _i_sca;
+import '../endpoints/admin_endpoint.dart' as _i_admin;
 import 'package:famylia_server/src/generated/board_post_type.dart' as _i19;
 import 'package:famylia_server/src/generated/calendar_event_category.dart'
     as _i20;
@@ -177,6 +176,12 @@ class Endpoints extends _i1.EndpointDispatch {
         ..initialize(
           server,
           'share',
+          null,
+        ),
+      'admin': _i_admin.AdminEndpoint()
+        ..initialize(
+          server,
+          'admin',
           null,
         ),
     };
@@ -2705,6 +2710,108 @@ class Endpoints extends _i1.EndpointDispatch {
             session,
             params['content'],
             fileName: params['fileName'],
+          ),
+        ),
+      },
+    );
+    connectors['admin'] = _i1.EndpointConnector(
+      name: 'admin',
+      endpoint: endpoints['admin']!,
+      methodConnectors: {
+        'adminLogin': _i1.MethodConnector(
+          name: 'adminLogin',
+          params: {
+            'email': _i1.ParameterDescription(
+              name: 'email',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'password': _i1.ParameterDescription(
+              name: 'password',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['admin'] as _i_admin.AdminEndpoint).adminLogin(
+            session,
+            params['email'],
+            params['password'],
+          ),
+        ),
+        'getAiConfig': _i1.MethodConnector(
+          name: 'getAiConfig',
+          params: {
+            'adminToken': _i1.ParameterDescription(
+              name: 'adminToken',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['admin'] as _i_admin.AdminEndpoint).getAiConfig(
+            session,
+            params['adminToken'],
+          ),
+        ),
+        'setAiConfig': _i1.MethodConnector(
+          name: 'setAiConfig',
+          params: {
+            'adminToken': _i1.ParameterDescription(
+              name: 'adminToken',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'provider': _i1.ParameterDescription(
+              name: 'provider',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'modelName': _i1.ParameterDescription(
+              name: 'modelName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['admin'] as _i_admin.AdminEndpoint).setAiConfig(
+            session,
+            params['adminToken'],
+            params['provider'],
+            params['modelName'],
+          ),
+        ),
+        'getUsageStats': _i1.MethodConnector(
+          name: 'getUsageStats',
+          params: {
+            'adminToken': _i1.ParameterDescription(
+              name: 'adminToken',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'days': _i1.ParameterDescription(
+              name: 'days',
+              type: _i1.getType<int?>(),
+              nullable: true,
+            ),
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['admin'] as _i_admin.AdminEndpoint).getUsageStats(
+            session,
+            params['adminToken'],
+            days: params['days'] ?? 30,
           ),
         ),
       },

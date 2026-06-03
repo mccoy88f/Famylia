@@ -96,6 +96,10 @@ import 'package:famylia_server/src/generated/todo_item.dart' as _i84;
 import 'family_goal_status.dart' as _i85;
 import 'family_goal.dart' as _i86;
 import 'shared_content_analysis.dart' as _i87;
+import 'ai_provider.dart' as _i88;
+import 'ai_config.dart' as _i89;
+import 'token_usage_log.dart' as _i90;
+import 'usage_stat.dart' as _i91;
 export 'board_changed.dart';
 export 'board_post.dart';
 export 'board_post_type.dart';
@@ -131,6 +135,10 @@ export 'family_with_role.dart';
 export 'family_goal_status.dart';
 export 'family_goal.dart';
 export 'shared_content_analysis.dart';
+export 'ai_provider.dart';
+export 'ai_config.dart';
+export 'token_usage_log.dart';
+export 'usage_stat.dart';
 export 'famylia_exception.dart';
 export 'gdpr_export.dart';
 export 'health_entry.dart';
@@ -2844,6 +2852,164 @@ class Protocol extends _i1.SerializationManagerServer {
       ],
       managed: true,
     ),
+    _i2.TableDefinition(
+      name: 'ai_config',
+      dartName: 'AiConfig',
+      schema: 'public',
+      module: 'famylia',
+      columns: [
+        _i2.ColumnDefinition(
+          name: 'id',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'nextval(\'ai_config_id_seq\'::regclass)',
+        ),
+        _i2.ColumnDefinition(
+          name: 'provider',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:AiProvider',
+          columnDefault: '\'openrouter\'::text',
+        ),
+        _i2.ColumnDefinition(
+          name: 'modelName',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+          columnDefault: '\'google/gemini-flash-1.5\'::text',
+        ),
+        _i2.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _i2.IndexDefinition(
+          indexName: 'ai_config_pkey',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'id',
+            )
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: true,
+        ),
+      ],
+      managed: true,
+    ),
+    _i2.TableDefinition(
+      name: 'token_usage_log',
+      dartName: 'TokenUsageLog',
+      schema: 'public',
+      module: 'famylia',
+      columns: [
+        _i2.ColumnDefinition(
+          name: 'id',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'nextval(\'token_usage_log_id_seq\'::regclass)',
+        ),
+        _i2.ColumnDefinition(
+          name: 'familyId',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _i2.ColumnDefinition(
+          name: 'feature',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'provider',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'modelName',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'inputTokens',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _i2.ColumnDefinition(
+          name: 'outputTokens',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _i2.ColumnDefinition(
+          name: 'costUsd',
+          columnType: _i2.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _i2.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _i2.IndexDefinition(
+          indexName: 'token_usage_log_pkey',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'id',
+            )
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: true,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'token_usage_log_family_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'familyId',
+            )
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'token_usage_log_created_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'createdAt',
+            )
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
     ..._i3.Protocol.targetTableDefinitions,
     ..._i2.Protocol.targetTableDefinitions,
   ];
@@ -2958,6 +3124,23 @@ class Protocol extends _i1.SerializationManagerServer {
     }
     if (t == _i87.SharedContentAnalysis) {
       return _i87.SharedContentAnalysis.fromJson(data) as T;
+    }
+    if (t == _i88.AiProvider) {
+      return _i88.AiProvider.fromJson(data) as T;
+    }
+    if (t == _i89.AiConfig) {
+      return _i89.AiConfig.fromJson(data) as T;
+    }
+    if (t == _i90.TokenUsageLog) {
+      return _i90.TokenUsageLog.fromJson(data) as T;
+    }
+    if (t == _i91.UsageStat) {
+      return _i91.UsageStat.fromJson(data) as T;
+    }
+    if (t == List<_i91.UsageStat>) {
+      return (data as List)
+          .map((e) => deserialize<_i91.UsageStat>(e))
+          .toList() as dynamic;
     }
     if (t == _i36.FamyliaException) {
       return _i36.FamyliaException.fromJson(data) as T;
@@ -3729,6 +3912,21 @@ class Protocol extends _i1.SerializationManagerServer {
     if (dataClassName == 'SharedContentAnalysis') {
       return deserialize<_i87.SharedContentAnalysis>(data['data']);
     }
+    if (dataClassName == 'AiProvider') {
+      return deserialize<_i88.AiProvider>(data['data']);
+    }
+    if (dataClassName == 'AiConfig') {
+      return deserialize<_i89.AiConfig>(data['data']);
+    }
+    if (dataClassName == 'TokenUsageLog') {
+      return deserialize<_i90.TokenUsageLog>(data['data']);
+    }
+    if (dataClassName == 'UsageStat') {
+      return deserialize<_i91.UsageStat>(data['data']);
+    }
+    if (dataClassName == 'List<UsageStat>') {
+      return deserialize<List<_i91.UsageStat>>(data['data']);
+    }
     if (dataClassName == 'FamyliaException') {
       return deserialize<_i36.FamyliaException>(data['data']);
     }
@@ -3904,6 +4102,10 @@ class Protocol extends _i1.SerializationManagerServer {
         return _i65.TodoItem.t;
       case _i68.UserPoints:
         return _i68.UserPoints.t;
+      case _i89.AiConfig:
+        return _i89.AiConfig.t;
+      case _i90.TokenUsageLog:
+        return _i90.TokenUsageLog.t;
     }
     return null;
   }

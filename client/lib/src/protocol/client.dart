@@ -70,6 +70,64 @@ import 'package:famylia_client/src/protocol/family_goal_status.dart' as _i55;
 import 'package:famylia_client/src/protocol/family_goal.dart' as _i56;
 import 'package:famylia_client/src/protocol/shared_content_analysis.dart'
     as _i57;
+import 'package:famylia_client/src/protocol/ai_config.dart' as _i58;
+import 'package:famylia_client/src/protocol/usage_stat.dart' as _i59;
+
+/// {@category Endpoint}
+class EndpointAdmin extends _i1.EndpointRef {
+  EndpointAdmin(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'admin';
+
+  _i2.Future<String> adminLogin(
+    String email,
+    String password,
+  ) =>
+      caller.callServerEndpoint<String>(
+        'admin',
+        'adminLogin',
+        {
+          'email': email,
+          'password': password,
+        },
+      );
+
+  _i2.Future<_i58.AiConfig> getAiConfig(String adminToken) =>
+      caller.callServerEndpoint<_i58.AiConfig>(
+        'admin',
+        'getAiConfig',
+        {'adminToken': adminToken},
+      );
+
+  _i2.Future<_i58.AiConfig> setAiConfig(
+    String adminToken,
+    String provider,
+    String modelName,
+  ) =>
+      caller.callServerEndpoint<_i58.AiConfig>(
+        'admin',
+        'setAiConfig',
+        {
+          'adminToken': adminToken,
+          'provider': provider,
+          'modelName': modelName,
+        },
+      );
+
+  _i2.Future<List<_i59.UsageStat>> getUsageStats(
+    String adminToken, {
+    int? days,
+  }) =>
+      caller.callServerEndpoint<List<_i59.UsageStat>>(
+        'admin',
+        'getUsageStats',
+        {
+          'adminToken': adminToken,
+          if (days != null) 'days': days,
+        },
+      );
+}
 
 /// {@category Endpoint}
 class EndpointAi extends _i1.EndpointRef {
@@ -1352,6 +1410,7 @@ class Client extends _i1.ServerpodClientShared {
           disconnectStreamsOnLostInternetConnection:
               disconnectStreamsOnLostInternetConnection,
         ) {
+    admin = EndpointAdmin(this);
     ai = EndpointAi(this);
     board = EndpointBoard(this);
     calendar = EndpointCalendar(this);
@@ -1373,6 +1432,8 @@ class Client extends _i1.ServerpodClientShared {
     todo = EndpointTodo(this);
     modules = Modules(this);
   }
+
+  late final EndpointAdmin admin;
 
   late final EndpointAi ai;
 
@@ -1416,6 +1477,7 @@ class Client extends _i1.ServerpodClientShared {
 
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
+        'admin': admin,
         'ai': ai,
         'board': board,
         'calendar': calendar,

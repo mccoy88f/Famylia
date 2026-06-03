@@ -1,9 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'package:serverpod/serverpod.dart';
-import '../generated/shared_content_analysis.dart';
+import '../generated/protocol.dart';
 import '../util/family_access.dart';
+import '../util/ai_config_util.dart';
 
 class ShareEndpoint extends Endpoint {
   @override
@@ -16,55 +15,48 @@ class ShareEndpoint extends Endpoint {
   }) async {
     await requireUserId(session);
 
-    final apiKey = Platform.environment['OPENROUTER_API_KEY'] ?? '';
-    if (apiKey.isEmpty) {
-      final title = content.length > 80 ? content.substring(0, 80) : content;
-      return SharedContentAnalysis(
-        title: title,
-        description: content,
-        suggestedDeadline: null,
-      );
-    }
+    final truncated =
+        content.length > 2000 ? content.substring(0, 2000) : content;
 
-    final prompt =
+    final systemPrompt =
+        'Sei MarIA, l\'assistente familiare di Famylia. Analizza il contenuto e rispondi SOLO con JSON valido.';
+    final userPrompt =
         '''Analizza il seguente contenuto condiviso e estrai le informazioni per creare un task in un\'app familiare.
 Rispondi SOLO con un JSON valido con questi campi:
-- title: string (titolo breve del task, max 60 caratteri)
-- description: string (descrizione opzionale, può essere vuota)
-- suggestedDeadline: string|null (data nel formato YYYY-MM-DD se deducibile, altrimenti null)
+{"title": "titolo breve del task, max 60 caratteri", "description": "descrizione opzionale, può essere vuota", "suggestedDeadline": "YYYY-MM-DD o null"}
 
 Contenuto da analizzare:
-${content.length > 2000 ? content.substring(0, 2000) : content}''';
+$truncated''';
 
     try {
-      final response = await http.post(
-        Uri.parse('https://openrouter.ai/api/v1/chat/completions'),
-        headers: {
-          'Authorization': 'Bearer $apiKey',
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://famylia.app',
-          'X-Title': 'Famylia',
-        },
-        body: jsonEncode({
-          'model': 'google/gemini-flash-1.5',
-          'messages': [
-            {'role': 'user', 'content': prompt}
-          ],
-          'response_format': {'type': 'json_object'},
-        }),
+      final aiResult =
+          await AiConfigUtil.callAi(session, systemPrompt, userPrompt);
+      final result = jsonDecode(aiResult.text) as Map<String, dynamic>;
+
+      // Log usage (familyId 0 as fallback — share has no family context)
+      final config = await AiConfigUtil.getConfig(session);
+      final cost = AiConfigUtil.estimateCost(
+        config.provider.name,
+        config.modelName,
+        aiResult.inputTokens,
+        aiResult.outputTokens,
+      );
+      await AiConfigUtil.logUsage(
+        session,
+        familyId: 0,
+        feature: 'share',
+        provider: config.provider.name,
+        modelName: config.modelName,
+        inputTokens: aiResult.inputTokens,
+        outputTokens: aiResult.outputTokens,
+        costUsd: cost,
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final text =
-            (data['choices'] as List).first['message']['content'] as String;
-        final result = jsonDecode(text) as Map<String, dynamic>;
-        return SharedContentAnalysis(
-          title: (result['title'] as String?) ?? '',
-          description: (result['description'] as String?) ?? '',
-          suggestedDeadline: result['suggestedDeadline'] as String?,
-        );
-      }
+      return SharedContentAnalysis(
+        title: (result['title'] as String?) ?? '',
+        description: (result['description'] as String?) ?? '',
+        suggestedDeadline: result['suggestedDeadline'] as String?,
+      );
     } catch (_) {}
 
     final title = content.length > 80 ? content.substring(0, 80) : content;

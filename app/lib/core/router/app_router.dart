@@ -27,6 +27,9 @@ import '../../features/privacy/privacy_screen.dart';
 import '../../features/reports/reports_screen.dart';
 import '../../features/ai/ai_import_screen.dart';
 import '../../features/ai/ai_admin_screen.dart';
+import '../../features/admin/admin_login_screen.dart';
+import '../../features/admin/admin_dashboard_screen.dart';
+import '../../core/api/admin_repository.dart';
 import '../session/app_state.dart';
 import '../session/family_context.dart';
 
@@ -63,6 +66,8 @@ abstract final class AppRoutes {
   static const leaderboard = '/leaderboard';
   static const aiImport = '/ai/import';
   static const aiAdmin = '/ai/admin';
+  static const adminLogin = '/admin';
+  static const adminDashboard = '/admin/dashboard';
   static String shoppingList(int id) => '/shopping/$id';
 }
 
@@ -75,6 +80,8 @@ GoRouter createAppRouter({
     refreshListenable: Listenable.merge([appState, familyContext]),
     redirect: (context, state) {
       final loc = state.matchedLocation;
+      // Admin routes bypass normal auth flow
+      if (loc.startsWith('/admin')) return null;
       final isAuthRoute = loc == AppRoutes.login || loc == AppRoutes.register;
 
       if (!appState.isSignedIn) {
@@ -142,6 +149,17 @@ GoRouter createAppRouter({
       GoRoute(path: AppRoutes.leaderboard, builder: (_, __) => const LeaderboardScreen()),
       GoRoute(path: AppRoutes.aiImport, builder: (_, __) => const AiImportScreen()),
       GoRoute(path: AppRoutes.aiAdmin, builder: (_, __) => const AiAdminScreen()),
+      GoRoute(path: AppRoutes.adminLogin, builder: (_, __) => const AdminLoginScreen()),
+      GoRoute(
+        path: AppRoutes.adminDashboard,
+        builder: (context, state) {
+          final repo = state.extra as AdminRepository?;
+          if (repo == null || !repo.isAuthenticated) {
+            return const AdminLoginScreen();
+          }
+          return AdminDashboardScreen(repo: repo);
+        },
+      ),
     ],
   );
 }

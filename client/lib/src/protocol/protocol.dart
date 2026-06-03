@@ -95,6 +95,9 @@ import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i83;
 import 'family_goal_status.dart' as _i84;
 import 'family_goal.dart' as _i85;
 import 'shared_content_analysis.dart' as _i86;
+import 'ai_provider.dart' as _i87;
+import 'ai_config.dart' as _i88;
+import 'usage_stat.dart' as _i89;
 export 'board_changed.dart';
 export 'board_post.dart';
 export 'board_post_type.dart';
@@ -130,6 +133,9 @@ export 'family_with_role.dart';
 export 'family_goal_status.dart';
 export 'family_goal.dart';
 export 'shared_content_analysis.dart';
+export 'ai_provider.dart';
+export 'ai_config.dart';
+export 'usage_stat.dart';
 export 'famylia_exception.dart';
 export 'gdpr_export.dart';
 export 'health_entry.dart';
@@ -279,6 +285,23 @@ class Protocol extends _i1.SerializationManager {
     }
     if (t == _i85.FamilyGoal) {
       return _i85.FamilyGoal.fromJson(data) as T;
+    }
+    if (t == _i86.SharedContentAnalysis) {
+      return _i86.SharedContentAnalysis.fromJson(data) as T;
+    }
+    if (t == _i87.AiProvider) {
+      return _i87.AiProvider.fromJson(data) as T;
+    }
+    if (t == _i88.AiConfig) {
+      return _i88.AiConfig.fromJson(data) as T;
+    }
+    if (t == _i89.UsageStat) {
+      return _i89.UsageStat.fromJson(data) as T;
+    }
+    if (t == List<_i89.UsageStat>) {
+      return (data as List)
+          .map((e) => deserialize<_i89.UsageStat>(e))
+          .toList() as dynamic;
     }
     if (t == _i34.FamyliaException) {
       return _i34.FamyliaException.fromJson(data) as T;
