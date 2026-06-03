@@ -1,6 +1,8 @@
 # Build Flutter Web — contesto build: root monorepo (vedi docker-compose)
 FROM ghcr.io/cirruslabs/flutter:stable AS build
 
+ARG SERVER_URL=http://localhost:8080/
+
 WORKDIR /src
 COPY client ./client
 
@@ -10,7 +12,7 @@ RUN flutter pub get
 
 COPY app ./
 RUN flutter build web --release \
-    --dart-define=SERVER_URL=http://localhost:8080/
+    --dart-define=SERVER_URL=${SERVER_URL}
 
 FROM nginx:alpine
 COPY docker/nginx/app.conf /etc/nginx/conf.d/default.conf
