@@ -33,3 +33,4 @@ data/
 
 # Documenti caricati (dev)
 server/storage/
+.claude/
