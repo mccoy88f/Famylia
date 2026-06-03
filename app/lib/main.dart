@@ -14,6 +14,7 @@ import 'core/router/app_router.dart';
 import 'core/session/app_state.dart';
 import 'core/session/family_context.dart';
 import 'core/theme/app_settings.dart';
+import 'core/l10n/app_localizations.dart';
 import 'core/theme/famylia_shad_theme.dart';
 
 Future<void> main() async {
@@ -96,6 +97,9 @@ class _FamyliaAppState extends State<FamyliaApp> {
           themeMode: widget.appSettings.themeMode,
           theme: FamyliaShadTheme.lightBase,
           darkTheme: FamyliaShadTheme.darkBase,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale(widget.familyContext.locale),
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(

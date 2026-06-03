@@ -9,6 +9,7 @@ import '../../core/api/shopping_repository.dart';
 import '../../core/api/todo_repository.dart';
 import '../../core/extensions/context_extensions.dart';
 import '../../core/router/app_router.dart';
+import '../../core/l10n/app_localizations.dart';
 import '../../core/session/app_state.dart';
 
 class ListaScreen extends StatefulWidget {
@@ -148,6 +149,14 @@ class _TodoTabState extends State<_TodoTab> with AutomaticKeepAliveClientMixin {
     try {
       await _repo.complete(item.id!);
       await _load();
+      if (mounted) {
+        final s = AppLocalizations.of(context);
+        final pts = item.points;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('${s.taskDoneSnack}  ${s.taskPointsSnack(pts)}'),
+          duration: const Duration(seconds: 2),
+        ));
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_repo.errorMessage(e))));
