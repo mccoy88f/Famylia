@@ -120,7 +120,7 @@ class QuickAddModal extends StatelessWidget {
       context: context,
       builder: (ctx) => _SimpleDialog(
         title: 'Nuovo task',
-        hintText: 'Cosa devi fare?',
+        hintText: 'Cosa c\'è da fare?',
         controller: ctrl,
         confirmLabel: 'Aggiungi',
       ),
@@ -130,7 +130,7 @@ class QuickAddModal extends StatelessWidget {
       await TodoRepository().create(familyId, title.trim());
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Task aggiunto'), duration: Duration(seconds: 2)),
+          const SnackBar(content: Text('Aggiunto alla lista ✓'), duration: Duration(seconds: 2)),
         );
       }
     } catch (_) {}
@@ -149,7 +149,7 @@ class QuickAddModal extends StatelessWidget {
 
     if (lists.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Crea prima una lista della spesa')),
+        const SnackBar(content: Text('Prima crea una lista della spesa 😉')),
       );
       return;
     }
@@ -178,7 +178,7 @@ class QuickAddModal extends StatelessWidget {
               TextField(
                 controller: itemCtrl,
                 autofocus: true,
-                decoration: const InputDecoration(hintText: 'Cosa comprare?'),
+                decoration: const InputDecoration(hintText: 'Cosa manca? 🛒'),
               ),
             ],
           ),
@@ -194,7 +194,7 @@ class QuickAddModal extends StatelessWidget {
       await repo.addItem(selectedListId, itemCtrl.text.trim());
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Articolo aggiunto'), duration: Duration(seconds: 2)),
+          const SnackBar(content: Text('Aggiunto alla lista ✓'), duration: Duration(seconds: 2)),
         );
       }
     } catch (_) {}
@@ -407,7 +407,7 @@ class QuickAddModal extends StatelessWidget {
           controller: ctrl,
           autofocus: true,
           maxLines: 3,
-          decoration: const InputDecoration(hintText: 'Scrivi un messaggio alla famiglia...'),
+          decoration: const InputDecoration(hintText: 'Cosa vuoi dire alla famiglia?'),
         ),
         actions: [
           ShadButton.ghost(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
@@ -420,7 +420,7 @@ class QuickAddModal extends StatelessWidget {
       await BoardRepository().createNote(familyId, ctrl.text.trim());
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Post pubblicato'), duration: Duration(seconds: 2)),
+          const SnackBar(content: Text('Messaggio inviato ✓'), duration: Duration(seconds: 2)),
         );
       }
     } catch (_) {}

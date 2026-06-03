@@ -409,7 +409,7 @@ class _FeedScreenState extends State<FeedScreen> {
     if (bytes.lengthInBytes > 800 * 1024) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Immagine troppo grande (max 800 KB)'), backgroundColor: Colors.red),
+          const SnackBar(content: Text('Foto troppo grande! Usa un\'immagine sotto 800 KB'), backgroundColor: Colors.red),
         );
       }
       return;
@@ -431,7 +431,7 @@ class _FeedScreenState extends State<FeedScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Errore nel salvataggio: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Qualcosa è andato storto 😕 Riprova'), backgroundColor: Colors.red),
         );
       }
     }

@@ -69,7 +69,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     backgroundColor: shadTheme.colorScheme.primary.withValues(alpha: 0.1),
                     child: ListTile(
                       leading: Icon(Icons.emoji_events, color: shadTheme.colorScheme.primary),
-                      title: const Text('I tuoi punti'),
+                      title: const Text('I tuoi punti 🌟'),
                       trailing: Text(
                         '${_mine?.points ?? 0}',
                         style: shadTheme.textTheme.h2,
@@ -77,20 +77,26 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text('Leaderboard', style: shadTheme.textTheme.h4),
+                  Text('Chi è il più in gamba? 🏆', style: shadTheme.textTheme.h4),
                   const SizedBox(height: 8),
                   if ((_board?.entries ?? []).isEmpty)
-                    Text('Completa task per guadagnare punti', style: shadTheme.textTheme.muted)
+                    Text('Nessun punto ancora — completa qualcosa e scala la classifica! 🚀', style: shadTheme.textTheme.muted)
                   else
                     for (var i = 0; i < _board!.entries.length; i++)
                       ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: shadTheme.colorScheme.primary,
+                          backgroundColor: i == 0
+                              ? const Color(0xFFFFD700)
+                              : i == 1
+                                  ? const Color(0xFFC0C0C0)
+                                  : i == 2
+                                      ? const Color(0xFFCD7F32)
+                                      : shadTheme.colorScheme.primary,
                           foregroundColor: shadTheme.colorScheme.primaryForeground,
-                          child: Text('${i + 1}'),
+                          child: Text(i == 0 ? '🥇' : i == 1 ? '🥈' : i == 2 ? '🥉' : '${i + 1}'),
                         ),
                         title: Text(_board!.entries[i].displayName),
-                        trailing: Text('${_board!.entries[i].points} pt'),
+                        trailing: Text('${_board!.entries[i].points} pt ⭐'),
                       ),
                 ],
               ),

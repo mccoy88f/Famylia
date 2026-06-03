@@ -106,7 +106,7 @@ class _ShoppingListsScreenState extends State<ShoppingListsScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _lists.isEmpty
-              ? const Center(child: Text('Nessuna lista attiva'))
+              ? const Center(child: Text('Nessuna lista ancora — creane una!'))
               : RefreshIndicator(
                   onRefresh: _load,
                   child: ListView.builder(

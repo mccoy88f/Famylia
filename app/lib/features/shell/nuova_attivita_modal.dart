@@ -1127,7 +1127,7 @@ class _StepChiGenerica extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _ChoiceRow(
-            label: 'Tutta la famiglia',
+            label: 'Tutti',
             icon: Icons.family_restroom,
             selected: data.tuttoFamiglia,
             onTap: () { data.tuttoFamiglia = true; data.destinatario = null; onChanged(); },
@@ -1159,7 +1159,7 @@ class _StepChiGenerica extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             _ChoiceRow(
-              label: 'Non assegnato',
+              label: 'Chiunque può farlo',
               icon: Icons.person_off_outlined,
               selected: data.responsabile == null,
               onTap: () { data.responsabile = null; onChanged(); },
@@ -1240,7 +1240,7 @@ class _StepChiSpesa extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _MultiChoiceRow(
-            label: 'Tutta la famiglia',
+            label: 'Tutti',
             icon: Icons.family_restroom,
             selected: data.beneficiariIds.isEmpty,
             onTap: () { data.beneficiariIds = []; onChanged(); },

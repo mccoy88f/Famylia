@@ -35,15 +35,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _requestCode() async {
     if (_nameCtrl.text.trim().isEmpty) {
-      setState(() => _error = 'Inserisci il nome');
+      setState(() => _error = 'Come ti chiami? Il nome è obbligatorio');
       return;
     }
     if (!_emailCtrl.text.contains('@')) {
-      setState(() => _error = 'Email non valida');
+      setState(() => _error = 'Questa email non sembra giusta');
       return;
     }
     if (_passCtrl.text.length < 8) {
-      setState(() => _error = 'Password: minimo 8 caratteri');
+      setState(() => _error = 'La password è troppo corta (min. 8 caratteri)');
       return;
     }
     setState(() { _loading = true; _error = null; });
@@ -105,7 +105,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _completeRegistration() async {
     if (_codeCtrl.text.trim().length < 4) {
-      setState(() => _error = 'Inserisci il codice di verifica');
+      setState(() => _error = 'Inserisci il codice che ti abbiamo mandato');
       return;
     }
     setState(() { _loading = true; _error = null; });
@@ -134,7 +134,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       appBar: AppBar(
         backgroundColor: shadTheme.colorScheme.background,
         surfaceTintColor: Colors.transparent,
-        title: Text('Registrati', style: shadTheme.textTheme.h4),
+        title: Text('Crea il tuo account', style: shadTheme.textTheme.h4),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -186,7 +186,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   width: double.infinity,
                   child: _loading
                       ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('Invia codice verifica'),
+                      : const Text('Manda il codice →'),
                 ),
               ] else ...[
                 ShadCard(
@@ -224,7 +224,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   width: double.infinity,
                   child: _loading
                       ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('Completa registrazione'),
+                      : const Text('Entra in famiglia 🏠'),
                 ),
               ],
             ],

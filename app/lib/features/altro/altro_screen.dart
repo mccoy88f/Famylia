@@ -357,7 +357,7 @@ class _FamilyMembersSectionState extends State<_FamilyMembersSection> {
     if (bytes.lengthInBytes > 800 * 1024) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Immagine troppo grande (max 800 KB)'), backgroundColor: Colors.red),
+          const SnackBar(content: Text('Foto troppo grande! Usa un\'immagine sotto 800 KB'), backgroundColor: Colors.red),
         );
       }
       return;
@@ -370,7 +370,7 @@ class _FamilyMembersSectionState extends State<_FamilyMembersSection> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Errore nel salvataggio: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Qualcosa è andato storto 😕 Riprova'), backgroundColor: Colors.red),
         );
       }
     }
@@ -592,7 +592,7 @@ class _MemberTileState extends State<_MemberTile> {
     if (bytes.lengthInBytes > 400 * 1024) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Immagine troppo grande (max 400 KB)'), backgroundColor: Colors.red),
+          const SnackBar(content: Text('Foto troppo grande! Prova con una sotto 400 KB'), backgroundColor: Colors.red),
         );
       }
       return;
@@ -609,7 +609,7 @@ class _MemberTileState extends State<_MemberTile> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Errore nel salvataggio foto: $e'), backgroundColor: Colors.red),
+            SnackBar(content: Text('Qualcosa è andato storto 😕 Riprova'), backgroundColor: Colors.red),
           );
         }
         return;

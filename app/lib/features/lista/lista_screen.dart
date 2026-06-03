@@ -296,7 +296,7 @@ class _TodoTabState extends State<_TodoTab> with AutomaticKeepAliveClientMixin {
                         children: [
                           Icon(Icons.task_alt_outlined, size: 48, color: shadTheme.colorScheme.mutedForeground),
                           const SizedBox(height: 12),
-                          Text('Nessun task', style: shadTheme.textTheme.muted),
+                          Text('Niente da fare oggi 🎉 Goditi il meritato relax!', style: shadTheme.textTheme.muted, textAlign: TextAlign.center),
                           const SizedBox(height: 4),
                           Text('Scrivilo sopra e premi invio',
                               style: shadTheme.textTheme.muted.copyWith(fontSize: 12)),
@@ -531,7 +531,7 @@ class _SpesaTabState extends State<_SpesaTab> with AutomaticKeepAliveClientMixin
         await _load();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Lista creata e articolo aggiunto'), duration: Duration(seconds: 2)),
+            const SnackBar(content: Text('Lista creata e articolo aggiunto ✓'), duration: Duration(seconds: 2)),
           );
         }
       } catch (e) {
@@ -545,7 +545,7 @@ class _SpesaTabState extends State<_SpesaTab> with AutomaticKeepAliveClientMixin
         await _repo.addItem(_lists.first.id!, name.trim());
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Aggiunto a "${_lists.first.name}"'), duration: const Duration(seconds: 2)),
+            SnackBar(content: Text('Aggiunto a "${_lists.first.name}" ✓'), duration: const Duration(seconds: 2)),
           );
         }
       } catch (e) {

@@ -66,13 +66,13 @@ class _OnboardingHubScreenState extends State<OnboardingHubScreen> {
               Icon(Icons.family_restroom, size: 72, color: shadTheme.colorScheme.primary),
               const SizedBox(height: 24),
               Text(
-                'La tua famiglia su Famylia',
+                'Chi c\'è in famiglia?',
                 textAlign: TextAlign.center,
                 style: shadTheme.textTheme.h2,
               ),
               const SizedBox(height: 12),
               Text(
-                'Crea un nuovo gruppo oppure unisciti con un codice invito.',
+                'Crea un nuovo gruppo famiglia o unisciti a chi ti ha già invitato.',
                 textAlign: TextAlign.center,
                 style: shadTheme.textTheme.muted,
               ),
@@ -85,7 +85,7 @@ class _OnboardingHubScreenState extends State<OnboardingHubScreen> {
                   children: [
                     Icon(Icons.add_home_work_outlined, size: 18),
                     SizedBox(width: 8),
-                    Text('Crea una famiglia'),
+                    Text('Crea la mia famiglia'),
                   ],
                 ),
               ),
@@ -98,7 +98,7 @@ class _OnboardingHubScreenState extends State<OnboardingHubScreen> {
                   children: [
                     Icon(Icons.qr_code_2_outlined, size: 18),
                     SizedBox(width: 8),
-                    Text('Ho un codice invito'),
+                    Text('Sono stato/a invitato/a'),
                   ],
                 ),
               ),

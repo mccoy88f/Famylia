@@ -30,11 +30,11 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = _emailCtrl.text.trim();
     final pass = _passCtrl.text;
     if (email.isEmpty || !email.contains('@')) {
-      setState(() => _error = 'Inserisci un\'email valida');
+      setState(() => _error = 'Hmm, questa email non ci convince');
       return;
     }
     if (pass.length < 8) {
-      setState(() => _error = 'Password: minimo 8 caratteri');
+      setState(() => _error = 'La password è troppo corta (min. 8 caratteri)');
       return;
     }
     setState(() { _loading = true; _error = null; });
@@ -45,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } on AuthException catch (e) {
       setState(() => _error = e.message);
     } catch (_) {
-      setState(() => _error = 'Errore di connessione. Il server è avviato?');
+      setState(() => _error = 'Impossibile connettersi — il server è acceso?');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -70,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text('Famylia', textAlign: TextAlign.center, style: shadTheme.textTheme.h1),
                   const SizedBox(height: 8),
                   Text(
-                    'Accedi per gestire la tua famiglia',
+                    'Bentornato/a in famiglia 👋',
                     textAlign: TextAlign.center,
                     style: shadTheme.textTheme.muted,
                   ),
