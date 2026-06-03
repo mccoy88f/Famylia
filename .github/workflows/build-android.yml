@@ -17,7 +17,7 @@ on:
         default: appbundle
 
 env:
-  FLUTTER_VERSION: '3.32.0'
+  FLUTTER_VERSION: '3.44.1'
   JAVA_VERSION: '17'
   APP_ID: app.famylia.app
   APP_DIR: app
