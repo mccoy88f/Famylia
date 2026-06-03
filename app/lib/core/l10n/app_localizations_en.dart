@@ -79,4 +79,26 @@ class AppLocalizationsEn extends AppLocalizations {
   @override String get mariaFeature2 => '📅 Catches appointments and deadlines';
   @override String get mariaFeature3 => '🛒 Suggests what\'s missing from the shopping list';
   @override String get mariaFeature4 => '💬 Answers the family\'s questions';
+
+  // ── Goals ─────────────────────────────────────────────────────────────────
+  @override String get goalsTitle => 'Goals';
+  @override String get goalsEmpty => 'No goals yet — create one! 🎯';
+  @override String get goalsCreate => 'New goal';
+  @override String get goalsCreateTitle => 'Create goal';
+  @override String get goalsFor => 'For who?';
+  @override String get goalsTargetPoints => 'Points to reach';
+  @override String get goalsReward => 'Prize in €';
+  @override String get goalsDeadline => 'Deadline';
+  @override String get goalsDeadlineOptional => 'Deadline (optional)';
+  @override String get goalsDescriptionHint => 'Optional description...';
+  @override String get goalsSave => 'Create goal';
+  @override String get goalsActive => 'Active';
+  @override String get goalsCompleted => 'Completed 🎉';
+  @override String get goalsCancelled => 'Cancelled';
+  @override String get goalsCancel => 'Cancel goal';
+  @override String get goalsMarkPaid => 'Mark as paid ✓';
+  @override String get goalsPaid => 'Paid ✓';
+  @override String get goalsProgressOf => 'of';
+  @override String goalsPointsNeeded(int needed) => '$needed pts to go';
+  @override String goalsRewardAmount(double amount) => '€${amount.toStringAsFixed(2)}';
 }

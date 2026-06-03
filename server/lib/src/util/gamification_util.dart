@@ -29,13 +29,44 @@ Future<UserPoints> awardPoints(
     badges.add(badge);
   }
 
-  return UserPoints.db.updateRow(
+  final newPoints = row.points + delta;
+  final updated = await UserPoints.db.updateRow(
     session,
     row.copyWith(
-      points: row.points + delta,
+      points: newPoints,
       badgesJson: jsonEncode(badges),
     ),
   );
+
+  await _checkAndCompleteGoals(session, familyId, userId, newPoints);
+
+  return updated;
+}
+
+Future<void> _checkAndCompleteGoals(
+  Session session,
+  int familyId,
+  int userId,
+  int newPoints,
+) async {
+  final goals = await FamilyGoal.db.find(
+    session,
+    where: (t) =>
+        t.familyId.equals(familyId) &
+        t.targetUserId.equals(userId) &
+        t.status.equals(FamilyGoalStatus.active),
+  );
+  for (final goal in goals) {
+    if (newPoints >= goal.targetPoints) {
+      await FamilyGoal.db.updateRow(
+        session,
+        goal.copyWith(
+          status: FamilyGoalStatus.completed,
+          completedAt: DateTime.now().toUtc(),
+        ),
+      );
+    }
+  }
 }
 
 List<String> _parseBadges(String json) {

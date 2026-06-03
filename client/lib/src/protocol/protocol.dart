@@ -92,6 +92,8 @@ import 'package:famylia_client/src/protocol/recipe.dart' as _i80;
 import 'package:famylia_client/src/protocol/shopping_list.dart' as _i81;
 import 'package:famylia_client/src/protocol/todo_item.dart' as _i82;
 import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i83;
+import 'family_goal_status.dart' as _i84;
+import 'family_goal.dart' as _i85;
 export 'board_changed.dart';
 export 'board_post.dart';
 export 'board_post_type.dart';
@@ -124,6 +126,8 @@ export 'family_member_info.dart';
 export 'family_report.dart';
 export 'family_role.dart';
 export 'family_with_role.dart';
+export 'family_goal_status.dart';
+export 'family_goal.dart';
 export 'famylia_exception.dart';
 export 'gdpr_export.dart';
 export 'health_entry.dart';
@@ -267,6 +271,12 @@ class Protocol extends _i1.SerializationManager {
     }
     if (t == _i33.FamilyWithRole) {
       return _i33.FamilyWithRole.fromJson(data) as T;
+    }
+    if (t == _i84.FamilyGoalStatus) {
+      return _i84.FamilyGoalStatus.fromJson(data) as T;
+    }
+    if (t == _i85.FamilyGoal) {
+      return _i85.FamilyGoal.fromJson(data) as T;
     }
     if (t == _i34.FamyliaException) {
       return _i34.FamyliaException.fromJson(data) as T;
@@ -468,6 +478,12 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i33.FamilyWithRole?>()) {
       return (data != null ? _i33.FamilyWithRole.fromJson(data) : null) as T;
     }
+    if (t == _i1.getType<_i84.FamilyGoalStatus?>()) {
+      return (data != null ? _i84.FamilyGoalStatus.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i85.FamilyGoal?>()) {
+      return (data != null ? _i85.FamilyGoal.fromJson(data) : null) as T;
+    }
     if (t == _i1.getType<_i34.FamyliaException?>()) {
       return (data != null ? _i34.FamyliaException.fromJson(data) : null) as T;
     }
@@ -643,6 +659,11 @@ class Protocol extends _i1.SerializationManager {
           .map((e) => deserialize<_i75.FamilyWithRole>(e))
           .toList() as T;
     }
+    if (t == List<_i85.FamilyGoal>) {
+      return (data as List)
+          .map((e) => deserialize<_i85.FamilyGoal>(e))
+          .toList() as T;
+    }
     if (t == List<_i76.FamilyMemberInfo>) {
       return (data as List)
           .map((e) => deserialize<_i76.FamilyMemberInfo>(e))
@@ -783,6 +804,12 @@ class Protocol extends _i1.SerializationManager {
     }
     if (data is _i33.FamilyWithRole) {
       return 'FamilyWithRole';
+    }
+    if (data is _i84.FamilyGoalStatus) {
+      return 'FamilyGoalStatus';
+    }
+    if (data is _i85.FamilyGoal) {
+      return 'FamilyGoal';
     }
     if (data is _i34.FamyliaException) {
       return 'FamyliaException';
@@ -997,6 +1024,12 @@ class Protocol extends _i1.SerializationManager {
     }
     if (dataClassName == 'FamilyWithRole') {
       return deserialize<_i33.FamilyWithRole>(data['data']);
+    }
+    if (dataClassName == 'FamilyGoalStatus') {
+      return deserialize<_i84.FamilyGoalStatus>(data['data']);
+    }
+    if (dataClassName == 'FamilyGoal') {
+      return deserialize<_i85.FamilyGoal>(data['data']);
     }
     if (dataClassName == 'FamyliaException') {
       return deserialize<_i34.FamyliaException>(data['data']);

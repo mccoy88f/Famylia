@@ -102,4 +102,26 @@ abstract class AppLocalizations {
   String get mariaFeature2;
   String get mariaFeature3;
   String get mariaFeature4;
+
+  // ── Goals ─────────────────────────────────────────────────────────────────
+  String get goalsTitle;
+  String get goalsEmpty;
+  String get goalsCreate;
+  String get goalsCreateTitle;
+  String get goalsFor;
+  String get goalsTargetPoints;
+  String get goalsReward;
+  String get goalsDeadline;
+  String get goalsDeadlineOptional;
+  String get goalsDescriptionHint;
+  String get goalsSave;
+  String get goalsActive;
+  String get goalsCompleted;
+  String get goalsCancelled;
+  String get goalsCancel;
+  String get goalsMarkPaid;
+  String get goalsPaid;
+  String get goalsProgressOf;
+  String goalsPointsNeeded(int needed);
+  String goalsRewardAmount(double amount);
 }

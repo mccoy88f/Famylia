@@ -66,6 +66,8 @@ import 'package:famylia_client/src/protocol/todo_priority.dart' as _i51;
 import 'package:famylia_client/src/protocol/todo_status.dart' as _i52;
 import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i53;
 import 'protocol.dart' as _i54;
+import 'package:famylia_client/src/protocol/family_goal_status.dart' as _i55;
+import 'package:famylia_client/src/protocol/family_goal.dart' as _i56;
 
 /// {@category Endpoint}
 class EndpointAi extends _i1.EndpointRef {
@@ -723,6 +725,58 @@ class EndpointGamification extends _i1.EndpointRef {
 }
 
 /// {@category Endpoint}
+class EndpointGoal extends _i1.EndpointRef {
+  EndpointGoal(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'goal';
+
+  _i2.Future<_i56.FamilyGoal> createGoal(
+    int familyId,
+    int targetUserId,
+    String title,
+    int targetPoints,
+    double rewardAmount, {
+    String? description,
+    DateTime? deadline,
+  }) =>
+      caller.callServerEndpoint<_i56.FamilyGoal>(
+        'goal',
+        'createGoal',
+        {
+          'familyId': familyId,
+          'targetUserId': targetUserId,
+          'title': title,
+          'targetPoints': targetPoints,
+          'rewardAmount': rewardAmount,
+          if (description != null) 'description': description,
+          if (deadline != null) 'deadline': deadline,
+        },
+      );
+
+  _i2.Future<List<_i56.FamilyGoal>> listGoals(int familyId) =>
+      caller.callServerEndpoint<List<_i56.FamilyGoal>>(
+        'goal',
+        'listGoals',
+        {'familyId': familyId},
+      );
+
+  _i2.Future<_i56.FamilyGoal> cancelGoal(int goalId) =>
+      caller.callServerEndpoint<_i56.FamilyGoal>(
+        'goal',
+        'cancelGoal',
+        {'goalId': goalId},
+      );
+
+  _i2.Future<_i56.FamilyGoal> markPaid(int goalId) =>
+      caller.callServerEndpoint<_i56.FamilyGoal>(
+        'goal',
+        'markPaid',
+        {'goalId': goalId},
+      );
+}
+
+/// {@category Endpoint}
 class EndpointGdpr extends _i1.EndpointRef {
   EndpointGdpr(_i1.EndpointCaller caller) : super(caller);
 
@@ -1285,6 +1339,7 @@ class Client extends _i1.ServerpodClientShared {
     expense = EndpointExpense(this);
     family = EndpointFamily(this);
     gamification = EndpointGamification(this);
+    goal = EndpointGoal(this);
     gdpr = EndpointGdpr(this);
     health = EndpointHealth(this);
     location = EndpointLocation(this);
@@ -1315,6 +1370,8 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointGamification gamification;
 
+  late final EndpointGoal goal;
+
   late final EndpointGdpr gdpr;
 
   late final EndpointHealth health;
@@ -1343,6 +1400,7 @@ class Client extends _i1.ServerpodClientShared {
         'expense': expense,
         'family': family,
         'gamification': gamification,
+        'goal': goal,
         'gdpr': gdpr,
         'health': health,
         'location': location,

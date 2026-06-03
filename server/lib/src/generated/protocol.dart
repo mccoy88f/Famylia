@@ -93,6 +93,8 @@ import 'package:famylia_server/src/generated/safe_zone.dart' as _i81;
 import 'package:famylia_server/src/generated/recipe.dart' as _i82;
 import 'package:famylia_server/src/generated/shopping_list.dart' as _i83;
 import 'package:famylia_server/src/generated/todo_item.dart' as _i84;
+import 'family_goal_status.dart' as _i85;
+import 'family_goal.dart' as _i86;
 export 'board_changed.dart';
 export 'board_post.dart';
 export 'board_post_type.dart';
@@ -125,6 +127,8 @@ export 'family_member_info.dart';
 export 'family_report.dart';
 export 'family_role.dart';
 export 'family_with_role.dart';
+export 'family_goal_status.dart';
+export 'family_goal.dart';
 export 'famylia_exception.dart';
 export 'gdpr_export.dart';
 export 'health_entry.dart';
@@ -2709,6 +2713,135 @@ class Protocol extends _i1.SerializationManagerServer {
       ],
       managed: true,
     ),
+    _i2.TableDefinition(
+      name: 'family_goal',
+      dartName: 'FamilyGoal',
+      schema: 'public',
+      module: 'famylia',
+      columns: [
+        _i2.ColumnDefinition(
+          name: 'id',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'nextval(\'family_goal_id_seq\'::regclass)',
+        ),
+        _i2.ColumnDefinition(
+          name: 'familyId',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _i2.ColumnDefinition(
+          name: 'createdBy',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _i2.ColumnDefinition(
+          name: 'targetUserId',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _i2.ColumnDefinition(
+          name: 'title',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'description',
+          columnType: _i2.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'targetPoints',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _i2.ColumnDefinition(
+          name: 'rewardAmount',
+          columnType: _i2.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _i2.ColumnDefinition(
+          name: 'deadline',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'status',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:FamilyGoalStatus',
+          columnDefault: '\'active\'::text',
+        ),
+        _i2.ColumnDefinition(
+          name: 'completedAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'paidAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'paidBy',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+      ],
+      foreignKeys: [
+        _i2.ForeignKeyDefinition(
+          constraintName: 'family_goal_fk_0',
+          columns: ['familyId'],
+          referenceTable: 'family',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _i2.ForeignKeyAction.noAction,
+          onDelete: _i2.ForeignKeyAction.cascade,
+          matchType: null,
+        ),
+      ],
+      indexes: [
+        _i2.IndexDefinition(
+          indexName: 'family_goal_pkey',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'id',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: true,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'family_goal_family_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'familyId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
     ..._i3.Protocol.targetTableDefinitions,
     ..._i2.Protocol.targetTableDefinitions,
   ];
@@ -2814,6 +2947,12 @@ class Protocol extends _i1.SerializationManagerServer {
     }
     if (t == _i35.FamilyWithRole) {
       return _i35.FamilyWithRole.fromJson(data) as T;
+    }
+    if (t == _i85.FamilyGoalStatus) {
+      return _i85.FamilyGoalStatus.fromJson(data) as T;
+    }
+    if (t == _i86.FamilyGoal) {
+      return _i86.FamilyGoal.fromJson(data) as T;
     }
     if (t == _i36.FamyliaException) {
       return _i36.FamyliaException.fromJson(data) as T;
@@ -3015,6 +3154,12 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i1.getType<_i35.FamilyWithRole?>()) {
       return (data != null ? _i35.FamilyWithRole.fromJson(data) : null) as T;
     }
+    if (t == _i1.getType<_i85.FamilyGoalStatus?>()) {
+      return (data != null ? _i85.FamilyGoalStatus.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i86.FamilyGoal?>()) {
+      return (data != null ? _i86.FamilyGoal.fromJson(data) : null) as T;
+    }
     if (t == _i1.getType<_i36.FamyliaException?>()) {
       return (data != null ? _i36.FamyliaException.fromJson(data) : null) as T;
     }
@@ -3190,6 +3335,11 @@ class Protocol extends _i1.SerializationManagerServer {
           .map((e) => deserialize<_i77.FamilyWithRole>(e))
           .toList() as T;
     }
+    if (t == List<_i86.FamilyGoal>) {
+      return (data as List)
+          .map((e) => deserialize<_i86.FamilyGoal>(e))
+          .toList() as T;
+    }
     if (t == List<_i78.FamilyMemberInfo>) {
       return (data as List)
           .map((e) => deserialize<_i78.FamilyMemberInfo>(e))
@@ -3333,6 +3483,12 @@ class Protocol extends _i1.SerializationManagerServer {
     }
     if (data is _i35.FamilyWithRole) {
       return 'FamilyWithRole';
+    }
+    if (data is _i85.FamilyGoalStatus) {
+      return 'FamilyGoalStatus';
+    }
+    if (data is _i86.FamilyGoal) {
+      return 'FamilyGoal';
     }
     if (data is _i36.FamyliaException) {
       return 'FamyliaException';
@@ -3551,6 +3707,12 @@ class Protocol extends _i1.SerializationManagerServer {
     }
     if (dataClassName == 'FamilyWithRole') {
       return deserialize<_i35.FamilyWithRole>(data['data']);
+    }
+    if (dataClassName == 'FamilyGoalStatus') {
+      return deserialize<_i85.FamilyGoalStatus>(data['data']);
+    }
+    if (dataClassName == 'FamilyGoal') {
+      return deserialize<_i86.FamilyGoal>(data['data']);
     }
     if (dataClassName == 'FamyliaException') {
       return deserialize<_i36.FamyliaException>(data['data']);
