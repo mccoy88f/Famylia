@@ -4,6 +4,8 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../core/api/gamification_repository.dart';
 import '../../core/extensions/context_extensions.dart';
+import '../../core/l10n/app_localizations.dart';
+import 'goals_screen.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
@@ -51,12 +53,33 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   @override
   Widget build(BuildContext context) {
     final shadTheme = ShadTheme.of(context);
+    final s = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: shadTheme.colorScheme.background,
       appBar: AppBar(
         backgroundColor: shadTheme.colorScheme.background,
         surfaceTintColor: Colors.transparent,
-        title: const Text('Classifica'),
+        title: Text(s.leaderboardTitle.split('?').first.trim()),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ShadButton.ghost(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const GoalsScreen()),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.emoji_events_outlined, size: 18),
+                  const SizedBox(width: 4),
+                  Text(s.goalsTitle, style: const TextStyle(fontSize: 13)),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -68,8 +91,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   ShadCard(
                     backgroundColor: shadTheme.colorScheme.primary.withValues(alpha: 0.1),
                     child: ListTile(
-                      leading: Icon(Icons.emoji_events, color: shadTheme.colorScheme.primary),
-                      title: const Text('I tuoi punti 🌟'),
+                      leading: Icon(Icons.stars, color: shadTheme.colorScheme.primary),
+                      title: Text(s.leaderboardMyPoints),
                       trailing: Text(
                         '${_mine?.points ?? 0}',
                         style: shadTheme.textTheme.h2,
@@ -77,12 +100,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text('Chi è il più in gamba? 🏆', style: shadTheme.textTheme.h4),
+                  Text(s.leaderboardTitle, style: shadTheme.textTheme.h4),
                   const SizedBox(height: 8),
                   if ((_board?.entries ?? []).isEmpty)
-                    Text('Nessun punto ancora — completa qualcosa e scala la classifica! 🚀', style: shadTheme.textTheme.muted)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Text(s.leaderboardEmpty, style: shadTheme.textTheme.muted, textAlign: TextAlign.center),
+                    )
                   else
-                    for (var i = 0; i < _board!.entries.length; i++)
+                    for (var i = 0; i < _board!.entries.length; i++) ...[
                       ListTile(
                         leading: CircleAvatar(
                           backgroundColor: i == 0
@@ -91,13 +117,19 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                   ? const Color(0xFFC0C0C0)
                                   : i == 2
                                       ? const Color(0xFFCD7F32)
-                                      : shadTheme.colorScheme.primary,
-                          foregroundColor: shadTheme.colorScheme.primaryForeground,
-                          child: Text(i == 0 ? '🥇' : i == 1 ? '🥈' : i == 2 ? '🥉' : '${i + 1}'),
+                                      : shadTheme.colorScheme.muted,
+                          child: Text(
+                            i < 3 ? ['🥇', '🥈', '🥉'][i] : '${i + 1}',
+                            style: const TextStyle(fontSize: i < 3 ? 18 : 14),
+                          ),
                         ),
-                        title: Text(_board!.entries[i].displayName),
-                        trailing: Text('${_board!.entries[i].points} pt ⭐'),
+                        title: Text(_board!.entries[i].displayName, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        trailing: Text('${_board!.entries[i].points} pt',
+                            style: TextStyle(color: shadTheme.colorScheme.primary, fontWeight: FontWeight.w700)),
                       ),
+                      if (i < _board!.entries.length - 1)
+                        Divider(height: 1, indent: 56, color: shadTheme.colorScheme.border),
+                    ],
                 ],
               ),
             ),

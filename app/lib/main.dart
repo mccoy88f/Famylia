@@ -8,12 +8,14 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/api/famylia_services.dart';
+import 'core/config/app_config.dart';
 import 'core/shopping/shopping_offline_store.dart';
 import 'core/sync/connectivity_sync.dart';
 import 'core/router/app_router.dart';
 import 'core/session/app_state.dart';
 import 'core/session/family_context.dart';
 import 'core/theme/app_settings.dart';
+import 'core/l10n/app_localizations.dart';
 import 'core/theme/famylia_shad_theme.dart';
 
 Future<void> main() async {
@@ -22,9 +24,11 @@ Future<void> main() async {
   await initializeDateFormatting('it');
   await Hive.initFlutter();
   await ShoppingOfflineStore.instance.init();
-  await FamyliaServices.init();
 
   final prefs = await SharedPreferences.getInstance();
+  await AppConfig.load(prefs);   // load custom server URL before init
+  await FamyliaServices.init();
+
   final familyContext = FamilyContext(prefs);
   await familyContext.load();
   final appSettings = AppSettings(prefs);
@@ -96,6 +100,9 @@ class _FamyliaAppState extends State<FamyliaApp> {
           themeMode: widget.appSettings.themeMode,
           theme: FamyliaShadTheme.lightBase,
           darkTheme: FamyliaShadTheme.darkBase,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale(widget.familyContext.locale),
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(

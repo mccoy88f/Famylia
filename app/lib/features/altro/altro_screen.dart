@@ -16,6 +16,7 @@ import '../../core/extensions/context_extensions.dart';
 import '../../core/router/app_router.dart';
 import '../../core/session/app_state.dart';
 import '../../core/session/family_context.dart';
+import '../maria/maria_settings_section.dart';
 
 class AltroScreen extends StatelessWidget {
   const AltroScreen({super.key});
@@ -66,6 +67,8 @@ class _WideLayout extends StatelessWidget {
               const SizedBox(height: 20),
               _ModulesSection(label: 'Altro', items: _infoItems),
               const SizedBox(height: 20),
+              const MarIASubscriptionSection(),
+              const SizedBox(height: 20),
               const _SettingsSection(),
             ],
           ),
@@ -92,6 +95,8 @@ class _NarrowLayout extends StatelessWidget {
         _ModulesSection(label: 'Sicurezza', items: _safetyItems),
         const SizedBox(height: 20),
         _ModulesSection(label: 'Altro', items: _infoItems),
+        const SizedBox(height: 20),
+        const MarIASubscriptionSection(),
         const SizedBox(height: 20),
         const _SettingsSection(),
       ],
@@ -499,6 +504,10 @@ class _FamilyMembersSectionState extends State<_FamilyMembersSection> {
                   if (i < _members.length - 1)
                     Divider(height: 1, indent: 16, color: shadTheme.colorScheme.border),
                 ],
+              if (family.hasMarIA && !_loading) ...[
+                Divider(height: 1, indent: 16, color: shadTheme.colorScheme.border),
+                MarIAMemberTile(shadTheme: shadTheme),
+              ],
             ],
           ),
         ),

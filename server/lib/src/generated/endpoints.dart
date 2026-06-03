@@ -20,6 +20,7 @@ import '../endpoints/emergency_endpoint.dart' as _i8;
 import '../endpoints/expense_endpoint.dart' as _i9;
 import '../endpoints/family_endpoint.dart' as _i10;
 import '../endpoints/gamification_endpoint.dart' as _i11;
+import '../endpoints/goal_endpoint.dart' as _i11b;
 import '../endpoints/gdpr_endpoint.dart' as _i12;
 import '../endpoints/health_endpoint.dart' as _i13;
 import '../endpoints/location_endpoint.dart' as _i14;
@@ -119,6 +120,12 @@ class Endpoints extends _i1.EndpointDispatch {
         ..initialize(
           server,
           'gamification',
+          null,
+        ),
+      'goal': _i11b.GoalEndpoint()
+        ..initialize(
+          server,
+          'goal',
           null,
         ),
       'gdpr': _i12.GdprEndpoint()
@@ -1529,6 +1536,59 @@ class Endpoints extends _i1.EndpointDispatch {
             session,
             params['familyId'],
           ),
+        ),
+      },
+    );
+    connectors['goal'] = _i1.EndpointConnector(
+      name: 'goal',
+      endpoint: endpoints['goal']!,
+      methodConnectors: {
+        'createGoal': _i1.MethodConnector(
+          name: 'createGoal',
+          params: {
+            'familyId': _i1.ParameterDescription(name: 'familyId', type: _i1.getType<int>(), nullable: false),
+            'targetUserId': _i1.ParameterDescription(name: 'targetUserId', type: _i1.getType<int>(), nullable: false),
+            'title': _i1.ParameterDescription(name: 'title', type: _i1.getType<String>(), nullable: false),
+            'targetPoints': _i1.ParameterDescription(name: 'targetPoints', type: _i1.getType<int>(), nullable: false),
+            'rewardAmount': _i1.ParameterDescription(name: 'rewardAmount', type: _i1.getType<double>(), nullable: false),
+            'description': _i1.ParameterDescription(name: 'description', type: _i1.getType<String?>(), nullable: true),
+            'deadline': _i1.ParameterDescription(name: 'deadline', type: _i1.getType<DateTime?>(), nullable: true),
+          },
+          call: (_i1.Session session, Map<String, dynamic> params) async =>
+              (endpoints['goal'] as _i11b.GoalEndpoint).createGoal(
+            session,
+            params['familyId'],
+            params['targetUserId'],
+            params['title'],
+            params['targetPoints'],
+            params['rewardAmount'],
+            description: params['description'],
+            deadline: params['deadline'],
+          ),
+        ),
+        'listGoals': _i1.MethodConnector(
+          name: 'listGoals',
+          params: {
+            'familyId': _i1.ParameterDescription(name: 'familyId', type: _i1.getType<int>(), nullable: false),
+          },
+          call: (_i1.Session session, Map<String, dynamic> params) async =>
+              (endpoints['goal'] as _i11b.GoalEndpoint).listGoals(session, params['familyId']),
+        ),
+        'cancelGoal': _i1.MethodConnector(
+          name: 'cancelGoal',
+          params: {
+            'goalId': _i1.ParameterDescription(name: 'goalId', type: _i1.getType<int>(), nullable: false),
+          },
+          call: (_i1.Session session, Map<String, dynamic> params) async =>
+              (endpoints['goal'] as _i11b.GoalEndpoint).cancelGoal(session, params['goalId']),
+        ),
+        'markPaid': _i1.MethodConnector(
+          name: 'markPaid',
+          params: {
+            'goalId': _i1.ParameterDescription(name: 'goalId', type: _i1.getType<int>(), nullable: false),
+          },
+          call: (_i1.Session session, Map<String, dynamic> params) async =>
+              (endpoints['goal'] as _i11b.GoalEndpoint).markPaid(session, params['goalId']),
         ),
       },
     );

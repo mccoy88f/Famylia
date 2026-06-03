@@ -1,0 +1,21 @@
+### Obiettivo con premio in denaro per un membro della famiglia.
+class: FamilyGoal
+table: family_goal
+fields:
+  familyId: int, relation(parent=family)
+  createdBy: int
+  targetUserId: int
+  title: String
+  description: String?
+  targetPoints: int
+  rewardAmount: double
+  deadline: DateTime?
+  status: FamilyGoalStatus, default=active
+  completedAt: DateTime?
+  paidAt: DateTime?
+  paidBy: int?
+indexes:
+  family_goal_family_idx:
+    fields: familyId
+  family_goal_target_idx:
+    fields: targetUserId, status

@@ -1,0 +1,6 @@
+enum: FamilyGoalStatus
+serialized: byName
+values:
+  active: 0
+  completed: 1
+  cancelled: 2

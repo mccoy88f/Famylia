@@ -13,6 +13,8 @@ import '../../core/api/shopping_repository.dart';
 import '../../core/api/todo_repository.dart';
 import '../../core/api/ai_repository.dart';
 import '../../core/extensions/context_extensions.dart';
+import '../../core/session/family_context.dart';
+import '../maria/maria_upsell_sheet.dart';
 import '../../core/router/app_router.dart';
 import '../../core/session/activity_refresh.dart';
 import '../../core/session/app_state.dart';
@@ -546,10 +548,17 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
                     child: ListenableBuilder(
                       listenable: _quickInputCtrl,
                       builder: (_, __) {
+                        final hasMarIA = context.read<FamilyContext>().hasMarIA;
                         final hasText = _quickInputCtrl.text.trim().isNotEmpty;
                         if (hasText) {
                           return ShadButton(
-                            onPressed: _aiAnalyzing ? null : _analyzeWithAi,
+                            onPressed: _aiAnalyzing ? null : () {
+                              if (!hasMarIA) {
+                                MarIAUpsellSheet.show(context);
+                              } else {
+                                _analyzeWithAi();
+                              }
+                            },
                             width: double.infinity,
                             child: _aiAnalyzing
                                 ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
@@ -565,8 +574,12 @@ class _NuovaAttivitaModalState extends State<NuovaAttivitaModal> {
                         }
                         return ShadButton.outline(
                           onPressed: () {
-                            Navigator.pop(context);
-                            context.go(AppRoutes.aiImport);
+                            if (!hasMarIA) {
+                              MarIAUpsellSheet.show(context);
+                            } else {
+                              Navigator.pop(context);
+                              context.go(AppRoutes.aiImport);
+                            }
                           },
                           width: double.infinity,
                           child: const Row(

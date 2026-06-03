@@ -1,0 +1,175 @@
+name: Build Android
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      show_private_server:
+        description: 'Mostra pulsante server privato'
+        type: boolean
+        default: false
+      flavor:
+        description: 'Tipo di build'
+        type: choice
+        options: [apk, appbundle]
+        default: appbundle
+
+env:
+  FLUTTER_VERSION: '3.32.0'
+  JAVA_VERSION: '17'
+  APP_ID: app.famylia.app
+  APP_DIR: app
+
+jobs:
+  build:
+    name: Build Android
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Java ────────────────────────────────────────────────────────────────
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      # ── Flutter ─────────────────────────────────────────────────────────────
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      # ── Genera la piattaforma Android (non è committata — solo web) ─────────
+      - name: Generate Android platform
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          flutter create \
+            --platforms=android \
+            --org app.famylia \
+            --project-name famylia_app \
+            --overwrite \
+            .
+
+      # ── Aggiorna applicationId e permessi ───────────────────────────────────
+      - name: Patch AndroidManifest
+        working-directory: ${{ env.APP_DIR }}/android/app/src/main
+        run: |
+          # Permessi necessari
+          sed -i 's|</manifest>|    <uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>\n</manifest>|' AndroidManifest.xml
+
+      - name: Patch build.gradle applicationId
+        working-directory: ${{ env.APP_DIR }}/android/app
+        run: |
+          sed -i "s/com\.example\.famylia_app/${{ env.APP_ID }}/g" build.gradle
+          # Minimum SDK 21 (richiesto da alcune dipendenze)
+          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/' build.gradle || true
+          sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 21/' build.gradle || true
+
+      # ── Dipendenze ──────────────────────────────────────────────────────────
+      - name: Flutter pub get
+        working-directory: ${{ env.APP_DIR }}
+        run: flutter pub get
+
+      # ── Keystore (solo se i secret sono configurati) ─────────────────────────
+      - name: Decode keystore
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        working-directory: ${{ env.APP_DIR }}/android
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > keystore.jks
+
+      - name: Create key.properties
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        working-directory: ${{ env.APP_DIR }}/android
+        run: |
+          cat > key.properties <<EOF
+          storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=../android/keystore.jks
+          EOF
+
+      - name: Configure signing in build.gradle
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        working-directory: ${{ env.APP_DIR }}/android/app
+        run: |
+          # Inserisce il blocco signingConfigs prima di buildTypes
+          cat > signing_patch.py <<'PYEOF'
+          import re, sys
+          content = open('build.gradle').read()
+          signing_block = '''
+              signingConfigs {
+                  release {
+                      def props = new Properties()
+                      props.load(new FileInputStream(rootProject.file('key.properties')))
+                      keyAlias props['keyAlias']
+                      keyPassword props['keyPassword']
+                      storeFile file(props['storeFile'])
+                      storePassword props['storePassword']
+                  }
+              }
+          '''
+          release_signing = "signingConfig signingConfigs.release"
+          content = re.sub(r'(android \{)', r'\1' + signing_block, content, count=1)
+          content = re.sub(r'(buildTypes \{[^}]*release \{)', r'\1\n            ' + release_signing, content, count=1)
+          open('build.gradle', 'w').write(content)
+          PYEOF
+          python3 signing_patch.py
+
+      # ── Build ────────────────────────────────────────────────────────────────
+      - name: Determine dart-defines
+        id: defines
+        run: |
+          DEFINES=""
+          if [ "${{ github.event.inputs.show_private_server }}" = "true" ]; then
+            DEFINES="$DEFINES --dart-define=SHOW_PRIVATE_SERVER=true"
+          fi
+          echo "flags=$DEFINES" >> $GITHUB_OUTPUT
+
+      - name: Build APK
+        if: ${{ github.event.inputs.flavor == 'apk' || github.event_name == 'push' }}
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          flutter build apk --release ${{ steps.defines.outputs.flags }}
+
+      - name: Build App Bundle (AAB)
+        if: ${{ github.event.inputs.flavor == 'appbundle' || startsWith(github.ref, 'refs/tags/') }}
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          flutter build appbundle --release ${{ steps.defines.outputs.flags }}
+
+      # ── Artifacts ────────────────────────────────────────────────────────────
+      - name: Upload APK
+        if: ${{ hashFiles('app/build/app/outputs/flutter-apk/app-release.apk') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: famylia-android-apk-${{ github.sha }}
+          path: app/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: Upload AAB
+        if: ${{ hashFiles('app/build/app/outputs/bundle/release/app-release.aab') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: famylia-android-aab-${{ github.sha }}
+          path: app/build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+      # ── Release (solo su tag v*) ─────────────────────────────────────────────
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            app/build/app/outputs/flutter-apk/app-release.apk
+            app/build/app/outputs/bundle/release/app-release.aab
+          generate_release_notes: true
