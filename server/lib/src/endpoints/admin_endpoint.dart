@@ -98,7 +98,7 @@ class AdminEndpoint extends Endpoint {
     final since = DateTime.now().toUtc().subtract(Duration(days: days));
     final logs = await TokenUsageLog.db.find(
       session,
-      where: (t) => t.createdAt > since,
+      where: (t) => t.createdAt.isAfter(since),
       orderBy: (t) => t.createdAt,
       orderDescending: true,
       limit: 5000,

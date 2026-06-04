@@ -124,6 +124,9 @@ class AiConfigUtil {
         'response_format': {'type': 'json_object'},
       }),
     );
+    if (response.statusCode != 200) {
+      throw Exception('OpenRouter error ${response.statusCode}: ${response.body}');
+    }
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     final text =
         (data['choices'] as List).first['message']['content'] as String;
@@ -161,9 +164,16 @@ class AiConfigUtil {
         'generationConfig': {'responseMimeType': 'application/json'},
       }),
     );
+    if (response.statusCode != 200) {
+      throw Exception('Gemini error ${response.statusCode}: ${response.body}');
+    }
     final data = jsonDecode(response.body) as Map<String, dynamic>;
+    final candidates = data['candidates'] as List?;
+    if (candidates == null || candidates.isEmpty) {
+      throw Exception('Gemini returned no candidates: ${response.body}');
+    }
     final text =
-        data['candidates'][0]['content']['parts'][0]['text'] as String;
+        candidates[0]['content']['parts'][0]['text'] as String;
     final usage = data['usageMetadata'] as Map<String, dynamic>? ?? {};
     return AiCallResult(
       text: text,
