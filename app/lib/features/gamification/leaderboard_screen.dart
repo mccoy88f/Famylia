@@ -95,7 +95,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       title: Text(s.leaderboardMyPoints),
                       trailing: Text(
                         '${_mine?.points ?? 0}',
-                        style: shadTheme.textTheme.h2,
+                        style: shadTheme.textTheme.h4,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
@@ -123,9 +124,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                             style: TextStyle(fontSize: i < 3 ? 18.0 : 14.0),
                           ),
                         ),
-                        title: Text(_board!.entries[i].displayName, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        title: Text(_board!.entries[i].displayName, style: const TextStyle(fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
                         trailing: Text('${_board!.entries[i].points} pt',
-                            style: TextStyle(color: shadTheme.colorScheme.primary, fontWeight: FontWeight.w700)),
+                            style: TextStyle(color: shadTheme.colorScheme.primary, fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis),
                       ),
                       if (i < _board!.entries.length - 1)
                         Divider(height: 1, indent: 56, color: shadTheme.colorScheme.border),

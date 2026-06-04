@@ -312,10 +312,11 @@ class _GoalCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(goal.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                    Text(goal.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15), overflow: TextOverflow.ellipsis),
                     Text(
                       '${s.goalsFor} $memberName',
                       style: TextStyle(fontSize: 12, color: shadTheme.colorScheme.mutedForeground),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -346,9 +347,12 @@ class _GoalCard extends StatelessWidget {
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: shadTheme.colorScheme.primary),
               ),
               if (currentPoints != null && goal.status == FamilyGoalStatus.active) ...[
-                Text(
-                  '  ·  ${s.goalsProgressOf} ${currentPoints!} pt attuali',
-                  style: TextStyle(fontSize: 12, color: shadTheme.colorScheme.mutedForeground),
+                Flexible(
+                  child: Text(
+                    '  ·  ${s.goalsProgressOf} ${currentPoints!} pt attuali',
+                    style: TextStyle(fontSize: 12, color: shadTheme.colorScheme.mutedForeground),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
               if (goal.deadline != null) ...[
