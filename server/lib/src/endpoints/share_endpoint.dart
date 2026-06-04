@@ -12,6 +12,7 @@ class ShareEndpoint extends Endpoint {
     Session session,
     String content, {
     String? fileName,
+    int? familyId,
   }) async {
     await requireUserId(session);
 
@@ -27,7 +28,7 @@ Contenuto da analizzare:
 $truncated''';
 
     try {
-      final aiResult = await AiConfigUtil.callAi(session, userPrompt);
+      final aiResult = await AiConfigUtil.callAi(session, userPrompt, familyId: familyId);
       final result = jsonDecode(aiResult.text) as Map<String, dynamic>;
 
       // Log usage (familyId 0 as fallback — share has no family context)
@@ -40,7 +41,7 @@ $truncated''';
       );
       await AiConfigUtil.logUsage(
         session,
-        familyId: 0,
+        familyId: familyId ?? 0,
         feature: 'share',
         provider: config.provider.name,
         modelName: config.modelName,
@@ -54,7 +55,9 @@ $truncated''';
         description: (result['description'] as String?) ?? '',
         suggestedDeadline: result['suggestedDeadline'] as String?,
       );
-    } catch (_) {}
+    } catch (e) {
+      if (e is QuotaExceededException) rethrow;
+    }
 
     final title = content.length > 80 ? content.substring(0, 80) : content;
     return SharedContentAnalysis(

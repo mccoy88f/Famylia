@@ -47,7 +47,9 @@ class _ShareProcessingScreenState extends State<ShareProcessingScreen> {
       final msg = e.toString();
       if (msg.contains('QuotaExceeded')) {
         try {
-          final json = jsonDecode(msg.substring(msg.indexOf('{'))) as Map<String, dynamic>;
+          final braceIdx = msg.indexOf('{');
+          if (braceIdx < 0) throw FormatException('no json');
+          final json = jsonDecode(msg.substring(braceIdx)) as Map<String, dynamic>;
           final resetDate = DateTime.parse(json['resetDate'] as String);
           final isTokenLimit = json['isTokenLimit'] as bool? ?? true;
           Navigator.of(context).pop();

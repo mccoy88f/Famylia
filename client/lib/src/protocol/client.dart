@@ -1201,6 +1201,7 @@ class EndpointShare extends _i1.EndpointRef {
   _i2.Future<_i57.SharedContentAnalysis> analyzeContent(
     String content, {
     String? fileName,
+    int? familyId,
   }) =>
       caller.callServerEndpoint<_i57.SharedContentAnalysis>(
         'share',
@@ -1208,6 +1209,7 @@ class EndpointShare extends _i1.EndpointRef {
         {
           'content': content,
           'fileName': fileName,
+          'familyId': familyId,
         },
       );
 }

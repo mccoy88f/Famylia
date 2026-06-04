@@ -11,7 +11,8 @@ class ShareRepository {
   Future<SharedContentAnalysis> analyzeContent(
     String content, {
     String? fileName,
+    int? familyId,
   }) async {
-    return _client.share.analyzeContent(content, fileName: fileName);
+    return _client.share.analyzeContent(content, fileName: fileName, familyId: familyId);
   }
 }
