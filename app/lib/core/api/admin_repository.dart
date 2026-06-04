@@ -2,14 +2,16 @@ import 'package:famylia_client/famylia_client.dart';
 import 'famylia_services.dart';
 
 class AdminRepository {
+  AdminRepository() : _client = FamyliaServices.instance.client;
+
+  final Client _client;
   String? _adminToken;
 
   bool get isAuthenticated => _adminToken != null;
   String? get adminToken => _adminToken;
 
   Future<void> login(String email, String password) async {
-    final client = FamyliaServices.client;
-    final token = await client.admin.adminLogin(email, password);
+    final token = await _client.admin.adminLogin(email, password);
     _adminToken = token;
   }
 
@@ -19,33 +21,32 @@ class AdminRepository {
 
   Future<AiConfig> getAiConfig() async {
     final token = _requireToken();
-    return FamyliaServices.client.admin.getAiConfig(token);
+    return _client.admin.getAiConfig(token);
   }
 
   Future<AiConfig> setAiConfig(String provider, String modelName,
       {String? systemPrompt}) async {
     final token = _requireToken();
-    return FamyliaServices.client.admin
+    return _client.admin
         .setAiConfig(token, provider, modelName, systemPrompt: systemPrompt);
   }
 
   Future<FamilyQuota?> getFamilyQuota(int familyId) async {
     final token = _requireToken();
-    return FamyliaServices.client.admin.getFamilyQuota(token, familyId);
+    return _client.admin.getFamilyQuota(token, familyId);
   }
 
   Future<FamilyQuota> setFamilyQuota(int familyId,
       {int? monthlyTokenLimit, double? monthlyCostLimitUsd}) async {
     final token = _requireToken();
-    return FamyliaServices.client.admin.setFamilyQuota(token, familyId,
+    return _client.admin.setFamilyQuota(token, familyId,
         monthlyTokenLimit: monthlyTokenLimit,
         monthlyCostLimitUsd: monthlyCostLimitUsd);
   }
 
   Future<List<UsageStat>> getUsageStats({int days = 30}) async {
     final token = _requireToken();
-    return FamyliaServices.client.admin
-        .getUsageStats(token, days: days);
+    return _client.admin.getUsageStats(token, days: days);
   }
 
   String _requireToken() {
